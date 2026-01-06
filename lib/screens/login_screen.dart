@@ -304,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Chưa có tài khoản? ',
+                              '',
                               style: GoogleFonts.nunito(
                                 fontSize: 16,
                                 color: Colors.white,
@@ -315,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Tính năng đăng ký đang được phát triển',
+                                      '',
                                       style: GoogleFonts.nunito(),
                                     ),
                                     backgroundColor: const Color(0xFF73C6D9),
@@ -323,7 +323,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               },
                               child: Text(
-                                'Đăng ký',
+                                '',
                                 style: GoogleFonts.nunito(
                                   fontSize: 16,
                                   color: Colors.white,
