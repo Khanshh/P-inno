@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
+import 'home_main_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -62,16 +63,11 @@ class HomeScreen extends StatelessWidget {
                   // Card "Kiến Thức"
                   InkWell(
                     onTap: () {
-                      // TODO: Navigate to knowledge screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Tính năng Kiến Thức đang được phát triển',
-                            style: GoogleFonts.nunito(),
-                          ),
-                          backgroundColor: const Color(0xFF73C6D9),
-                        ),
-                      );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const HomeMainScreen(),
+                      ),
+                    );
                     },
                     borderRadius: BorderRadius.circular(24),
                     child: Container(
@@ -89,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Container(
                             width: 80,
-                            height: 80,
+                            height: 10,
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.4),
                               borderRadius: BorderRadius.circular(20),
@@ -102,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'Kiến Thức',
+                            'Khám Phá',
                             style: GoogleFonts.nunito(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
