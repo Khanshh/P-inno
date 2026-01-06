@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'chat_ai_screen.dart';
 
 class HomeMainScreen extends StatefulWidget {
   const HomeMainScreen({super.key});
@@ -204,7 +205,18 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-      onTap: (index) => setState(() => _selectedIndex = index),
+      onTap: (index) {
+        if (index == 1) {
+          // Navigate to Chat AI screen
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const ChatAIScreen(),
+            ),
+          );
+        } else {
+          setState(() => _selectedIndex = index);
+        }
+      },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: _primaryColor,
       unselectedItemColor: Colors.grey.shade500,
