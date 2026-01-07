@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/login_dialog.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -182,7 +183,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Navigate to login
+                LoginDialog.show(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
