@@ -265,4 +265,3 @@ class _NotificationItem {
   final String time;
   bool isRead;
 }
-

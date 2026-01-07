@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'chat_ai_screen.dart';
 import 'notification_screen.dart';
+import 'profile_screen.dart';
 
 class HomeMainScreen extends StatefulWidget {
   const HomeMainScreen({super.key});
@@ -219,6 +220,13 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const NotificationScreen(),
+            ),
+          );
+        } else if (index == 3) {
+          // Navigate to Profile screen
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const ProfileScreen(),
             ),
           );
         } else {
