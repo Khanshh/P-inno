@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/medical_record_screen.dart';
 
 class LoginDialog extends StatelessWidget {
   const LoginDialog({super.key});
@@ -57,7 +58,7 @@ class LoginDialog extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 5. Main Button
-                  _buildLoginButton(),
+                  _buildLoginButton(context),
                   
                   const SizedBox(height: 20),
 
@@ -83,12 +84,12 @@ class LoginDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6A1B9A).withOpacity(0.1), // Tím nhạt
+              color: const Color(0xFF73C6D9).withOpacity(0.1), // Xanh nhạt
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.local_hospital_rounded,
-              color: Color(0xFF6A1B9A), // Tím
+              color: Color(0xFF73C6D9), // Xanh
               size: 24,
             ),
           ),
@@ -218,15 +219,15 @@ class LoginDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildLoginButton(BuildContext context) {
     return Container(
       width: double.infinity,
       height: 50,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF8E24AA), // Tím
-            Color(0xFFD81B60), // Hồng đậm
+            Color(0xFF73C6D9),
+            Color(0xFF4DADC2),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -234,7 +235,7 @@ class LoginDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFD81B60).withOpacity(0.3),
+            color: const Color(0xFF73C6D9).withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -242,7 +243,12 @@ class LoginDialog extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: () {
-          // Mock action
+          Navigator.of(context).pop(); // Close dialog
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MedicalRecordScreen(),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
@@ -269,7 +275,7 @@ class LoginDialog extends StatelessWidget {
           child: const Text(
             'Quên mật khẩu?',
             style: TextStyle(
-              color: Color(0xFF8E24AA),
+              color: Color(0xFF73C6D9),
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -292,7 +298,7 @@ class LoginDialog extends StatelessWidget {
           child: const Text(
             'Liên hệ bệnh viện để được cấp tài khoản',
             style: TextStyle(
-              color: Color(0xFF8E24AA),
+              color: Color(0xFF73C6D9),
               fontWeight: FontWeight.w500,
               fontSize: 14,
             ),
