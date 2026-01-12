@@ -640,7 +640,6 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
       children: [
         Container(
           width: double.infinity,
-          height: 220,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
