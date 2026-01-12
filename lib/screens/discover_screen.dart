@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'infertility_detail_screen.dart';
+import 'ivf_detail_screen.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -245,7 +246,15 @@ class DiscoverScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+                   if (method['title'] == 'IVF') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const IVFDetailScreen(),
+                      ),
+                    );
+                  }
+                },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   side: BorderSide(color: Colors.grey.shade300),
