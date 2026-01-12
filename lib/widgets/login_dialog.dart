@@ -118,13 +118,13 @@ class LoginDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF0F5), // Hồng rất nhạt
+        color: const Color(0xFFE0F7FA), // Xanh nhạt
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Icon(Icons.business, color: Color(0xFFAD1457), size: 22),
+          const Icon(Icons.business, color: Color(0xFF0097A7), size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -134,7 +134,7 @@ class LoginDialog extends StatelessWidget {
                   'Bệnh viện Phụ Sản Trung ương',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF880E4F),
+                    color: Color(0xFF00838F),
                     fontSize: 15,
                   ),
                 ),
@@ -142,7 +142,7 @@ class LoginDialog extends StatelessWidget {
                 Text(
                   '43 Tràng Thi, Hoàn Kiếm, Hà Nội',
                   style: TextStyle(
-                    color: const Color(0xFF880E4F).withOpacity(0.7),
+                    color: const Color(0xFF00838F).withOpacity(0.7),
                     fontSize: 13,
                   ),
                 ),

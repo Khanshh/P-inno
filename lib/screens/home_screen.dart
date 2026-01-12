@@ -63,11 +63,11 @@ class HomeScreen extends StatelessWidget {
                   // Card "Kiến Thức"
                   InkWell(
                     onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const HomeMainScreen(),
-                      ),
-                    );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const HomeMainScreen(),
+                        ),
+                      );
                     },
                     borderRadius: BorderRadius.circular(24),
                     child: Container(

@@ -209,25 +209,16 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
       currentIndex: _selectedIndex,
       onTap: (index) {
         if (index == 1) {
-          // Navigate to Chat AI screen
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const ChatAIScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const ChatAIScreen()),
           );
         } else if (index == 2) {
-          // Navigate to Notification screen
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const NotificationScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const NotificationScreen()),
           );
         } else if (index == 3) {
-          // Navigate to Profile screen
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const ProfileScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const ProfileScreen()),
           );
         } else {
           setState(() => _selectedIndex = index);
