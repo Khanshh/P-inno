@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'chat_ai_screen.dart';
+import 'discover_screen.dart';
 import 'notification_screen.dart';
 import 'profile_screen.dart';
 
@@ -61,9 +62,20 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                         (item) => Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: _FeatureCard(
-                              item: item,
-                              primaryColor: _primaryColor,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (item.title == 'Tìm hiểu') {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const DiscoverScreen(),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: _FeatureCard(
+                                item: item,
+                                primaryColor: _primaryColor,
+                              ),
                             ),
                           ),
                         ),
