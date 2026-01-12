@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'infertility_detail_screen.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -16,7 +17,7 @@ class DiscoverScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBannerCard(),
+                  _buildBannerCard(context),
                   const SizedBox(height: 25),
                   const Text(
                     'Phương pháp hỗ trợ sinh sản',
@@ -92,56 +93,61 @@ class DiscoverScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBannerCard() {
+  Widget _buildBannerCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF9C27B0), Color(0xFFE91E63)], // Tím -> Hồng
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF73C6D9), // Xanh chủ đạo
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE91E63).withOpacity(0.3),
+            color: const Color(0xFF73C6D9).withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const InfertilityDetailScreen(),
             ),
-            child: const Icon(
-              Icons.favorite,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Text(
-              'Tìm hiểu về hiếm muộn',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.favorite,
                 color: Colors.white,
+                size: 28,
               ),
             ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios,
-            color: Colors.white,
-            size: 18,
-          ),
-        ],
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Text(
+                'Tìm hiểu về hiếm muộn',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }
