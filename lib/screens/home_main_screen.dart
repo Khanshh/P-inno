@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'chat_ai_screen.dart';
 import 'discover_screen.dart';
 import 'notification_screen.dart';
+import 'news_screen.dart';
 import 'profile_screen.dart';
 
 class HomeMainScreen extends StatefulWidget {
@@ -194,8 +195,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          Text(
+        children: [
+          const Text(
             'Tin Tức Y Tế',
             style: TextStyle(
               fontSize: 18,
@@ -203,12 +204,21 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               color: Colors.black87,
             ),
           ),
-          Text(
-            'Xem tất cả >',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF73C6D9),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const NewsScreen(),
+                ),
+              );
+            },
+            child: const Text(
+              'Xem tất cả >',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF73C6D9),
+              ),
             ),
           ),
         ],
