@@ -17,8 +17,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, dynamic>> _pages = [
     {
-      'title': 'Chào Mừng Đến Với\nHành Trình Làm Mẹ',
-      'description': 'Ứng dụng đồng hành cùng bạn trong suốt thai kỳ, mang đến sự chăm sóc tốt nhất cho mẹ và bé',
+      'title': '...',
+      'description': '...',
       'icon': Icons.favorite,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -26,8 +26,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Theo Dõi Sức Khỏe\nToàn Diện',
-      'description': 'Ghi chép các chỉ số quan trọng như cân nặng, huyết áp, và sự phát triển của bé',
+      'title': '...',
+      'description': '...',
       'icon': Icons.monitor_heart,
       'colors': [
         const Color(0xFF5BB8CE), // Xanh ngọc đậm hơn
@@ -35,8 +35,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Lời Khuyên Từ\nChuyên Gia',
-      'description': 'Nhận thông tin và lời khuyên hữu ích theo từng giai đoạn thai kỳ của bạn',
+      'title': '...',
+      'description': '...',
       'icon': Icons.medical_services,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -44,8 +44,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Sẵn Sàng\nBắt Đầu?',
-      'description': 'Hãy cùng nhau bắt đầu hành trình tuyệt vời này và chăm sóc sức khỏe thai sản một cách tốt nhất',
+      'title': '...',
+      'description': '...',
       'icon': Icons.rocket_launch,
       'colors': [
         const Color(0xFF4DADC2), // Xanh ngọc đậm
