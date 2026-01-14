@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_profile import router as profile_router
 from app.api.v1.routes_medical_records import router as medical_records_router
+from app.api.v1.routes_home import router as home_router
+from app.api.v1.routes_news import router as news_router
+from app.api.v1.routes_discover import router as discover_router
 from app.core.config import settings
 
 
@@ -44,6 +47,9 @@ def create_app() -> FastAPI:
         prefix="/api/v1",
         tags=["medical-records"],
     )
+    app.include_router(home_router, prefix="/api/v1", tags=["home"])
+    app.include_router(news_router, prefix="/api/v1", tags=["news"])
+    app.include_router(discover_router, prefix="/api/v1", tags=["discover"])
 
     return app
 
