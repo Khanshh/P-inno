@@ -19,7 +19,7 @@ class NewsScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 24,
           ),
         ),
         centerTitle: false,
@@ -32,7 +32,7 @@ class NewsScreen extends StatelessWidget {
             child: Text(
               'Tất Cả Tin Tức',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -126,7 +126,7 @@ class _NewsCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                       height: 1.2,
@@ -138,7 +138,7 @@ class _NewsCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: Colors.grey,
                       height: 1.3,
                     ),
@@ -151,7 +151,7 @@ class _NewsCard extends StatelessWidget {
                       Text(
                         news['time']!,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
@@ -161,7 +161,7 @@ class _NewsCard extends StatelessWidget {
                       Text(
                         news['views']!,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),

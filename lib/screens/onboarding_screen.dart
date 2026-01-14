@@ -17,8 +17,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, dynamic>> _pages = [
     {
-      'title': 'Chào Mừng Đến Với\nHành Trình Làm Mẹ',
-      'description': 'Ứng dụng đồng hành cùng bạn trong suốt thai kỳ, mang đến sự chăm sóc tốt nhất cho mẹ và bé',
+      'title': 'Chào mừng bạn đến với nơi phép màu bắt đầu.',
+      'description': 'Từng bước nhỏ cùng bạn hiện thực hóa giấc mơ làm cha mẹ.',
       'icon': Icons.favorite,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -26,8 +26,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Theo Dõi Sức Khỏe\nToàn Diện',
-      'description': 'Ghi chép các chỉ số quan trọng như cân nặng, huyết áp, và sự phát triển của bé',
+      'title': 'Chạm vào mầm sống.',
+      'description': 'Công nghệ thông minh hỗ trợ các cặp đôi hiếm muộn.',
       'icon': Icons.monitor_heart,
       'colors': [
         const Color(0xFF5BB8CE), // Xanh ngọc đậm hơn
@@ -35,8 +35,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Lời Khuyên Từ\nChuyên Gia',
-      'description': 'Nhận thông tin và lời khuyên hữu ích theo từng giai đoạn thai kỳ của bạn',
+      'title': 'Luôn có chúng tôi bên cạnh.',
+      'description': ' Kết nối chuyên gia, giải đáp mọi thắc mắc của bạn.',
       'icon': Icons.medical_services,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -44,8 +44,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': 'Sẵn Sàng\nBắt Đầu?',
-      'description': 'Hãy cùng nhau bắt đầu hành trình tuyệt vời này và chăm sóc sức khỏe thai sản một cách tốt nhất',
+      'title': 'Hãy để hành trình này trở nên dễ dàng và nhẹ nhàng hơn từ hôm nay.',
+      'description': 'Đừng chờ đợi thêm, hãy để hy vọng bắt đầu chuyển hóa thành hành động.',
       'icon': Icons.rocket_launch,
       'colors': [
         const Color(0xFF4DADC2), // Xanh ngọc đậm

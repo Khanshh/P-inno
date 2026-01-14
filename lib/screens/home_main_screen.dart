@@ -156,7 +156,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                 'HealthCare',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -165,7 +165,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                 'Xin chào',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.9),
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -182,7 +182,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 18,
+          fontSize: 22,
           fontWeight: FontWeight.w700,
           color: Colors.black87,
         ),
@@ -199,7 +199,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           const Text(
             'Tin Tức Y Tế',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
@@ -215,7 +215,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             child: const Text(
               'Xem tất cả >',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF73C6D9),
               ),
@@ -316,7 +316,7 @@ class _FeatureCard extends StatelessWidget {
             item.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 14.5,
+              fontSize: 17,
               fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
@@ -371,7 +371,7 @@ class _NewsCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
@@ -382,7 +382,7 @@ class _NewsCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Colors.grey.shade700,
                     height: 1.35,
                   ),
@@ -399,7 +399,7 @@ class _NewsCard extends StatelessWidget {
                     Text(
                       item.time,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 14.5,
                         color: Colors.grey.shade700,
                       ),
                     ),
@@ -413,7 +413,7 @@ class _NewsCard extends StatelessWidget {
                     Text(
                       '${item.views} lượt xem',
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 14.5,
                         color: Colors.grey.shade700,
                       ),
                     ),

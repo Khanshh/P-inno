@@ -19,7 +19,7 @@ class InfertilityDetailScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 24,
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class InfertilityDetailScreen extends StatelessWidget {
               Text(
                 'Hiếm muộn là gì?',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -62,7 +62,7 @@ class InfertilityDetailScreen extends StatelessWidget {
           RichText(
             text: TextSpan(
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 17,
                 color: Colors.grey[800],
                 height: 1.5,
               ),
@@ -96,7 +96,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                   child: Text(
                     'Đối với phụ nữ trên 35 tuổi, thời gian này rút ngắn còn 6 tháng. Nếu sau 6 tháng chưa có tin vui, bạn nên đi khám sớm.',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.pink[900],
                       height: 1.4,
                       fontWeight: FontWeight.w500,
@@ -125,7 +125,7 @@ class InfertilityDetailScreen extends StatelessWidget {
               Text(
                 'Nguyên nhân hiếm muộn',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -181,7 +181,7 @@ class InfertilityDetailScreen extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: Colors.blueGrey[800],
                   height: 1.4,
                 ),
@@ -240,7 +240,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -257,7 +257,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -283,7 +283,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                               child: Text(
                                 item,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Colors.grey[800],
                                 ),
                               ),
@@ -313,7 +313,7 @@ class InfertilityDetailScreen extends StatelessWidget {
               Text(
                 'Phương pháp điều trị',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -376,7 +376,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -385,7 +385,7 @@ class InfertilityDetailScreen extends StatelessWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Colors.grey[600],
                   ),
                 ),
@@ -407,7 +407,7 @@ class InfertilityDetailScreen extends StatelessWidget {
           const Text(
             'Lời khuyên từ chuyên gia',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Color(0xFF8E24AA),
             ),
@@ -417,7 +417,7 @@ class InfertilityDetailScreen extends StatelessWidget {
             'Đừng ngần ngại tìm kiếm sự giúp đỡ. Y học hiện đại có rất nhiều phương pháp để hỗ trợ bạn hiện thực hóa giấc mơ làm cha mẹ. Việc phát hiện và điều trị sớm là chìa khóa thành công.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey[800],
               height: 1.5,
               fontStyle: FontStyle.italic,
@@ -439,7 +439,7 @@ class InfertilityDetailScreen extends StatelessWidget {
               child: const Text(
                 'Tham khảo bệnh viện/phòng khám',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
