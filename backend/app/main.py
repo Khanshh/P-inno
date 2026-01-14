@@ -15,13 +15,13 @@ def create_app() -> FastAPI:
     multiple application instances if needed.
     """
     app = FastAPI(
-        title="Hackathon Backend API",
+        title="ENA Backend API",
         description="FastAPI backend for the fertility/medical Flutter app.",
         version="1.0.0",
     )
 
     # CORS configuration
-    # For hackathon / development we allow all origins.
+    # For ENA / development we allow all origins.
     # You can restrict this later by editing `settings.BACKEND_CORS_ORIGINS`.
     app.add_middleware(
         CORSMiddleware,
@@ -34,7 +34,7 @@ def create_app() -> FastAPI:
     # Health check
     @app.get("/health", tags=["system"])
     async def health_check() -> dict:
-        return {"status": "ok", "service": "hackathon-backend"}
+        return {"status": "ok", "service": "ENA-backend"}
 
     # API v1 routers
     app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
