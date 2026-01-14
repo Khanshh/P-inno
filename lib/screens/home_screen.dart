@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                     'Sức Khỏe Thai Sản',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.nunito(
-                      fontSize: 32,
+                      fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -100,7 +100,7 @@ class HomeScreen extends StatelessWidget {
                           Text(
                             'Khám Phá',
                             style: GoogleFonts.nunito(
-                              fontSize: 28,
+                              fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -110,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                             'Tìm hiểu về thai kỳ và chăm sóc sức khỏe',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.nunito(
-                              fontSize: 16,
+                              fontSize: 18,
                               color: Colors.white,
                             ),
                           ),
@@ -132,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                     child: Text(
                       'Đăng nhập tài khoản',
                       style: GoogleFonts.nunito(
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.white,
                         decoration: TextDecoration.underline,
                         decorationColor: Colors.white,

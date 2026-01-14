@@ -62,7 +62,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                   const Text(
                     'IVF',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -76,7 +76,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                     child: const Text(
                       '40-50%',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
@@ -110,7 +110,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                         style: TextStyle(
                           color: _currentTab == 0 ? const Color(0xFF73C6D9) : Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -131,7 +131,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                         style: TextStyle(
                           color: _currentTab == 1 ? const Color(0xFF73C6D9) : Colors.white,
                           fontWeight: _currentTab == 1 ? FontWeight.bold : FontWeight.w500,
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -203,7 +203,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
               Text(
                 'Định nghĩa',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -214,7 +214,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
           Text(
             'Thụ tinh trong ống nghiệm (IVF) là kỹ thuật điều trị vô sinh, trong đó tinh trùng của người chồng và trứng của người vợ được thụ tinh trong phòng thí nghiệm để tạo thành phôi.',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.grey[700],
               height: 1.5,
             ),
@@ -252,7 +252,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
           const Text(
             'Chỉ định điều trị',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -278,7 +278,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                     child: Text(
                       item,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.black87,
                         fontWeight: FontWeight.w500,
                       ),
@@ -312,7 +312,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
           const Text(
             'Ưu điểm',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -333,7 +333,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                   child: Text(
                     item,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.black87,
                       height: 1.4,
                     ),
@@ -370,7 +370,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
               Text(
                 'Lưu ý',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
@@ -393,7 +393,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                   child: Text(
                     item,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.black87,
                       height: 1.4,
                     ),
@@ -424,7 +424,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
               'Cần tư vấn chi tiết?',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -543,7 +543,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                         style: const TextStyle(
                           color: Color(0xFF0277BD),
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -584,7 +584,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                             Text(
                               steps[index]['title'],
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
@@ -606,7 +606,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                               Text(
                                 steps[index]['duration'],
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 14,
                                   color: Colors.grey[700],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -618,7 +618,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                         Text(
                           steps[index]['description'],
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: Colors.grey[600],
                             height: 1.4,
                           ),
@@ -704,7 +704,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                     const Text(
                       'Video mô phỏng 3D',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -717,7 +717,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                           'Quy trình IVF toàn diện',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 16,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -731,7 +731,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                             '5:45',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -781,7 +781,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                 child: Text(
                   'Video giúp bạn hình dung rõ hơn về quá trình thụ tinh và phát triển phôi.',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Colors.brown,
                   ),
                 ),

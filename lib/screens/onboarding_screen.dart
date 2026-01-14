@@ -17,8 +17,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, dynamic>> _pages = [
     {
-      'title': '...',
-      'description': '...',
+      'title': 'Chào mừng bạn đến với nơi phép màu bắt đầu.',
+      'description': 'Từng bước nhỏ cùng bạn hiện thực hóa giấc mơ làm cha mẹ.',
       'icon': Icons.favorite,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -26,8 +26,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': '...',
-      'description': '...',
+      'title': 'Chạm vào mầm sống.',
+      'description': 'Công nghệ thông minh hỗ trợ các cặp đôi hiếm muộn.',
       'icon': Icons.monitor_heart,
       'colors': [
         const Color(0xFF5BB8CE), // Xanh ngọc đậm hơn
@@ -35,8 +35,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': '...',
-      'description': '...',
+      'title': 'Luôn có chúng tôi bên cạnh.',
+      'description': ' Kết nối chuyên gia, giải đáp mọi thắc mắc của bạn.',
       'icon': Icons.medical_services,
       'colors': [
         const Color(0xFF73C6D9), // Xanh ngọc chính
@@ -44,8 +44,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ],
     },
     {
-      'title': '...',
-      'description': '...',
+      'title': 'Hãy để hành trình này trở nên dễ dàng và nhẹ nhàng hơn từ hôm nay.',
+      'description': 'Đừng chờ đợi thêm, hãy để hy vọng bắt đầu chuyển hóa thành hành động.',
       'icon': Icons.rocket_launch,
       'colors': [
         const Color(0xFF4DADC2), // Xanh ngọc đậm
