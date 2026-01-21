@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/chat_message_model.dart';
+import '../services/ai_chat_service.dart';
 
 class ChatAIScreen extends StatefulWidget {
   const ChatAIScreen({super.key});
@@ -11,14 +14,96 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   final Color _primaryColor = const Color(0xFF73C6D9);
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final AiChatService _aiChatService = AiChatService();
+
+  final List<ChatMessage> _messages = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   final List<String> _quickReplies = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Add welcome message
+    _messages.add(
+      ChatMessage.assistant(
+        'Xin chào! Tôi là trợ lý AI sức khỏe. Tôi có thể giúp gì cho bạn hôm nay?',
+      ),
+    );
+  }
 
   @override
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty || _isLoading) return;
+
+    // Clear input immediately
+    _textController.clear();
+
+    // Add user message
+    setState(() {
+      _messages.add(ChatMessage.user(text));
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    // Scroll to bottom
+    _scrollToBottom();
+
+    try {
+      // Send to AI
+      final response = await _aiChatService.sendMessage(
+        messages: _messages,
+      );
+
+      // Add AI response
+      setState(() {
+        _messages.add(response.reply);
+        _isLoading = false;
+      });
+
+      // Scroll to bottom again
+      _scrollToBottom();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Không thể kết nối với AI. Vui lòng thử lại.';
+      });
+
+      // Show error snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  String _formatTime(DateTime time) {
+    return DateFormat('HH:mm').format(time);
   }
 
   @override
@@ -105,11 +190,138 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   }
 
   Widget _buildChatBody() {
-    return ListView(
+    return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      itemCount: _messages.length + (_isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        // Show loading indicator at the end
+        if (index == _messages.length) {
+          return _buildLoadingIndicator();
+        }
+
+        final message = _messages[index];
+        final time = _formatTime(DateTime.now());
+
+        if (message.isUser) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildUserChatBubble(
+              message: message.content,
+              time: time,
+            ),
+          );
+        } else {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildAIChatBubble(
+              message: message.content,
+              time: time,
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: _primaryColor.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.smart_toy,
+              color: Color(0xFF73C6D9),
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Đang trả lời...',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserChatBubble({
+    required String message,
+    required String time,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _buildQuickReplies(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: _primaryColor,
+                  borderRadius: BorderRadius.circular(18).copyWith(
+                    bottomRight: const Radius.circular(4),
+                  ),
+                ),
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.white,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          time,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade600,
+          ),
+        ),
       ],
     );
   }
@@ -274,13 +486,11 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.send, color: Color(0xFF73C6D9)),
-              onPressed: () {
-                // TODO: Send message
-                if (_textController.text.trim().isNotEmpty) {
-                  _textController.clear();
-                }
-              },
+              icon: Icon(
+                Icons.send,
+                color: _isLoading ? Colors.grey : const Color(0xFF73C6D9),
+              ),
+              onPressed: _isLoading ? null : _sendMessage,
             ),
           ],
         ),
