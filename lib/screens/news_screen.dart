@@ -1,7 +1,53 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/news_model.dart';
 
-class NewsScreen extends StatelessWidget {
+class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
+
+  @override
+  State<NewsScreen> createState() => _NewsScreenState();
+}
+
+class _NewsScreenState extends State<NewsScreen> {
+  final ApiService _apiService = ApiService();
+
+  List<NewsModel> _news = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNews();
+  }
+
+  Future<void> _loadNews() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _apiService.getNews(page: 1, limit: 20);
+      setState(() {
+        _news = response.items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Không thể tải tin tức. Vui lòng thử lại sau.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatViews(int views) {
+    if (views >= 1000) {
+      return '${(views / 1000).toStringAsFixed(1).replaceAll('.0', '')}k';
+    }
+    return views.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,24 +84,71 @@ class NewsScreen extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF5F5F5), // Light grey background for list
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75, // Adjust for card height
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 16,
+          if (_isLoading)
+            const Expanded(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_errorMessage != null)
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.wifi_off, size: 40, color: Colors.grey),
+                      const SizedBox(height: 12),
+                      Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: _loadNews,
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
                 ),
-                itemCount: _mockNews.length,
-                itemBuilder: (context, index) {
-                  return _NewsCard(news: _mockNews[index]);
-                },
+              ),
+            )
+          else if (_news.isEmpty)
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Hiện chưa có tin tức.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: Container(
+                color: const Color(0xFFF5F5F5),
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _news.length,
+                  itemBuilder: (context, index) {
+                    return _NewsCard(
+                      news: _news[index],
+                      formatViews: _formatViews,
+                    );
+                  },
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -63,9 +156,13 @@ class NewsScreen extends StatelessWidget {
 }
 
 class _NewsCard extends StatelessWidget {
-  final Map<String, String> news;
+  final NewsModel news;
+  final String Function(int) formatViews;
 
-  const _NewsCard({required this.news});
+  const _NewsCard({
+    required this.news,
+    required this.formatViews,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,8 +189,16 @@ class _NewsCard extends StatelessWidget {
               Container(
                 height: 100, // Fixed height for image area
                 width: double.infinity,
-                color: Colors.grey[300], // Placeholder color
-                child: const Icon(Icons.image, color: Colors.grey),
+                color: Colors.grey[300],
+                child: news.imageUrl != null
+                    ? Image.network(
+                        news.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.image, color: Colors.grey);
+                        },
+                      )
+                    : const Icon(Icons.image, color: Colors.grey),
               ),
               Positioned(
                 top: 8,
@@ -122,7 +227,7 @@ class _NewsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    news['title']!,
+                    news.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -134,7 +239,7 @@ class _NewsCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    news['description']!,
+                    news.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -149,7 +254,7 @@ class _NewsCard extends StatelessWidget {
                       const Icon(Icons.access_time, size: 12, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
-                        news['time']!,
+                        news.time,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -159,7 +264,7 @@ class _NewsCard extends StatelessWidget {
                       const Icon(Icons.remove_red_eye_outlined, size: 12, color: Colors.grey),
                       const SizedBox(width: 4),
                       Text(
-                        news['views']!,
+                        formatViews(news.views),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -176,55 +281,3 @@ class _NewsCard extends StatelessWidget {
     );
   }
 }
-
-// Mock Data
-final List<Map<String, String>> _mockNews = [
-  {
-    'title': 'Tầm quan trọng của giấc ngủ đối với sức khỏe',
-    'description': 'Người trưởng thành cần từ 7-9 tiếng ngủ mỗi đêm để phục hồi cơ thể và tinh thần.',
-    'time': '1 ngày trước',
-    'views': '1.8k',
-  },
-  {
-    'title': 'Bảo hiểm du lịch: Những điều cần biết',
-    'description': 'Lợi ích của việc mua bảo hiểm khi đi du lịch nước ngoài và các rủi ro được bảo vệ.',
-    'time': '2 ngày trước',
-    'views': '2.1k',
-  },
-  {
-    'title': 'Khí hậu Việt Nam theo mùa và ảnh hưởng sức khỏe',
-    'description': 'Cách phòng tránh các bệnh thường gặp khi thời tiết thay đổi thất thường.',
-    'time': '12 giờ trước',
-    'views': '950',
-  },
-  {
-    'title': 'Du lịch tiết kiệm: Bí quyết cho người mới',
-    'description': 'Lên kế hoạch chi tiêu hợp lý để có chuyến đi trọn vẹn mà không lo về giá.',
-    'time': '3 ngày trước',
-    'views': '3.2k',
-  },
-  {
-    'title': 'Tập thể dục buổi sáng có tốt không?',
-    'description': 'Những lợi ích bất ngờ của việc vận động nhẹ nhàng vào khung giờ vàng buổi sáng.',
-    'time': '5 giờ trước',
-    'views': '1.5k',
-  },
-  {
-    'title': 'Quản lý Stress trong công việc hiệu quả',
-    'description': 'Các phương pháp đơn giản giúp giảm căng thẳng và tăng năng suất làm việc.',
-    'time': '4 ngày trước',
-    'views': '4.1k',
-  },
-  {
-    'title': 'Chế độ ăn Eat Clean cho người bận rộn',
-    'description': 'Gợi ý thực đơn nhanh gọn, đầy đủ dinh dưỡng cho dân văn phòng.',
-    'time': '1 tuần trước',
-    'views': '5.5k',
-  },
-  {
-    'title': 'Lợi ích của việc uống đủ nước mỗi ngày',
-    'description': 'Nước giúp thanh lọc cơ thể, làm đẹp da và hỗ trợ giảm cân hiệu quả.',
-    'time': '1 ngày trước',
-    'views': '800',
-  },
-];

@@ -12,12 +12,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<String> _quickReplies = const [
-    'Phương pháp IVF là gì?',
-    'Bệnh viện uy tín',
-    'Chế độ dinh dưỡng',
-    'Lịch khám thai',
-  ];
+  final List<String> _quickReplies = const [];
 
   @override
   void dispose() {
@@ -114,14 +109,6 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
-        _buildAIChatBubble(
-          message: 'Xin chào! Tôi là trợ lý AI sức khỏe của bạn. '
-              'Tôi có thể giúp bạn tìm hiểu về các vấn đề sức khỏe, '
-              'tư vấn về thai kỳ, và cung cấp thông tin y tế hữu ích. '
-              'Hãy đặt câu hỏi bất kỳ, tôi sẽ cố gắng hỗ trợ bạn tốt nhất!',
-          time: '00:16',
-        ),
-        const SizedBox(height: 24),
         _buildQuickReplies(),
       ],
     );
