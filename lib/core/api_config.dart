@@ -5,10 +5,10 @@ class ApiConfig {
   // - Android Emulator: 'http://10.0.2.2:8000'
   // - iOS Simulator: 'http://localhost:8000'
   // - Device thật: 'http://<IP_MÁY_TÍNH>:8000' (ví dụ: 'http://192.168.1.100:8000')
-  //
+  //192.168.1.187
   // Lưu ý: Backend phải chạy với --host 0.0.0.0 để cho phép kết nối từ thiết bị khác
   // Command: uvicorn app.main:app --reload --host 0.0.0.0
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'http://192.168.1.187:8000';
   
   // API endpoints
   static const String apiPrefix = '/api/v1';

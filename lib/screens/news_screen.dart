@@ -200,22 +200,7 @@ class _NewsCard extends StatelessWidget {
                       )
                     : const Icon(Icons.image, color: Colors.grey),
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.favorite_border,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
+
             ],
           ),
           
