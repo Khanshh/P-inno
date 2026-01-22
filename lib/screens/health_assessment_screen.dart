@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'assessment_question_screen.dart';
 
 class HealthAssessmentScreen extends StatelessWidget {
   const HealthAssessmentScreen({Key? key}) : super(key: key);
@@ -153,7 +154,14 @@ class HealthAssessmentScreen extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AssessmentQuestionScreen(),
+                                  ),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryColor,
                                 foregroundColor: Colors.white,
