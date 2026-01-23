@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'infertility_detail_screen.dart';
 import 'ivf_detail_screen.dart';
 import 'icsi_detail_screen.dart';
+import 'iui_detail_screen.dart';
+import 'ovulation_stimulation_screen.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -175,11 +177,12 @@ class DiscoverScreen extends StatelessWidget {
         'color': Colors.purple,
       },
       {
-        'title': 'Đông trứng',
-        'subtitle': 'Bảo tồn khả năng sinh sản',
-        'icon': Icons.ac_unit_outlined,
-        'color': Colors.cyan,
+        'title': 'Kích trứng',
+        'subtitle': 'Kích thích phóng noãn',
+        'icon': Icons.bubble_chart_outlined,
+        'color': Colors.orange,
       },
+      
     ];
 
     return Wrap(
@@ -258,6 +261,18 @@ class DiscoverScreen extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const ICSIDetailScreen(),
+                      ),
+                    );
+                  } else if (method['title'] == 'IUI') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const IUIDetailScreen(),
+                      ),
+                    );
+                  } else if (method['title'] == 'Kích trứng') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const OvulationStimulationScreen(),
                       ),
                     );
                   }
