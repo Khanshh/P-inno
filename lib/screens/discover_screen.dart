@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'infertility_detail_screen.dart';
 import 'ivf_detail_screen.dart';
+import 'icsi_detail_screen.dart';
 
 class DiscoverScreen extends StatelessWidget {
   const DiscoverScreen({super.key});
@@ -251,6 +252,12 @@ class DiscoverScreen extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const IVFDetailScreen(),
+                      ),
+                    );
+                  } else if (method['title'] == 'ICSI') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ICSIDetailScreen(),
                       ),
                     );
                   }
