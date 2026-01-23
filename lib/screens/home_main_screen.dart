@@ -28,6 +28,156 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   String? _errorFeatures;
   String? _errorNews;
 
+  final List<Map<String, String>> _dailyTips = [
+    {
+      "title": "Uống Đủ Nước Mỗi Ngày",
+      "content": "Uống ít nhất 8 cốc nước mỗi ngày giúp cơ thể duy trì độ ẩm, hỗ trợ tiêu hóa và làm đẹp da."
+    },
+    {
+      "title": "Ngủ Đủ Giấc",
+      "content": "Ngủ 7-8 tiếng mỗi đêm giúp cơ thể phục hồi năng lượng, tăng cường hệ miễn dịch và cải thiện trí nhớ."
+    },
+    {
+      "title": "Ăn Nhiều Rau Xanh",
+      "content": "Bổ sung rau xanh vào bữa ăn hàng ngày giúp cung cấp vitamin, khoáng chất và chất xơ cần thiết cho cơ thể."
+    },
+    {
+      "title": "Tập Thể Dục Đều Đặn",
+      "content": "Dành ít nhất 30 phút mỗi ngày để vận động nhẹ nhàng như đi bộ, yoga giúp cải thiện sức khỏe tim mạch."
+    },
+    {
+      "title": "Giảm Stress",
+      "content": "Dành thời gian thư giãn, nghe nhạc hoặc thiền để giảm căng thẳng và cải thiện tinh thần."
+    },
+    {
+      "title": "Hạn Chế Đường",
+      "content": "Giảm lượng đường tiêu thụ giúp giảm nguy cơ béo phì, tiểu đường và các bệnh tim mạch."
+    },
+    {
+      "title": "Khám Sức Khỏe Định Kỳ",
+      "content": "Thăm khám bác sĩ định kỳ 6 tháng/lần để phát hiện sớm các vấn đề sức khỏe tiềm ẩn."
+    },
+  ];
+
+  void _showDailyTipDialog(BuildContext context) {
+    if (_dailyTips.isEmpty) return;
+    
+    final int tipIndex = DateTime.now().day % _dailyTips.length;
+    final Map<String, String> currentTip = _dailyTips[tipIndex];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFF9800), // Orange
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lightbulb, color: Colors.white),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        "Mẹo Sức Khỏe Hôm Nay",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Body
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      currentTip['title']!,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      currentTip['content']!,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[700],
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, size: 16, color: Colors.orange[300]),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Cập nhật hôm nay",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.orange[300],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    
+                    // Footer Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF9800),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          "Đã hiểu",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -161,6 +311,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                             builder: (_) => const HealthAssessmentScreen(),
                                           ),
                                         );
+                                      } else if (item.title == 'Mẹo hôm nay') {
+                                        _showDailyTipDialog(context);
                                       }
                                     },
                                     child: _FeatureCard(
