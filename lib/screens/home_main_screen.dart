@@ -8,6 +8,7 @@ import 'health_assessment_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
+import '../widgets/ai_summary_dialog.dart';
 
 class HomeMainScreen extends StatefulWidget {
   const HomeMainScreen({super.key});
@@ -351,10 +352,14 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                 .map(
                                   (item) => Padding(
                                     padding: const EdgeInsets.only(bottom: 14),
-                                    child: _NewsCard(
-                                      news: item,
-                                      primaryColor: _primaryColor,
-                                      formatViews: _formatViews,
+                                    child: InkWell(
+                                      onTap: () => showAISummaryDialog(context, item),
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: _NewsCard(
+                                        news: item,
+                                        primaryColor: _primaryColor,
+                                        formatViews: _formatViews,
+                                      ),
                                     ),
                                   ),
                                 )

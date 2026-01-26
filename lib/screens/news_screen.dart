@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/news_model.dart';
+import '../widgets/ai_summary_dialog.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -141,9 +142,13 @@ class _NewsScreenState extends State<NewsScreen> {
                   ),
                   itemCount: _news.length,
                   itemBuilder: (context, index) {
-                    return _NewsCard(
-                      news: _news[index],
-                      formatViews: _formatViews,
+                    return InkWell(
+                      onTap: () => showAISummaryDialog(context, _news[index]),
+                      borderRadius: BorderRadius.circular(12),
+                      child: _NewsCard(
+                        news: _news[index],
+                        formatViews: _formatViews,
+                      ),
                     );
                   },
                 ),
