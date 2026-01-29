@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
 
 class OvulationStimulationScreen extends StatefulWidget {
-  const OvulationStimulationScreen({super.key});
+  final String methodId;
+  const OvulationStimulationScreen({super.key, required this.methodId});
 
   @override
   State<OvulationStimulationScreen> createState() => _OvulationStimulationScreenState();
@@ -29,7 +31,7 @@ class _OvulationStimulationScreenState extends State<OvulationStimulationScreen>
     });
 
     try {
-      final detail = await _apiService.getDiscoverMethodDetail('method-ovulation-stimulation');
+      final detail = await _apiService.getDiscoverMethodDetail(widget.methodId);
       setState(() {
         _detail = detail;
         _isLoading = false;
@@ -240,7 +242,7 @@ class _OvulationStimulationScreenState extends State<OvulationStimulationScreen>
               Icon(Icons.menu_book, color: Color(0xFF73C6D9)),
               SizedBox(width: 8),
               Text(
-                'Định nghĩa',
+                'Chi tiết phương pháp',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -250,12 +252,17 @@ class _OvulationStimulationScreenState extends State<OvulationStimulationScreen>
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'Kích thích phóng noãn là phương pháp sử dụng thuốc để kích thích buồng trứng sản xuất và giải phóng trứng. Đây thường là bước điều trị đầu tiên cho những phụ nữ có vấn đề về rụng trứng.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[700],
-              height: 1.5,
+          MarkdownBody(
+            data: _detail?.content ?? 'Đang cập nhật nội dung...',
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              h1: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+              h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+              h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
         ],

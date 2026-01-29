@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'ovulation_stimulation_screen.dart';
 import 'infertility_detail_screen.dart';
+import 'ivf_detail_screen.dart';
+import 'icsi_detail_screen.dart';
+import 'iui_detail_screen.dart';
+import 'ovulation_stimulation_screen.dart';
 import 'discover_method_detail_screen.dart';
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
@@ -267,14 +270,40 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DiscoverMethodDetailScreen(
-                        methodId: method.id,
-                        title: method.title,
+                   if (method.title == 'IVF') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const IVFDetailScreen(),
                       ),
-                    ),
-                  );
+                    );
+                  } else if (method.title == 'ICSI') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ICSIDetailScreen(),
+                      ),
+                    );
+                  } else if (method.title == 'IUI') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const IUIDetailScreen(),
+                      ),
+                    );
+                  } else if (method.title == 'Đông trứng' || method.title == 'Kích trứng') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => OvulationStimulationScreen(methodId: method.id),
+                      ),
+                    );
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DiscoverMethodDetailScreen(
+                          methodId: method.id,
+                          title: method.title,
+                        ),
+                      ),
+                    );
+                  }
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),

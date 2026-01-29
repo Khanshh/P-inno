@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
 class IUIDetailScreen extends StatefulWidget {
   const IUIDetailScreen({super.key});
@@ -9,19 +12,53 @@ class IUIDetailScreen extends StatefulWidget {
 
 class _IUIDetailScreenState extends State<IUIDetailScreen> {
   int _currentTab = 0; // 0: Định nghĩa, 1: Quy trình
+  final ApiService _apiService = ApiService();
+  DiscoverMethodDetailModel? _detail;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetail();
+  }
+
+  Future<void> _loadDetail() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final detail = await _apiService.getDiscoverMethodDetail('method-iui');
+      setState(() {
+        _detail = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  children: [
+                    _buildHeader(context),
+                    Expanded(
+                      child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -201,7 +238,7 @@ class _IUIDetailScreenState extends State<IUIDetailScreen> {
               Icon(Icons.menu_book, color: Color(0xFF73C6D9)), // Icon: Quyển sách
               SizedBox(width: 8),
               Text(
-                'Định nghĩa',
+                'Chi tiết phương pháp',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -211,12 +248,17 @@ class _IUIDetailScreenState extends State<IUIDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'IUI (Intrauterine Insemination) là phương pháp đưa tinh trùng đã được xử lý và làm sạch trực tiếp vào buồng tử cung trong thời kỳ rụng trứng, giúp tăng cơ hội thụ thai tự nhiên.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[700],
-              height: 1.5,
+          MarkdownBody(
+            data: _detail?.content ?? 'Đang cập nhật nội dung...',
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              h1: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+              h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+              h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
         ],

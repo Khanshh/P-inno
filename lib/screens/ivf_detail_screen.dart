@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
 class IVFDetailScreen extends StatefulWidget {
   const IVFDetailScreen({super.key});
@@ -9,19 +12,54 @@ class IVFDetailScreen extends StatefulWidget {
 
 class _IVFDetailScreenState extends State<IVFDetailScreen> {
   int _currentTab = 0; // 0: Định nghĩa, 1: Quy trình
+  final ApiService _apiService = ApiService();
+  DiscoverMethodDetailModel? _detail;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetail();
+  }
+
+  Future<void> _loadDetail() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Use the ID from backend mock data
+      final detail = await _apiService.getDiscoverMethodDetail('method-ivf');
+      setState(() {
+        _detail = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  children: [
+                    _buildHeader(context),
+                    Expanded(
+                      child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -201,7 +239,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
               Icon(Icons.menu_book, color: Color(0xFF73C6D9)),
               SizedBox(width: 8),
               Text(
-                'Định nghĩa',
+                'Chi tiết phương pháp',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -211,12 +249,17 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'Thụ tinh trong ống nghiệm (IVF) là kỹ thuật điều trị vô sinh, trong đó tinh trùng của người chồng và trứng của người vợ được thụ tinh trong phòng thí nghiệm để tạo thành phôi.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[700],
-              height: 1.5,
+          MarkdownBody(
+            data: _detail?.content ?? 'Đang cập nhật nội dung...',
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              h1: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+              h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+              h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
         ],

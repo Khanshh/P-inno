@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
 class ICSIDetailScreen extends StatefulWidget {
   const ICSIDetailScreen({super.key});
@@ -9,19 +12,53 @@ class ICSIDetailScreen extends StatefulWidget {
 
 class _ICSIDetailScreenState extends State<ICSIDetailScreen> {
   int _currentTab = 0; // 0: Định nghĩa, 1: Quy trình
+  final ApiService _apiService = ApiService();
+  DiscoverMethodDetailModel? _detail;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetail();
+  }
+
+  Future<void> _loadDetail() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final detail = await _apiService.getDiscoverMethodDetail('method-icsi');
+      setState(() {
+        _detail = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  children: [
+                    _buildHeader(context),
+                    Expanded(
+                      child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -201,7 +238,7 @@ class _ICSIDetailScreenState extends State<ICSIDetailScreen> {
               Icon(Icons.biotech, color: Color(0xFF73C6D9)), // Icon: Kính hiển vi/Tiêm
               SizedBox(width: 8),
               Text(
-                'Định nghĩa',
+                'Chi tiết phương pháp',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -211,12 +248,17 @@ class _ICSIDetailScreenState extends State<ICSIDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            'ICSI (Intracytoplasmic Sperm Injection) là kỹ thuật tiêm một tinh trùng duy nhất trực tiếp vào bên trong tế bào trứng để tạo thành phôi. Đây là kỹ thuật tiên tiến nhất trong các phương pháp hỗ trợ sinh sản.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[700],
-              height: 1.5,
+          MarkdownBody(
+            data: _detail?.content ?? 'Đang cập nhật nội dung...',
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.5,
+              ),
+              h1: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+              h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+              h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
         ],
