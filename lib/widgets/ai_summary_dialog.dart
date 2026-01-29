@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import '../services/api_service.dart';
 import '../models/news_model.dart';
 import '../screens/news_detail_screen.dart';
 
@@ -33,10 +33,48 @@ void showAISummaryDialog(BuildContext context, NewsModel item) {
   );
 }
 
-class _AISummaryDialogContent extends StatelessWidget {
+class _AISummaryDialogContent extends StatefulWidget {
   final NewsModel item;
 
   const _AISummaryDialogContent({required this.item});
+
+  @override
+  State<_AISummaryDialogContent> createState() => _AISummaryDialogContentState();
+}
+
+class _AISummaryDialogContentState extends State<_AISummaryDialogContent> {
+  late NewsModel _currentItem;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentItem = widget.item;
+    if (_currentItem.summary == null || _currentItem.content == null) {
+      _fetchDetail();
+    }
+  }
+
+  Future<void> _fetchDetail() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final detail = await ApiService().getNewsDetail(_currentItem.id);
+      setState(() {
+        _currentItem = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = "Không thể tải tóm tắt. Vui lòng thử lại.";
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +133,7 @@ class _AISummaryDialogContent extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "Phân tích hoàn tất",
+                      _isLoading ? "Đang phân tích..." : "Phân tích hoàn tất",
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 12,
@@ -127,7 +165,7 @@ class _AISummaryDialogContent extends StatelessWidget {
               ),
             ),
             child: Text(
-              item.title,
+              _currentItem.title,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -176,14 +214,36 @@ class _AISummaryDialogContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  item.summary ?? "Chưa có bản tóm tắt cho bài viết này.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: Colors.black87.withOpacity(0.8),
+                if (_isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF73C6D9)),
+                      ),
+                    ),
+                  )
+                else if (_error != null)
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(_error!, style: const TextStyle(color: Colors.red)),
+                        TextButton(
+                          onPressed: _fetchDetail,
+                          child: const Text("Thử lại"),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Text(
+                    _currentItem.summary ?? "Chưa có bản tóm tắt cho bài viết này.",
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.5,
+                      color: Colors.black87.withOpacity(0.8),
+                    ),
                   ),
-                ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
@@ -225,14 +285,16 @@ class _AISummaryDialogContent extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close dialog first
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => NewsDetailScreen(news: item),
-                            ),
-                          );
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                Navigator.of(context).pop(); // Close dialog first
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => NewsDetailScreen(news: _currentItem),
+                                  ),
+                                );
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF73C6D9),
                           foregroundColor: Colors.white,

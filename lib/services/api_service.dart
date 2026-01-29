@@ -72,6 +72,22 @@ class ApiService {
     }
   }
 
+  Future<NewsModel> getNewsDetail(String newsId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.news}/$newsId'),
+      );
+
+      if (response.statusCode == 200) {
+        return NewsModel.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to load news detail: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching news detail: $e');
+    }
+  }
+
   Future<List<DiscoverMethodModel>> getDiscoverMethods() async {
     try {
       final response = await http.get(Uri.parse(ApiConfig.discoverMethods));

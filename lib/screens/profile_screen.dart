@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/login_dialog.dart';
-import 'discover_screen.dart';
 import '../services/api_service.dart';
 import '../models/user_model.dart';
 import 'medical_record_screen.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
-import 'home_main_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

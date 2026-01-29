@@ -18,7 +18,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   final AiChatService _aiChatService = AiChatService();
 
   final List<ChatMessage> _messages = [];
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String? _errorMessage;
 
   final List<String> _quickReplies = const [];
