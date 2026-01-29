@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
+import 'register_screen.dart';
 import 'home_main_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -60,82 +61,63 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 60),
 
-                  // Card "Kiến Thức"
-                  InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const HomeMainScreen(),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.5),
-                          width: 2,
+                  // Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF73C6D9),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(
-                              Icons.article,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Khám Phá',
-                            style: GoogleFonts.nunito(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Tìm hiểu về thai kỳ và chăm sóc sức khỏe',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'Đăng Nhập',
+                        style: GoogleFonts.nunito(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // Link đăng nhập
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
+                  // Register Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // Navigate to RegisterScreen (to be created)
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white, width: 2),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28),
                         ),
-                      );
-                    },
-                    child: Text(
-                      'Đăng nhập tài khoản',
-                      style: GoogleFonts.nunito(
-                        fontSize: 18,
-                        color: Colors.white,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.white,
+                      ),
+                      child: Text(
+                        'Đăng Ký',
+                        style: GoogleFonts.nunito(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

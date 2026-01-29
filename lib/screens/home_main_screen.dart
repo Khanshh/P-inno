@@ -210,7 +210,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         _features = [
           FeatureModel(
             id: 'feature-1',
-            title: 'Tìm hiểu',
+            title: 'Tìm hiểu kiến thức',
             icon: 'search',
             order: 1,
           ),
@@ -300,7 +300,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 6),
                                   child: GestureDetector(
                                     onTap: () {
-                                      if (item.title == 'Tìm hiểu') {
+                                      if (item.title == 'Tìm hiểu kiến thức') {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (_) => const DiscoverScreen(),
@@ -407,7 +407,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
-              Icons.favorite,
+              Icons.person,
               color: Colors.white,
               size: 28,
             ),
@@ -417,7 +417,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'HealthCare',
+                'Profile Summary Card',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,

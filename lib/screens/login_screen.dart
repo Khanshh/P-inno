@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'home_main_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,7 +25,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement login logic
+      // Navigate to HomeMainScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const HomeMainScreen(),
+        ),
+      );
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -304,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              '',
+                              'Chưa có tài khoản? ',
                               style: GoogleFonts.nunito(
                                 fontSize: 16,
                                 color: Colors.white,
@@ -312,18 +320,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '',
-                                      style: GoogleFonts.nunito(),
-                                    ),
-                                    backgroundColor: const Color(0xFF73C6D9),
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
                                   ),
                                 );
                               },
                               child: Text(
-                                '',
+                                'Đăng ký ngay',
                                 style: GoogleFonts.nunito(
                                   fontSize: 16,
                                   color: Colors.white,
