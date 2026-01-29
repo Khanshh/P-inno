@@ -10,7 +10,7 @@ router = APIRouter()
 _mock_features: List[Feature] = [
     Feature(
         id="feature-1",
-        title="Tìm hiểu kiến thức",
+        title="Tìm hiểu",
         icon="search",
         description="Khám phá kiến thức về sức khỏe",
         route="/discover",
