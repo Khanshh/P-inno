@@ -1,58 +1,108 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/user_model.dart';
+import '../models/medical_record_model.dart';
 
-class MedicalRecordScreen extends StatelessWidget {
+class MedicalRecordScreen extends StatefulWidget {
   const MedicalRecordScreen({super.key});
+
+  @override
+  State<MedicalRecordScreen> createState() => _MedicalRecordScreenState();
+}
+
+class _MedicalRecordScreenState extends State<MedicalRecordScreen> {
+  final ApiService _apiService = ApiService();
+  UserProfileModel? _profile;
+  List<MedicalRecordModel> _records = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final profile = await _apiService.getMyProfile();
+      final records = await _apiService.getMedicalRecords();
+      setState(() {
+        _profile = profile;
+        _records = records;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(context),
-                _buildBody(),
-                const SizedBox(height: 100), // Space for bottom button
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.download_rounded, color: Color(0xFF73C6D9)),
-                  label: const Text('Tải xuống hồ sơ (PDF)'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF73C6D9),
-                    side: const BorderSide(color: Color(0xFF73C6D9)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Stack(
+                  children: [
+                    SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildHeader(context),
+                          _buildBody(),
+                          const SizedBox(height: 100), // Space for bottom button
+                        ],
+                      ),
                     ),
-                  ),
+                    _buildBottomButton(),
+                  ],
                 ),
+    );
+  }
+
+  Widget _buildBottomButton() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: OutlinedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.download_rounded, color: Color(0xFF73C6D9)),
+            label: const Text('Tải xuống hồ sơ (PDF)'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF73C6D9),
+              side: const BorderSide(color: Color(0xFF73C6D9)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -145,9 +195,9 @@ class MedicalRecordScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Nguyễn Thị Lan Anh',
-                          style: TextStyle(
+                        Text(
+                          _profile?.fullName ?? 'Nguyễn Thị Lan Anh',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -165,9 +215,9 @@ class MedicalRecordScreen extends StatelessWidget {
                                 color: Colors.white24,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
-                                'Mã BN: 198203',
-                                style: TextStyle(
+                              child: Text(
+                                'Mã BN: ${_profile?.patientCode ?? '198203'}',
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -175,9 +225,9 @@ class MedicalRecordScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            const Text(
-                              'NS: 12/05/1995',
-                              style: TextStyle(
+                            Text(
+                              'Tuổi: ${_profile?.age ?? '29'}',
+                              style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 13,
                               ),
@@ -260,9 +310,9 @@ class MedicalRecordScreen extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        '10/01/2024',
-                        style: TextStyle(
+                      child: Text(
+                        _records.isNotEmpty ? _records.first.visitDate : '10/01/2024',
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Colors.black87,
                           fontWeight: FontWeight.w600,
@@ -272,9 +322,9 @@ class MedicalRecordScreen extends StatelessWidget {
                   ],
                 ),
                 const Divider(height: 24),
-                const Text(
-                  'Hiếm muộn nguyên phát / Rối loạn rụng trứng',
-                  style: TextStyle(
+                Text(
+                  _records.isNotEmpty ? _records.first.diagnosis : 'Hiếm muộn nguyên phát / Rối loạn rụng trứng',
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFBF360C),

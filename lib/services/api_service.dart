@@ -4,6 +4,12 @@ import '../core/api_config.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
 import '../models/discover_model.dart';
+import '../models/notification_model.dart';
+import '../models/home_model.dart';
+import '../models/health_assessment_model.dart';
+import '../models/onboarding_model.dart';
+import '../models/user_model.dart';
+import '../models/medical_record_model.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -22,6 +28,21 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Error fetching features: $e');
+    }
+  }
+
+  Future<List<DailyTipModel>> getDailyTips() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.homeDailyTips));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => DailyTipModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load daily tips: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching daily tips: $e');
     }
   }
 
@@ -95,6 +116,90 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Error fetching infertility info: $e');
+    }
+  }
+
+  Future<List<NotificationModel>> getNotifications() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.notifications));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => NotificationModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load notifications: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching notifications: $e');
+    }
+  }
+
+  Future<List<AssessmentQuestionModel>> getAssessmentQuestions() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.healthAssessmentQuestions));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => AssessmentQuestionModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load assessment questions: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching assessment questions: $e');
+    }
+  }
+
+  Future<List<OnboardingPageModel>> getOnboardingPages() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.onboarding));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => OnboardingPageModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load onboarding pages: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching onboarding pages: $e');
+    }
+  }
+
+  Future<UserProfileModel> getMyProfile() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.profileMe),
+        headers: {
+          'Authorization': 'Bearer mock-access-token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        return UserProfileModel.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to load profile: \${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching profile: \$e');
+    }
+  }
+
+  Future<List<MedicalRecordModel>> getMedicalRecords() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.medicalRecords),
+        headers: {
+          'Authorization': 'Bearer mock-access-token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((json) => MedicalRecordModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load medical records: \${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching medical records: \$e');
     }
   }
 }

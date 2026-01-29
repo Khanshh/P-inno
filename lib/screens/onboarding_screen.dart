@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../widgets/onboarding_page.dart';
 import 'home_screen.dart';
+import '../services/api_service.dart';
+import '../models/onboarding_model.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -14,45 +16,45 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  final ApiService _apiService = ApiService();
+  List<OnboardingPageModel> _pages = [];
+  bool _isLoading = true;
+  String? _error;
 
-  final List<Map<String, dynamic>> _pages = [
-    {
-      'title': 'Chào mừng bạn đến với nơi phép màu bắt đầu.',
-      'description': 'Từng bước nhỏ cùng bạn hiện thực hóa giấc mơ làm cha mẹ.',
-      'icon': Icons.favorite,
-      'colors': [
-        const Color(0xFF73C6D9), // Xanh ngọc chính
-        const Color(0xFF9DD9E8), // Xanh ngọc nhạt
-      ],
-    },
-    {
-      'title': 'Chạm vào mầm sống.',
-      'description': 'Công nghệ thông minh hỗ trợ các cặp đôi hiếm muộn.',
-      'icon': Icons.monitor_heart,
-      'colors': [
-        const Color(0xFF5BB8CE), // Xanh ngọc đậm hơn
-        const Color(0xFF73C6D9), // Xanh ngọc chính
-      ],
-    },
-    {
-      'title': 'Luôn có chúng tôi bên cạnh.',
-      'description': ' Kết nối chuyên gia, giải đáp mọi thắc mắc của bạn.',
-      'icon': Icons.medical_services,
-      'colors': [
-        const Color(0xFF73C6D9), // Xanh ngọc chính
-        const Color(0xFFB8E6F0), // Xanh ngọc rất nhạt
-      ],
-    },
-    {
-      'title': 'Hãy để hành trình này trở nên dễ dàng và nhẹ nhàng hơn từ hôm nay.',
-      'description': 'Đừng chờ đợi thêm, hãy để hy vọng bắt đầu chuyển hóa thành hành động.',
-      'icon': Icons.rocket_launch,
-      'colors': [
-        const Color(0xFF4DADC2), // Xanh ngọc đậm
-        const Color(0xFF73C6D9), // Xanh ngọc chính
-      ],
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadPages();
+  }
+
+  Future<void> _loadPages() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final pages = await _apiService.getOnboardingPages();
+      setState(() {
+        _pages = pages;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+        // Fallback to mock data if API fails
+        _pages = [
+          OnboardingPageModel(
+            title: 'Chào mừng bạn đến với nơi phép màu bắt đầu.',
+            description: 'Từng bước nhỏ cùng bạn hiện thực hóa giấc mơ làm cha mẹ.',
+            icon: 'favorite',
+            colors: ['#73C6D9', '#9DD9E8'],
+          ),
+        ];
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -89,20 +91,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Stack(
         children: [
           // PageView
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            itemCount: _pages.length,
-            itemBuilder: (context, index) {
-              final page = _pages[index];
-              return OnboardingPage(
-                title: page['title'],
-                description: page['description'],
-                icon: page['icon'],
-                gradientColors: page['colors'],
-              );
-            },
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null && _pages.isEmpty
+                  ? Center(child: Text(_error!))
+                  : PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      itemCount: _pages.length,
+                      itemBuilder: (context, index) {
+                        final page = _pages[index];
+                        return OnboardingPage(
+                          title: page.title,
+                          description: page.description,
+                          icon: _getIconData(page.icon),
+                          gradientColors: page.colors.map((c) => _parseColor(c)).toList(),
+                        );
+                      },
+                    ),
 
           // Skip button
           if (_currentPage < _pages.length - 1)
@@ -155,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: _nextPage,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: _pages[_currentPage]['colors'][0],
+                        foregroundColor: _isLoading ? Colors.grey : _parseColor(_pages[_currentPage].colors[0]),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
@@ -179,5 +185,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'favorite':
+        return Icons.favorite;
+      case 'monitor_heart':
+        return Icons.monitor_heart;
+      case 'medical_services':
+        return Icons.medical_services;
+      case 'rocket_launch':
+        return Icons.rocket_launch;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _parseColor(String colorString) {
+    try {
+      if (colorString.startsWith('#')) {
+        return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
+      }
+      return Colors.blue;
+    } catch (e) {
+      return Colors.blue;
+    }
   }
 }

@@ -8,6 +8,7 @@ import 'health_assessment_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
+import '../models/home_model.dart';
 import '../widgets/ai_summary_dialog.dart';
 
 class HomeMainScreen extends StatefulWidget {
@@ -24,47 +25,19 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 
   List<FeatureModel> _features = [];
   List<NewsModel> _news = [];
+  List<DailyTipModel> _dailyTips = [];
   bool _isLoadingFeatures = true;
   bool _isLoadingNews = true;
+  bool _isLoadingTips = true;
   String? _errorFeatures;
   String? _errorNews;
-
-  final List<Map<String, String>> _dailyTips = [
-    {
-      "title": "Uống Đủ Nước Mỗi Ngày",
-      "content": "Uống ít nhất 8 cốc nước mỗi ngày giúp cơ thể duy trì độ ẩm, hỗ trợ tiêu hóa và làm đẹp da."
-    },
-    {
-      "title": "Ngủ Đủ Giấc",
-      "content": "Ngủ 7-8 tiếng mỗi đêm giúp cơ thể phục hồi năng lượng, tăng cường hệ miễn dịch và cải thiện trí nhớ."
-    },
-    {
-      "title": "Ăn Nhiều Rau Xanh",
-      "content": "Bổ sung rau xanh vào bữa ăn hàng ngày giúp cung cấp vitamin, khoáng chất và chất xơ cần thiết cho cơ thể."
-    },
-    {
-      "title": "Tập Thể Dục Đều Đặn",
-      "content": "Dành ít nhất 30 phút mỗi ngày để vận động nhẹ nhàng như đi bộ, yoga giúp cải thiện sức khỏe tim mạch."
-    },
-    {
-      "title": "Giảm Stress",
-      "content": "Dành thời gian thư giãn, nghe nhạc hoặc thiền để giảm căng thẳng và cải thiện tinh thần."
-    },
-    {
-      "title": "Hạn Chế Đường",
-      "content": "Giảm lượng đường tiêu thụ giúp giảm nguy cơ béo phì, tiểu đường và các bệnh tim mạch."
-    },
-    {
-      "title": "Khám Sức Khỏe Định Kỳ",
-      "content": "Thăm khám bác sĩ định kỳ 6 tháng/lần để phát hiện sớm các vấn đề sức khỏe tiềm ẩn."
-    },
-  ];
+  String? _errorTips;
 
   void _showDailyTipDialog(BuildContext context) {
     if (_dailyTips.isEmpty) return;
     
     final int tipIndex = DateTime.now().day % _dailyTips.length;
-    final Map<String, String> currentTip = _dailyTips[tipIndex];
+    final DailyTipModel currentTip = _dailyTips[tipIndex];
 
     showDialog(
       context: context,
@@ -114,7 +87,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      currentTip['title']!,
+                      currentTip.title,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -123,7 +96,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      currentTip['content']!,
+                      currentTip.content,
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[700],
@@ -188,6 +161,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   Future<void> _loadData() async {
     _loadFeatures();
     _loadNews();
+    _loadDailyTips();
   }
 
   Future<void> _loadFeatures() async {
@@ -249,6 +223,37 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         _isLoadingNews = false;
         // Fallback to empty list if API fails
         _news = [];
+      });
+    }
+  }
+
+  Future<void> _loadDailyTips() async {
+    setState(() {
+      _isLoadingTips = true;
+      _errorTips = null;
+    });
+
+    try {
+      final tips = await _apiService.getDailyTips();
+      setState(() {
+        _dailyTips = tips;
+        _isLoadingTips = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorTips = e.toString();
+        _isLoadingTips = false;
+        // Fallback to mock data if API fails
+        _dailyTips = [
+          DailyTipModel(
+            title: "Uống Đủ Nước Mỗi Ngày",
+            content: "Uống ít nhất 8 cốc nước mỗi ngày giúp cơ thể duy trì độ ẩm, hỗ trợ tiêu hóa và làm đẹp da."
+          ),
+          DailyTipModel(
+            title: "Ngủ Đủ Giấc",
+            content: "Ngủ 7-8 tiếng mỗi đêm giúp cơ thể phục hồi năng lượng, tăng cường hệ miễn dịch và cải thiện trí nhớ."
+          ),
+        ];
       });
     }
   }

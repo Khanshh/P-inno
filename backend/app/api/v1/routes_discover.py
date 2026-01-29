@@ -119,6 +119,34 @@ ICSI là kỹ thuật tiên tiến, được sử dụng khi chất lượng tin
         """,
         order=4,
     ),
+    DiscoverMethod(
+        id="method-ovulation-stimulation",
+        title="Kích trứng",
+        subtitle="Kích thích phóng noãn",
+        icon="bubble_chart_outlined",
+        color="#FF9800",
+        description="Phương pháp sử dụng thuốc để kích thích buồng trứng sản xuất và giải phóng trứng...",
+        content="""
+# Kích thích phóng noãn
+
+## Định nghĩa
+Kích thích phóng noãn là phương pháp sử dụng thuốc để kích thích buồng trứng sản xuất và giải phóng trứng. Đây thường là bước điều trị đầu tiên cho những phụ nữ có vấn đề về rụng trứng.
+
+## Chỉ định
+- Rối loạn phóng noãn
+- Hội chứng buồng trứng đa nang (PCOS)
+- Chu kỳ kinh không đều hoặc vô kinh
+- Buồng trứng không tạo trứng tự nhiên
+- Chuẩn bị cho IUI hoặc quan hệ có kế hoạch
+
+## Ưu điểm
+- Phương pháp đơn giản, ít xâm lấn
+- Chi phí thấp nhất
+- Có thể kết hợp với quan hệ tự nhiên
+- Tác dụng phụ ít, dễ thực hiện
+        """,
+        order=5,
+    ),
 ]
 
 # Mock data for infertility info

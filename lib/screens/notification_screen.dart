@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -9,77 +11,55 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
   final Color _primaryColor = const Color(0xFF73C6D9);
+  final ApiService _apiService = ApiService();
 
-  final List<_NotificationItem> _notifications = [
-    _NotificationItem(
-      id: '1',
-      icon: Icons.calendar_today,
-      iconColor: const Color(0xFF4CAF50),
-      title: 'Lịch khám thai tuần này',
-      description: 'Bạn có lịch khám thai vào thứ 3, 15/01/2024 lúc 9:00',
-      time: '5 phút trước',
-      isRead: false,
-    ),
-    _NotificationItem(
-      id: '2',
-      icon: Icons.medical_services,
-      iconColor: const Color(0xFF2196F3),
-      title: 'Kết quả xét nghiệm mới',
-      description: 'Kết quả xét nghiệm máu của bạn đã có sẵn',
-      time: '1 giờ trước',
-      isRead: false,
-    ),
-    _NotificationItem(
-      id: '3',
-      icon: Icons.chat_bubble,
-      iconColor: const Color(0xFFFF9800),
-      title: 'Tin nhắn từ bác sĩ',
-      description: 'Bác sĩ Nguyễn Văn A đã gửi cho bạn một tin nhắn',
-      time: '2 giờ trước',
-      isRead: true,
-    ),
-    _NotificationItem(
-      id: '4',
-      icon: Icons.notifications_active,
-      iconColor: const Color(0xFF9C27B0),
-      title: 'Nhắc nhở uống thuốc',
-      description: 'Đã đến giờ uống vitamin D và sắt',
-      time: '3 giờ trước',
-      isRead: true,
-    ),
-    _NotificationItem(
-      id: '5',
-      icon: Icons.info,
-      iconColor: const Color(0xFF607D8B),
-      title: 'Cập nhật ứng dụng',
-      description: 'Phiên bản mới của ứng dụng đã có sẵn',
-      time: 'Hôm qua',
-      isRead: true,
-    ),
-    _NotificationItem(
-      id: '6',
-      icon: Icons.local_hospital,
-      iconColor: const Color(0xFFE91E63),
-      title: 'Lịch tiêm phòng',
-      description: 'Nhắc nhở: Tiêm phòng cúm trong tuần này',
-      time: '2 ngày trước',
-      isRead: true,
-    ),
-  ];
+  List<NotificationModel> _notifications = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final notifications = await _apiService.getNotifications();
+      setState(() {
+        _notifications = notifications;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildMarkAllReadButton(),
-          Expanded(
-            child: _buildNotificationList(),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  children: [
+                    _buildMarkAllReadButton(),
+                    Expanded(
+                      child: _buildNotificationList(),
+                    ),
+                  ],
+                ),
     );
   }
 
@@ -128,6 +108,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildNotificationList() {
+    if (_notifications.isEmpty) {
+      return const Center(child: Text('Không có thông báo nào'));
+    }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _notifications.length,
@@ -159,7 +142,7 @@ class _NotificationItemWidget extends StatelessWidget {
     required this.onTap,
   });
 
-  final _NotificationItem notification;
+  final NotificationModel notification;
   final Color primaryColor;
   final VoidCallback onTap;
 
@@ -179,12 +162,12 @@ class _NotificationItemWidget extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: notification.iconColor.withOpacity(0.15),
+                color: _parseColor(notification.iconColor).withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                notification.icon,
-                color: notification.iconColor,
+                _getIconData(notification.icon),
+                color: _parseColor(notification.iconColor),
                 size: 24,
               ),
             ),
@@ -244,24 +227,34 @@ class _NotificationItemWidget extends StatelessWidget {
       ),
     );
   }
-}
 
-class _NotificationItem {
-  _NotificationItem({
-    required this.id,
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.description,
-    required this.time,
-    required this.isRead,
-  });
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'calendar_today':
+        return Icons.calendar_today;
+      case 'medical_services':
+        return Icons.medical_services;
+      case 'chat_bubble':
+        return Icons.chat_bubble;
+      case 'notifications_active':
+        return Icons.notifications_active;
+      case 'info':
+        return Icons.info;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      default:
+        return Icons.notifications;
+    }
+  }
 
-  final String id;
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String description;
-  final String time;
-  bool isRead;
+  Color _parseColor(String colorString) {
+    try {
+      if (colorString.startsWith('#')) {
+        return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
+      }
+      return Colors.blue;
+    } catch (e) {
+      return Colors.blue;
+    }
+  }
 }

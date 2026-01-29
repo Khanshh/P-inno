@@ -19,6 +19,9 @@ from app.api.v1.routes_home import router as home_router
 from app.api.v1.routes_news import router as news_router
 from app.api.v1.routes_discover import router as discover_router
 from app.api.v1.routes_ai_chat import router as ai_chat_router
+from app.api.v1.routes_notifications import router as notifications_router
+from app.api.v1.routes_health_assessment import router as health_assessment_router
+from app.api.v1.routes_onboarding import router as onboarding_router
 from app.core.config import settings
 
 
@@ -98,6 +101,9 @@ def create_app() -> FastAPI:
     app.include_router(news_router, prefix="/api/v1", tags=["news"])
     app.include_router(discover_router, prefix="/api/v1", tags=["discover"])
     app.include_router(ai_chat_router, prefix="/api/v1", tags=["ai-chat"])
+    app.include_router(notifications_router, prefix="/api/v1", tags=["notifications"])
+    app.include_router(health_assessment_router, prefix="/api/v1", tags=["health-assessment"])
+    app.include_router(onboarding_router, prefix="/api/v1", tags=["onboarding"])
 
     return app
 

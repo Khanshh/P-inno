@@ -1,7 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
-class InfertilityDetailScreen extends StatelessWidget {
+class InfertilityDetailScreen extends StatefulWidget {
   const InfertilityDetailScreen({super.key});
+
+  @override
+  State<InfertilityDetailScreen> createState() => _InfertilityDetailScreenState();
+}
+
+class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> {
+  final ApiService _apiService = ApiService();
+  InfertilityInfoModel? _info;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInfo();
+  }
+
+  Future<void> _loadInfo() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final info = await _apiService.getInfertilityInfo();
+      setState(() {
+        _info = info;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,18 +62,29 @@ class InfertilityDetailScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildDefinitionSection(),
-            const Divider(height: 1, thickness: 8, color: Color(0xFFF5F7FA)),
-            _buildCausesSection(),
-            const Divider(height: 1, thickness: 8, color: Color(0xFFF5F7FA)),
-            _buildTreatmentsSection(),
-            _buildExpertAdviceSection(context),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: MarkdownBody(
+                          data: _info?.content ?? '',
+                          styleSheet: MarkdownStyleSheet(
+                            h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                            h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                            h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                            p: TextStyle(fontSize: 16, color: Colors.grey[800], height: 1.5),
+                          ),
+                        ),
+                      ),
+                      _buildExpertAdviceSection(context),
+                    ],
+                  ),
+                ),
     );
   }
 

@@ -1,12 +1,48 @@
 import 'package:flutter/material.dart';
-import 'infertility_detail_screen.dart';
-import 'ivf_detail_screen.dart';
-import 'icsi_detail_screen.dart';
-import 'iui_detail_screen.dart';
 import 'ovulation_stimulation_screen.dart';
+import 'infertility_detail_screen.dart';
+import 'discover_method_detail_screen.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
-class DiscoverScreen extends StatelessWidget {
+class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
+
+  @override
+  State<DiscoverScreen> createState() => _DiscoverScreenState();
+}
+
+class _DiscoverScreenState extends State<DiscoverScreen> {
+  final ApiService _apiService = ApiService();
+  List<DiscoverMethodModel> _methods = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMethods();
+  }
+
+  Future<void> _loadMethods() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final methods = await _apiService.getDiscoverMethods();
+      setState(() {
+        _methods = methods;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +76,11 @@ class DiscoverScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildGridOptions(),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                          ? Center(child: Text(_error!))
+                          : _buildGridOptions(),
                   const SizedBox(height: 25),
                   _buildConsultationCard(),
                   const SizedBox(height: 20),
@@ -116,7 +156,7 @@ class DiscoverScreen extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => const InfertilityDetailScreen(),
+              builder: (_) => InfertilityDetailScreen(),
             ),
           );
         },
@@ -157,42 +197,18 @@ class DiscoverScreen extends StatelessWidget {
   }
 
   Widget _buildGridOptions() {
-    final List<Map<String, dynamic>> methods = [
-      {
-        'title': 'IVF',
-        'subtitle': 'Thụ tinh trong ống nghiệm',
-        'icon': Icons.science_outlined,
-        'color': Colors.blue,
-      },
-      {
-        'title': 'IUI',
-        'subtitle': 'Bơm tinh trùng vào tử cung',
-        'icon': Icons.medical_services_outlined,
-        'color': Colors.teal,
-      },
-      {
-        'title': 'ICSI',
-        'subtitle': 'Tiêm tinh trùng vào bào tương',
-        'icon': Icons.biotech_outlined,
-        'color': Colors.purple,
-      },
-      {
-        'title': 'Kích trứng',
-        'subtitle': 'Kích thích phóng noãn',
-        'icon': Icons.bubble_chart_outlined,
-        'color': Colors.orange,
-      },
-      
-    ];
+    if (_methods.isEmpty) {
+      return const Center(child: Text('Không có phương pháp nào'));
+    }
 
     return Wrap(
       spacing: 16,
       runSpacing: 16,
-      children: methods.map((method) => _buildOptionCard(method)).toList(),
+      children: _methods.map((method) => _buildOptionCard(method)).toList(),
     );
   }
 
-  Widget _buildOptionCard(Map<String, dynamic> method) {
+  Widget _buildOptionCard(DiscoverMethodModel method) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate width for 2 columns with spacing
@@ -219,18 +235,18 @@ class DiscoverScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: (method['color'] as Color).withOpacity(0.1),
+                  color: _parseColor(method.color).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  method['icon'] as IconData,
-                  color: method['color'] as Color,
+                  _getIconData(method.icon),
+                  color: _parseColor(method.color),
                   size: 24,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                method['title'] as String,
+                method.title,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -239,7 +255,7 @@ class DiscoverScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                method['subtitle'] as String,
+                method.subtitle,
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey[600],
@@ -251,31 +267,14 @@ class DiscoverScreen extends StatelessWidget {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: () {
-                   if (method['title'] == 'IVF') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const IVFDetailScreen(),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DiscoverMethodDetailScreen(
+                        methodId: method.id,
+                        title: method.title,
                       ),
-                    );
-                  } else if (method['title'] == 'ICSI') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ICSIDetailScreen(),
-                      ),
-                    );
-                  } else if (method['title'] == 'IUI') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const IUIDetailScreen(),
-                      ),
-                    );
-                  } else if (method['title'] == 'Kích trứng') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const OvulationStimulationScreen(),
-                      ),
-                    );
-                  }
+                    ),
+                  );
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -374,5 +373,33 @@ class DiscoverScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'science_outlined':
+        return Icons.science_outlined;
+      case 'medical_services_outlined':
+        return Icons.medical_services_outlined;
+      case 'biotech_outlined':
+        return Icons.biotech_outlined;
+      case 'ac_unit_outlined':
+        return Icons.ac_unit_outlined;
+      case 'bubble_chart_outlined':
+        return Icons.bubble_chart_outlined;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  Color _parseColor(String colorString) {
+    try {
+      if (colorString.startsWith('#')) {
+        return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
+      }
+      return Colors.blue;
+    } catch (e) {
+      return Colors.blue;
+    }
   }
 }

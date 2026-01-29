@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/health_assessment_model.dart';
 
 class AssessmentQuestionScreen extends StatefulWidget {
   const AssessmentQuestionScreen({super.key});
@@ -9,6 +11,10 @@ class AssessmentQuestionScreen extends StatefulWidget {
 
 class _AssessmentQuestionScreenState extends State<AssessmentQuestionScreen> {
   int _currentIndex = 0;
+  final ApiService _apiService = ApiService();
+  List<AssessmentQuestionModel> _questions = [];
+  bool _isLoading = true;
+  String? _error;
   final List<String> _selectedAnswers = []; // Store selected answer for current question
   // In a real app, we might store a map of questionId -> answer. 
   // For this mock, I'll reset selection on next question or keep state if navigating back is allowed. 
@@ -21,23 +27,31 @@ class _AssessmentQuestionScreenState extends State<AssessmentQuestionScreen> {
 
   final Color _primaryColor = const Color(0xFF73c6d9);
 
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'id': 1,
-      'question': 'Giới tính của bạn?',
-      'options': ['Nam', 'Nữ'],
-    },
-    {
-      'id': 2,
-      'question': 'Độ tuổi của bạn?',
-      'options': ['< 30', '30 - 35', '35 - 40', '> 40'],
-    },
-    {
-      'id': 3,
-      'question': 'Thời gian mong con?',
-      'options': ['< 6 tháng', '6 - 12 tháng', '> 1 năm'],
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final questions = await _apiService.getAssessmentQuestions();
+      setState(() {
+        _questions = questions;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   void _handleOptionSelect(String option) {
     setState(() {
@@ -85,235 +99,249 @@ class _AssessmentQuestionScreenState extends State<AssessmentQuestionScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      body: Column(
-        children: [
-          // Header (Custom AppBar)
-          Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 10,
-              bottom: 20,
-              left: 16,
-              right: 16,
-            ),
-            decoration: BoxDecoration(
-              color: _primaryColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        "Đánh giá sức khỏe sinh sản",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(width: 48), // Balance the back button
-                  ],
-                ),
-                const SizedBox(height: 20),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                    minHeight: 8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Body
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.topCenter,
-                children: [
-                  // Card Background
-                  Container(
-                    margin: const EdgeInsets.only(top: 24), // Space for the badge
-                    padding: const EdgeInsets.fromLTRB(20, 60, 20, 30), // Top padding for badge
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : _questions.isEmpty
+                  ? const Center(child: Text("Không có câu hỏi nào"))
+                  : Column(
                       children: [
-                        Text(
-                          currentQuestion['question'],
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
+                        // Header (Custom AppBar)
+                        _buildHeader(context, progress),
+                        // Body
+                        Expanded(
+                          child: _buildBody(context, currentQuestion, selectedOption),
                         ),
-                        const SizedBox(height: 32),
-                        // Options
-                        ...List<Widget>.from(
-                          (currentQuestion['options'] as List<String>).map((option) {
-                            final isSelected = option == selectedOption;
-                            return GestureDetector(
-                              onTap: () => _handleOptionSelect(option),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                margin: const EdgeInsets.only(bottom: 16),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 20,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? _primaryColor.withOpacity(0.1)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? _primaryColor
-                                        : Colors.grey.shade300,
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        option,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.normal,
-                                          color: isSelected
-                                              ? _primaryColor
-                                              : Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                    if (isSelected)
-                                      Icon(
-                                        Icons.check_circle,
-                                        color: _primaryColor,
-                                        size: 20,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
+                        // Bottom Action
+                        _buildBottomAction(hasSelection),
                       ],
                     ),
-                  ),
+    );
+  }
 
-                  // Circular Question Badge
-                  Positioned(
-                    top: 0,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: _primaryColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _primaryColor.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "${_currentIndex + 1}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+  Widget _buildHeader(BuildContext context, double progress) {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 10,
+        bottom: 20,
+        left: 16,
+        right: 16,
+      ),
+      decoration: BoxDecoration(
+        color: _primaryColor,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
               ),
+              const Expanded(
+                child: Text(
+                  "Đánh giá sức khỏe sinh sản",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48), // Balance the back button
+            ],
+          ),
+          const SizedBox(height: 20),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white24,
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              minHeight: 8,
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // Bottom Action
+  Widget _buildBody(BuildContext context, AssessmentQuestionModel currentQuestion, String? selectedOption) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // Card Background
           Container(
-            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.only(top: 24), // Space for the badge
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 30), // Top padding for badge
             decoration: BoxDecoration(
               color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
-                  offset: const Offset(0, -4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Column(
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: hasSelection ? _nextQuestion : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _primaryColor,
-                      disabledBackgroundColor: Colors.grey[300],
-                      shape: RoundedRectangleBorder(
+                Text(
+                  currentQuestion.question,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                // Options
+                ...currentQuestion.options.map((option) {
+                  final isSelected = option == selectedOption;
+                  return GestureDetector(
+                    onTap: () => _handleOptionSelect(option),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _primaryColor.withOpacity(0.1)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? _primaryColor
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
                       ),
-                      elevation: hasSelection ? 4 : 0,
-                    ),
-                    child: Text(
-                      _currentIndex == _questions.length - 1
-                          ? "Xem kết quả"
-                          : "Tiếp theo",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: hasSelection ? Colors.white : Colors.grey[600],
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? _primaryColor
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_circle,
+                              color: _primaryColor,
+                              size: 20,
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  "Vui lòng chọn ít nhất một đáp án",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
+                  );
+                }),
               ],
+            ),
+          ),
+
+          // Circular Question Badge
+          Positioned(
+            top: 0,
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: _primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: _primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                "${_currentIndex + 1}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomAction(bool hasSelection) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: hasSelection ? _nextQuestion : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primaryColor,
+                disabledBackgroundColor: Colors.grey[300],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: hasSelection ? 4 : 0,
+              ),
+              child: Text(
+                _currentIndex == _questions.length - 1
+                    ? "Xem kết quả"
+                    : "Tiếp theo",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: hasSelection ? Colors.white : Colors.grey[600],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            "Vui lòng chọn ít nhất một đáp án",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
             ),
           ),
         ],

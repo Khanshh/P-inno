@@ -1,9 +1,48 @@
 import 'package:flutter/material.dart';
 import '../widgets/login_dialog.dart';
 import 'discover_screen.dart';
+import '../services/api_service.dart';
+import '../models/user_model.dart';
+import 'medical_record_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ApiService _apiService = ApiService();
+  UserProfileModel? _profile;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final profile = await _apiService.getMyProfile();
+      setState(() {
+        _profile = profile;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +56,11 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _buildLoginCard(context),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _profile != null
+                          ? _buildProfileCard(context)
+                          : _buildLoginCard(context),
                   const SizedBox(height: 20),
 
                   _buildBenefitsCard(),
@@ -80,6 +123,101 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          const SizedBox(
+            width: 80,
+            height: 80,
+            child: CircleAvatar(
+              backgroundColor: Color(0xFFE3F2FD),
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=a042581f4e29026024d'),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _profile?.fullName ?? 'Nguyễn Thị A',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Mã BN: ${_profile?.patientCode ?? 'BN0001'}',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildProfileInfoRow(Icons.email_outlined, _profile?.email ?? 'patient@example.com'),
+          const SizedBox(height: 12),
+          _buildProfileInfoRow(Icons.phone_outlined, _profile?.phone ?? '+84 912 345 678'),
+          const SizedBox(height: 12),
+          _buildProfileInfoRow(Icons.location_on_outlined, _profile?.address ?? 'Hà Nội, Việt Nam'),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MedicalRecordScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF73C6D9),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Xem hồ sơ bệnh án',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFF73C6D9)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+        ),
+      ],
     );
   }
 

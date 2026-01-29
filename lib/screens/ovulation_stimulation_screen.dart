@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../models/discover_model.dart';
 
 class OvulationStimulationScreen extends StatefulWidget {
   const OvulationStimulationScreen({super.key});
@@ -9,19 +11,53 @@ class OvulationStimulationScreen extends StatefulWidget {
 
 class _OvulationStimulationScreenState extends State<OvulationStimulationScreen> {
   int _currentTab = 0; // 0: Định nghĩa, 1: Quy trình
+  final ApiService _apiService = ApiService();
+  DiscoverMethodDetailModel? _detail;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetail();
+  }
+
+  Future<void> _loadDetail() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final detail = await _apiService.getDiscoverMethodDetail('method-ovulation-stimulation');
+      setState(() {
+        _detail = detail;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  children: [
+                    _buildHeader(context),
+                    Expanded(
+                      child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
+                    ),
+                  ],
+                ),
     );
   }
 
