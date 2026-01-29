@@ -31,8 +31,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   // Logo/Icon
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 160,
+                    height: 160,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.25),
                       shape: BoxShape.circle,
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     child: const Icon(
                       Icons.favorite,
-                      size: 60,
+                      size: 90,
                       color: Colors.white,
                     ),
                   ),
@@ -53,8 +53,10 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     'Sức Khỏe Thai Sản',
                     textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.nunito(
-                      fontSize: 36,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
