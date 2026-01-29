@@ -36,6 +36,7 @@ Dinh dưỡng đóng vai trò then chốt cho sự phát triển trí não và t
 Trừ khi có chỉ định đặc biệt từ bác sĩ, mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga hoặc bơi lội để giảm căng thẳng, cải thiện lưu thông máu và dễ sinh hơn.
         """,
         category="Thai kỳ",
+        image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
         views=1200,
         created_at=datetime.now() - timedelta(hours=2),
     ),
@@ -65,6 +66,7 @@ Mùa lạnh là thời điểm dễ mắc các bệnh đường hô hấp như c
 Không khí hanh khô có thể khiến da mẹ bầu bị nứt nẻ, ngứa ngáy, đặc biệt là vùng bụng đang căng ra. Hãy sử dụng kem dưỡng ẩm an toàn cho bà bầu và uống đủ nước để duy trì độ ẩm cho da.
         """,
         category="Sức khỏe",
+        image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
         views=860,
         created_at=datetime.now() - timedelta(days=1),
     ),
@@ -90,6 +92,7 @@ Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. 
 *Lưu ý: Luôn tham khảo ý kiến bác sĩ trước khi bắt đầu bất kỳ chế độ tập luyện nào.*
         """,
         category="Tập luyện",
+        image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
         views=2300,
         created_at=datetime.now() - timedelta(days=2),
     ),
@@ -116,6 +119,7 @@ Giấc ngủ không chỉ là thời gian nghỉ ngơi mà còn là lúc cơ th�
 *   Sử dụng gối ôm dành cho bà bầu để tìm tư thế ngủ thoải mái nhất (thường là nằm nghiêng sang trái).
         """,
         category="Sức khỏe",
+        image_url="https://images.unsplash.com/photo-1511295742362-92c96b50484f?auto=format&fit=crop&q=80&w=1000",
         views=1800,
         created_at=datetime.now() - timedelta(days=1),
     ),
@@ -140,6 +144,7 @@ Việt Nam có khí hậu nhiệt đới gió mùa, thời tiết thay đổi th
 4.  **Trang phục:** Lựa chọn trang phục phù hợp với thời tiết, chất liệu thoáng mát vào mùa hè và giữ ấm vào mùa đông.
         """,
         category="Sức khỏe",
+        image_url="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1000",
         views=950,
         created_at=datetime.now() - timedelta(hours=12),
     ),
@@ -163,6 +168,7 @@ Tập thể dục buổi sáng mang lại nhiều lợi ích tuyệt vời, đ�
 *   Lắng nghe cơ thể, không tập quá sức. Nếu thấy mệt, khó thở hoặc đau bụng, hãy dừng lại ngay.
         """,
         category="Tập luyện",
+        image_url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=1000",
         views=1500,
         created_at=datetime.now() - timedelta(hours=5),
     ),
@@ -189,6 +195,7 @@ Eat Clean là chế độ ăn ưu tiên thực phẩm tươi sống, nguyên cá
 *   **Tối:** Cá hồi nướng và salad rau củ.
         """,
         category="Dinh dưỡng",
+        image_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1000",
         views=5500,
         created_at=datetime.now() - timedelta(days=7),
     ),
@@ -220,6 +227,7 @@ Uống đủ nước càng quan trọng hơn để:
 Mẹ bầu nên uống khoảng 8-10 cốc nước (tương đương 2-2.5 lít) mỗi ngày. Có thể bổ sung thêm từ nước ép trái cây, canh, súp...
         """,
         category="Sức khỏe",
+        image_url="https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000",
         views=800,
         created_at=datetime.now() - timedelta(days=1),
     ),
