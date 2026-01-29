@@ -48,8 +48,8 @@ class _AISummaryDialogContent extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF448AFF), // Blue Accent
-            Color(0xFF7C4DFF), // Deep Purple Accent
+            Color(0xFF73C6D9),
+            Color(0xFF73C6D9),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
@@ -160,7 +160,7 @@ class _AISummaryDialogContent extends StatelessWidget {
                       width: 4,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF448AFF),
+                        color: const Color(0xFF73C6D9),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -234,7 +234,7 @@ class _AISummaryDialogContent extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF448AFF),
+                          backgroundColor: const Color(0xFF73C6D9),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
