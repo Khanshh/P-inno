@@ -5,6 +5,7 @@ import 'notification_screen.dart';
 import 'news_screen.dart';
 import 'profile_screen.dart';
 import 'health_assessment_screen.dart';
+import 'community_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
@@ -521,7 +522,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           );
         } else if (index == 2) {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const NotificationScreen()),
+            MaterialPageRoute(builder: (_) => const CommunityScreen()),
           );
         } else if (index == 3) {
           Navigator.of(context).push(
@@ -544,8 +545,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           label: 'Chat AI',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications_none),
-          label: 'Thông báo',
+          icon: Icon(Icons.groups_outlined),
+          label: 'Cộng đồng',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
