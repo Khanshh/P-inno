@@ -31,7 +31,7 @@ class NewsModel {
       category: json['category'] as String?,
       imageUrl: json['image_url'] as String?,
       views: json['views'] as int,
-      time: json['time'] as String,
+      time: json['time'] as String? ?? '',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,

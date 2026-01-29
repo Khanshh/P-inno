@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/news_model.dart';
 import '../services/api_service.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NewsDetailScreen extends StatefulWidget {
@@ -157,12 +158,40 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        _currentNews.content ?? "Nội dung chi tiết bài báo đang được cập nhật.",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[800],
-                          height: 1.6,
+                      MarkdownBody(
+                        data: _currentNews.content ?? "Nội dung chi tiết bài báo đang được cập nhật.",
+                        styleSheet: MarkdownStyleSheet(
+                          p: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[800],
+                            height: 1.6,
+                          ),
+                          h1: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                          h2: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                          h3: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
+                          listBullet: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                          strong: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
