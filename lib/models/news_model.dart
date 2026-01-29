@@ -7,6 +7,7 @@ class NewsModel {
   final int views;
   final String time;
   final DateTime? createdAt;
+  final String? summary;
 
   NewsModel({
     required this.id,
@@ -17,6 +18,7 @@ class NewsModel {
     required this.views,
     required this.time,
     this.createdAt,
+    this.summary,
   });
 
   factory NewsModel.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class NewsModel {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : null,
+      summary: json['summary'] as String?,
     );
   }
 }
