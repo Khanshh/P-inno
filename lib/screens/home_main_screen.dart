@@ -283,8 +283,9 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildGradientAppBar(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               _buildSectionHeader('Chức năng'),
+              const SizedBox(height: 12),
               _isLoadingFeatures
                   ? const Padding(
                       padding: EdgeInsets.all(20.0),
@@ -328,8 +329,9 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                             .toList(),
                       ),
                     ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 32),
               _buildNewsHeader(),
+              const SizedBox(height: 12),
               _isLoadingNews
                   ? const Padding(
                       padding: EdgeInsets.all(20.0),
@@ -413,27 +415,41 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             ),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Profile Summary Card',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Chào mừng, Admin',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Xin chào',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 4),
+                Text(
+                  'Quản trị viên hệ thống',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const NotificationScreen()),
+              );
+            },
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
         ],
       ),
@@ -461,7 +477,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            'Tin Tức Y Tế',
+            'Tin tức y tế',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
