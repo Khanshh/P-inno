@@ -137,3 +137,107 @@ async def get_system_stats(admin_user: dict = Depends(get_admin_user)) -> System
         total_regular_users=regular_users,
         last_updated=datetime.now(),
     )
+
+
+class RegenerateSummariesResponse(BaseModel):
+    """Response for regenerate summaries endpoint."""
+    total_news: int
+    already_had_summary: int
+    generated_new: int
+    failed: int
+    skipped_no_content: int
+    message: str
+
+
+@router.post("/admin/regenerate-summaries", response_model=RegenerateSummariesResponse)
+async def regenerate_summaries(
+    force: bool = False,
+    use_ai: bool = False,
+    admin_user: dict = Depends(get_admin_user)
+) -> RegenerateSummariesResponse:
+    """
+    Regenerate summaries for news articles that don't have them (Admin only).
+    
+    Args:
+        force: If True, regenerate even if summary already exists (default: False)
+        use_ai: If True, use OpenAI (costs money). If False, use fallback (free) (default: False)
+    
+    Returns:
+        Statistics about the regeneration process
+    
+    **SAFETY FEATURES:**
+    - Only generates for news WITHOUT summary (unless force=True)
+    - Default uses FREE fallback (no OpenAI cost)
+    - Logs all operations for tracking
+    """
+    from app.api.v1.routes_news import _mock_news
+    from ai.features.news_summarizer import summarize_news_content, generate_fallback_summary
+    
+    total = len(_mock_news)
+    already_had = 0
+    generated = 0
+    failed = 0
+    skipped = 0
+    
+    print(f"\n{'='*60}")
+    print(f"🔄 Starting summary regeneration...")
+    print(f"   Mode: {'AI (OpenAI)' if use_ai else 'Fallback (FREE)'}")
+    print(f"   Force: {force}")
+    print(f"   Total news: {total}")
+    print(f"{'='*60}\n")
+    
+    for news in _mock_news:
+        # Skip if already has summary (unless force=True)
+        if news.summary and not force:
+            already_had += 1
+            print(f"⏭️  Skipping '{news.title[:40]}...' - already has summary")
+            continue
+        
+        # Skip if no content
+        if not news.content:
+            skipped += 1
+            print(f"⚠️  Skipping '{news.title[:40]}...' - no content")
+            continue
+        
+        try:
+            if use_ai:
+                # Use OpenAI (COSTS MONEY)
+                print(f"🤖 Generating AI summary for: {news.title[:40]}...")
+                summary = await summarize_news_content(
+                    title=news.title,
+                    content=news.content,
+                )
+            else:
+                # Use FREE fallback
+                print(f"📝 Generating fallback summary for: {news.title[:40]}...")
+                summary = await generate_fallback_summary(news.content, max_sentences=2)
+            
+            if summary:
+                news.summary = summary
+                generated += 1
+                print(f"   ✅ Success: {summary[:50]}...")
+            else:
+                failed += 1
+                print(f"   ❌ Failed to generate summary")
+                
+        except Exception as e:
+            failed += 1
+            print(f"   ❌ Error: {e}")
+    
+    print(f"\n{'='*60}")
+    print(f"✅ Summary regeneration complete!")
+    print(f"   Total: {total}")
+    print(f"   Already had: {already_had}")
+    print(f"   Generated: {generated}")
+    print(f"   Failed: {failed}")
+    print(f"   Skipped: {skipped}")
+    print(f"{'='*60}\n")
+    
+    return RegenerateSummariesResponse(
+        total_news=total,
+        already_had_summary=already_had,
+        generated_new=generated,
+        failed=failed,
+        skipped_no_content=skipped,
+        message=f"Successfully generated {generated} summaries using {'AI' if use_ai else 'fallback'} mode"
+    )

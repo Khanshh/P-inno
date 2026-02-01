@@ -391,9 +391,10 @@ async def create_news(
     # Generate new ID
     new_id = f"news-{len(_mock_news) + 1}"
     
-    # Generate AI summary from content
+    # Generate AI summary from content (ONLY if not already provided)
     summary = None
-    if news_data.content:
+    if news_data.content and not hasattr(news_data, 'summary'):
+        # Only generate if summary not provided in request
         try:
             print(f"🤖 Generating AI summary for news: {news_data.title}")
             summary = await summarize_news_content(
@@ -407,6 +408,11 @@ async def create_news(
         except Exception as e:
             print(f"❌ Error generating AI summary: {e}")
             summary = None
+    elif hasattr(news_data, 'summary') and news_data.summary:
+        # Use provided summary (skipping AI generation)
+        summary = news_data.summary
+        print(f"ℹ️  Using provided summary (skipping AI generation)")
+    
     
     # Create new news object
     new_news = News(
