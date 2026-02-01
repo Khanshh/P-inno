@@ -130,27 +130,31 @@ class _NewsScreenState extends State<NewsScreen> {
             )
           else
             Expanded(
-              child: Container(
-                color: const Color(0xFFF5F5F5),
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
+              child: RefreshIndicator(
+                onRefresh: _loadNews,
+                color: const Color(0xFF73C6D9),
+                child: Container(
+                  color: const Color(0xFFF5F5F5),
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: _news.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () => showAISummaryDialog(context, _news[index]),
+                        borderRadius: BorderRadius.circular(12),
+                        child: _NewsCard(
+                          news: _news[index],
+                          formatViews: _formatViews,
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: _news.length,
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () => showAISummaryDialog(context, _news[index]),
-                      borderRadius: BorderRadius.circular(12),
-                      child: _NewsCard(
-                        news: _news[index],
-                        formatViews: _formatViews,
-                      ),
-                    );
-                  },
                 ),
               ),
             ),

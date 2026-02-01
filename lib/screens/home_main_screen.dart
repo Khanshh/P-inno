@@ -284,10 +284,13 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          color: const Color(0xFF73C6D9),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               _buildGradientAppBar(),
               const SizedBox(height: 24),
               _buildSectionHeader('Chức năng'),
@@ -377,6 +380,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               const SizedBox(height: 16),
             ],
           ),
+        ),
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
