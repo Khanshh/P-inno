@@ -317,6 +317,7 @@ async def get_news(
             views=n.views,
             time=_format_time_ago(n.created_at) if n.created_at else "Không xác định",
             created_at=n.created_at,
+            summary=n.summary,
         )
         for n in paginated_news
     ]
@@ -354,6 +355,7 @@ async def get_news_detail(news_id: str) -> NewsDetailResponse:
         views=news.views,
         created_at=news.created_at,
         updated_at=news.updated_at,
+        summary=news.summary,
     )
 
 

@@ -70,19 +70,48 @@ Nội dung: {content}"""
             temperature=0.3,
         )
         
-        # Clean up response text in case AI added markdown code blocks
-        clean_text = response_text.strip()
-        if clean_text.startswith("```json"):
-            clean_text = clean_text[7:]
-        if clean_text.endswith("```"):
-            clean_text = clean_text[:-3]
-        clean_text = clean_text.strip()
+        # Log raw response for debugging
+        print(f"DEBUG: Raw AI response: '{response_text}'")
         
-        data = json.loads(clean_text)
-        return {
-            "category": data.get("category", "Sức khỏe"),
-            "summary": data.get("summary", "")
-        }
+        if not response_text:
+            print("❌ AI returned empty response")
+            return None
+
+        # Robust JSON extraction
+        clean_text = response_text.strip()
+        
+        # Handle code blocks
+        if "```" in clean_text:
+            # Try to find content inside ```json ... ``` or just ``` ... ```
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', clean_text, re.DOTALL)
+            if json_match:
+                clean_text = json_match.group(1)
+            else:
+                # If no code block found but ``` exists, maybe it's just one block
+                clean_text = clean_text.replace("```json", "").replace("```", "").strip()
+        
+        # If it's still not starting with {, try to find the start of JSON
+        if not clean_text.startswith("{") and "{" in clean_text:
+            clean_text = clean_text[clean_text.find("{"):]
+        if not clean_text.endswith("}") and "}" in clean_text:
+            clean_text = clean_text[:clean_text.rfind("}")+1]
+
+        try:
+            data = json.loads(clean_text)
+            return {
+                "category": data.get("category", "Sức khỏe"),
+                "summary": data.get("summary", "")
+            }
+        except json.JSONDecodeError as je:
+            print(f"❌ JSON Decode Error: {je} with text: '{clean_text}'")
+            # If it's not JSON, maybe AI just returned the text directly (fallback)
+            if not clean_text.startswith("{"):
+                return {
+                    "category": "Sức khỏe",
+                    "summary": response_text[:300]
+                }
+            return None
         
     except Exception as e:
         print(f"❌ Error generating summary/category: {e}")
