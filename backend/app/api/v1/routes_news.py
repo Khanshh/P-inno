@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from app.schemas.news import NewsResponse, NewsListResponse, NewsDetailResponse
 from app.models.news import News
 from app.core.dependencies import get_admin_user
+from ai.features.news_summarizer import summarize_news_content
 
 router = APIRouter()
 
@@ -41,6 +42,7 @@ Trừ khi có chỉ định đặc biệt từ bác sĩ, mẹ bầu nên duy tr�
         image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
         views=1200,
         created_at=datetime.now() - timedelta(hours=2),
+        summary="Hướng dẫn mới nhất về chăm sóc thai kỳ bao gồm lịch khám định kỳ 8 lần, chế độ dinh dưỡng đầy đủ 4 nhóm chất và bổ sung axit folic, sắt, canxi. Mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga để cải thiện sức khỏe và chuẩn bị tốt cho sinh nở.",
     ),
     News(
         id="news-2",
@@ -71,6 +73,7 @@ Không khí hanh khô có thể khiến da mẹ bầu bị nứt nẻ, ngứa ng
         image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
         views=860,
         created_at=datetime.now() - timedelta(days=1),
+        summary="Mùa lạnh, mẹ bầu cần giữ ấm cơ thể, mặc đủ ấm và tránh tắm nước quá lạnh. Tăng cường sức đề kháng bằng cách ăn nhiều trái cây giàu Vitamin C, uống nước ấm và có thể tiêm phòng cúm. Chăm sóc làn da bằng kem dưỡng ẩm an toàn để tránh nứt nẻ, ngứa ngáy.",
     ),
     News(
         id="news-3",
@@ -97,6 +100,7 @@ Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. 
         image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
         views=2300,
         created_at=datetime.now() - timedelta(days=2),
+        summary="Yoga nhẹ nhàng trước khi ngủ giúp mẹ bầu thư giãn cơ bắp, giảm đau lưng, điều hòa hơi thở và cải thiện lưu thông máu. Một số động tác gợi ý gồm tư thế con bướm, con mèo-con bò và gác chân lên tường, giúp giảm phù nề và thư giãn hiệu quả.",
     ),
     News(
         id="news-4",
@@ -382,9 +386,27 @@ async def create_news(
     Create a new news article (Admin only).
     
     Requires admin authentication.
+    Automatically generates AI summary from content.
     """
     # Generate new ID
     new_id = f"news-{len(_mock_news) + 1}"
+    
+    # Generate AI summary from content
+    summary = None
+    if news_data.content:
+        try:
+            print(f"🤖 Generating AI summary for news: {news_data.title}")
+            summary = await summarize_news_content(
+                title=news_data.title,
+                content=news_data.content,
+            )
+            if summary:
+                print(f"✅ AI summary generated successfully: {summary[:50]}...")
+            else:
+                print("⚠️  AI summary generation returned None, using fallback")
+        except Exception as e:
+            print(f"❌ Error generating AI summary: {e}")
+            summary = None
     
     # Create new news object
     new_news = News(
@@ -392,6 +414,7 @@ async def create_news(
         title=news_data.title,
         description=news_data.description,
         content=news_data.content,
+        summary=summary,  # Include AI-generated summary
         category=news_data.category,
         image_url=news_data.image_url,
         views=0,
@@ -406,6 +429,7 @@ async def create_news(
         title=new_news.title,
         description=new_news.description,
         content=new_news.content,
+        summary=new_news.summary,  # Return summary in response
         category=new_news.category,
         image_url=new_news.image_url,
         views=new_news.views,
