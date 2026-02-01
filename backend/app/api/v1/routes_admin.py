@@ -202,11 +202,18 @@ async def regenerate_summaries(
         try:
             if use_ai:
                 # Use OpenAI (COSTS MONEY)
-                print(f"🤖 Generating AI summary for: {news.title[:40]}...")
-                summary = await summarize_news_content(
+                print(f"🤖 Generating AI summary and category for: {news.title[:40]}...")
+                ai_result = await summarize_news_content(
                     title=news.title,
                     content=news.content,
                 )
+                if ai_result:
+                    summary = ai_result.get("summary")
+                    # Update category if it's default or empty
+                    if not news.category or news.category == "Sức khỏe" or news.category == "string":
+                        news.category = ai_result.get("category", news.category)
+                else:
+                    summary = None
             else:
                 # Use FREE fallback
                 print(f"📝 Generating fallback summary for: {news.title[:40]}...")
@@ -215,7 +222,7 @@ async def regenerate_summaries(
             if summary:
                 news.summary = summary
                 generated += 1
-                print(f"   ✅ Success: {summary[:50]}...")
+                print(f"   ✅ Success (Category: {news.category}): {summary[:50]}...")
             else:
                 failed += 1
                 print(f"   ❌ Failed to generate summary")

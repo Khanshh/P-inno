@@ -393,26 +393,35 @@ async def create_news(
     
     # Generate AI summary from content (ONLY if not already provided)
     summary = None
+    ai_category = None
+    
     if news_data.content and not hasattr(news_data, 'summary'):
         # Only generate if summary not provided in request
         try:
-            print(f"🤖 Generating AI summary for news: {news_data.title}")
-            summary = await summarize_news_content(
+            print(f"🤖 Generating AI summary and category for news: {news_data.title}")
+            ai_result = await summarize_news_content(
                 title=news_data.title,
                 content=news_data.content,
             )
-            if summary:
-                print(f"✅ AI summary generated successfully: {summary[:50]}...")
+            if ai_result:
+                summary = ai_result.get("summary")
+                ai_category = ai_result.get("category")
+                print(f"✅ AI result: Category={ai_category}, Summary={summary[:50]}...")
             else:
-                print("⚠️  AI summary generation returned None, using fallback")
+                print("⚠️  AI generation returned None")
         except Exception as e:
-            print(f"❌ Error generating AI summary: {e}")
+            print(f"❌ Error during AI generation: {e}")
             summary = None
     elif hasattr(news_data, 'summary') and news_data.summary:
         # Use provided summary (skipping AI generation)
         summary = news_data.summary
         print(f"ℹ️  Using provided summary (skipping AI generation)")
     
+    # Use AI category if admin didn't provide one or provided a placeholder
+    final_category = news_data.category
+    if (not final_category or final_category == "string") and ai_category:
+        final_category = ai_category
+        print(f"🏷️  Auto-categorized as: {final_category}")
     
     # Create new news object
     new_news = News(
@@ -420,8 +429,8 @@ async def create_news(
         title=news_data.title,
         description=news_data.description,
         content=news_data.content,
-        summary=summary,  # Include AI-generated summary
-        category=news_data.category,
+        summary=summary,
+        category=final_category,
         image_url=news_data.image_url,
         views=0,
         created_at=datetime.now(),

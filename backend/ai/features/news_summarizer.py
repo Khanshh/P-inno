@@ -4,90 +4,88 @@ News Summarization Service using OpenAI.
 This module provides AI-powered summarization for news articles.
 """
 
-from typing import Optional
+import json
+from typing import Optional, Dict
 from ai.core.clients.llm_client import get_llm_client, LLMMessage
 
 
-SUMMARIZATION_PROMPT = """Bạn là một trợ lý AI chuyên tóm tắt tin tức y tế và sức khỏe bằng tiếng Việt.
+SUMMARIZATION_PROMPT = """Bạn là trợ lý AI tóm tắt tin tức sức khỏe cho app về hiếm muộn và thai kỳ.
+
+Đối tượng người dùng: nam và nữ đang tìm hiểu về hiếm muộn, bà bầu, mẹ đã sinh.
+Tone: thân thiện, dễ hiểu, không gây lo lắng hay panic.
 
 Nhiệm vụ của bạn:
-- Đọc và hiểu nội dung bài viết
-- Tóm tắt thành 2-3 câu ngắn gọn, súc tích
+1. Đọc toàn bộ bài viết sau đây
+2. Phân loại bài viết vào đúng 1 category: [Thai kỳ / Tập luyện / Sức khỏe / Dinh dưỡng]
+3. Tóm tắt thành 2-3 câu ngắn gọn, súc tích (khoảng 50-100 từ)
+
+Quy tắc:
 - Giữ nguyên các thông tin y tế quan trọng
+- Không thêm thông tin không có trong bài gốc
 - Sử dụng ngôn ngữ dễ hiểu, thân thiện
 - Viết bằng tiếng Việt có dấu
+- Nếu bài viết không liên quan đến bất kỳ category nào ở trên, trả về: {"category": "Không xác định", "summary": "Bài viết này không thuộc phạm vi chủ đề của app."}
 
-Lưu ý:
-- Không thêm thông tin không có trong bài gốc
-- Tập trung vào ý chính và lợi ích cho người đọc
-- Độ dài: 2-3 câu (khoảng 50-100 từ)
-"""
+Output format (chỉ trả về JSON, không thêm text khác):
+{
+  "category": "<category>",
+  "summary": "<tóm tắt>"
+}"""
 
 
 async def summarize_news_content(
     title: str,
     content: str,
-    max_tokens: int = 200,
-) -> Optional[str]:
+    max_tokens: int = 512,
+) -> Optional[Dict[str, str]]:
     """
-    Generate an AI summary for a news article.
+    Generate an AI summary and category for a news article.
     
     Args:
         title: The news article title
         content: The full content of the news article
-        max_tokens: Maximum tokens for the summary (default: 200)
+        max_tokens: Maximum tokens for the response
     
     Returns:
-        A concise 2-3 sentence summary in Vietnamese, or None if generation fails
-    
-    Example:
-        >>> summary = await summarize_news_content(
-        ...     title="Lợi ích của yoga cho bà bầu",
-        ...     content="Yoga là môn thể thao nhẹ nhàng..."
-        ... )
-        >>> print(summary)
-        "Yoga giúp bà bầu giảm căng thẳng, cải thiện sức khỏe..."
+        A dictionary with 'category' and 'summary', or None if generation fails
     """
     if not content or len(content.strip()) < 20:
-        # Content too short to summarize
         return None
     
     try:
         llm_client = get_llm_client()
         
-        # Prepare the user message with article content
-        user_message = f"""Tiêu đề: {title}
-
-Nội dung:
-{content}
-
-Hãy tóm tắt bài viết trên thành 2-3 câu ngắn gọn bằng tiếng Việt."""
+        user_message = f"""Bài viết:
+Tiêu đề: {title}
+Nội dung: {content}"""
         
         messages = [
             LLMMessage(role="system", content=SUMMARIZATION_PROMPT),
             LLMMessage(role="user", content=user_message),
         ]
         
-        # Generate summary
-        summary = await llm_client.generate(
+        response_text = await llm_client.generate(
             messages=messages,
             max_tokens=max_tokens,
-            temperature=0.5,  # Lower temperature for more focused summaries
+            temperature=0.3,
         )
         
-        # Clean up the summary
-        summary = summary.strip()
+        # Clean up response text in case AI added markdown code blocks
+        clean_text = response_text.strip()
+        if clean_text.startswith("```json"):
+            clean_text = clean_text[7:]
+        if clean_text.endswith("```"):
+            clean_text = clean_text[:-3]
+        clean_text = clean_text.strip()
         
-        # Validate summary
-        if not summary or len(summary) < 10:
-            print(f"⚠️  Generated summary too short: {summary}")
-            return None
-        
-        return summary
+        data = json.loads(clean_text)
+        return {
+            "category": data.get("category", "Sức khỏe"),
+            "summary": data.get("summary", "")
+        }
         
     except Exception as e:
-        print(f"❌ Error generating summary: {e}")
-        # Return None on error - the news creation should still succeed
+        print(f"❌ Error generating summary/category: {e}")
         return None
 
 
