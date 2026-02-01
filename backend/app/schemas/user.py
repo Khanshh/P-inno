@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     username: str
     full_name: str
     patient_code: str
+    role: str = "user"
 
 
 class UserProfile(UserBase):

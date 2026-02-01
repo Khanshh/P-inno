@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from typing import List, Optional
+from pydantic import BaseModel
 
 from app.schemas.news import NewsResponse, NewsListResponse, NewsDetailResponse
 from app.models.news import News
+from app.core.dependencies import get_admin_user
 
 router = APIRouter()
 
@@ -349,4 +351,139 @@ async def get_news_detail(news_id: str) -> NewsDetailResponse:
         created_at=news.created_at,
         updated_at=news.updated_at,
     )
+
+
+# Admin-only endpoints
+
+class NewsCreateRequest(BaseModel):
+    """Schema for creating a new news article."""
+    title: str
+    description: str
+    content: str
+    category: str
+    image_url: Optional[str] = None
+
+
+class NewsUpdateRequest(BaseModel):
+    """Schema for updating a news article."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    image_url: Optional[str] = None
+
+
+@router.post("/news", response_model=NewsDetailResponse, status_code=status.HTTP_201_CREATED)
+async def create_news(
+    news_data: NewsCreateRequest,
+    admin_user: dict = Depends(get_admin_user)
+) -> NewsDetailResponse:
+    """
+    Create a new news article (Admin only).
+    
+    Requires admin authentication.
+    """
+    # Generate new ID
+    new_id = f"news-{len(_mock_news) + 1}"
+    
+    # Create new news object
+    new_news = News(
+        id=new_id,
+        title=news_data.title,
+        description=news_data.description,
+        content=news_data.content,
+        category=news_data.category,
+        image_url=news_data.image_url,
+        views=0,
+        created_at=datetime.now(),
+    )
+    
+    # Add to mock database
+    _mock_news.append(new_news)
+    
+    return NewsDetailResponse(
+        id=new_news.id,
+        title=new_news.title,
+        description=new_news.description,
+        content=new_news.content,
+        category=new_news.category,
+        image_url=new_news.image_url,
+        views=new_news.views,
+        created_at=new_news.created_at,
+        updated_at=new_news.updated_at,
+    )
+
+
+@router.put("/news/{news_id}", response_model=NewsDetailResponse)
+async def update_news(
+    news_id: str,
+    news_data: NewsUpdateRequest,
+    admin_user: dict = Depends(get_admin_user)
+) -> NewsDetailResponse:
+    """
+    Update an existing news article (Admin only).
+    
+    Requires admin authentication.
+    """
+    # Find the news
+    news = next((n for n in _mock_news if n.id == news_id), None)
+    
+    if not news:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"News with id {news_id} not found",
+        )
+    
+    # Update fields if provided
+    if news_data.title is not None:
+        news.title = news_data.title
+    if news_data.description is not None:
+        news.description = news_data.description
+    if news_data.content is not None:
+        news.content = news_data.content
+    if news_data.category is not None:
+        news.category = news_data.category
+    if news_data.image_url is not None:
+        news.image_url = news_data.image_url
+    
+    news.updated_at = datetime.now()
+    
+    return NewsDetailResponse(
+        id=news.id,
+        title=news.title,
+        description=news.description,
+        content=news.content,
+        category=news.category,
+        image_url=news.image_url,
+        views=news.views,
+        created_at=news.created_at,
+        updated_at=news.updated_at,
+    )
+
+
+@router.delete("/news/{news_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_news(
+    news_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Delete a news article (Admin only).
+    
+    Requires admin authentication.
+    """
+    global _mock_news
+    
+    # Find the news
+    news = next((n for n in _mock_news if n.id == news_id), None)
+    
+    if not news:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"News with id {news_id} not found",
+        )
+    
+    # Remove from list
+    _mock_news = [n for n in _mock_news if n.id != news_id]
+    
+    return None
 

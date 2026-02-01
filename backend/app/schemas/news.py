@@ -38,3 +38,21 @@ class NewsListResponse(BaseModel):
     limit: int
     has_next: bool
 
+
+class NewsCreateRequest(BaseModel):
+    """Schema for creating a new news article."""
+    title: str
+    description: str
+    content: str
+    category: str
+    image_url: Optional[str] = None
+
+
+class NewsUpdateRequest(BaseModel):
+    """Schema for updating a news article."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    image_url: Optional[str] = None
+

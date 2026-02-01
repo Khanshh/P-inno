@@ -22,6 +22,7 @@ from app.api.v1.routes_ai_chat import router as ai_chat_router
 from app.api.v1.routes_notifications import router as notifications_router
 from app.api.v1.routes_health_assessment import router as health_assessment_router
 from app.api.v1.routes_onboarding import router as onboarding_router
+from app.api.v1.routes_admin import router as admin_router
 from app.core.config import settings
 
 
@@ -36,6 +37,9 @@ def create_app() -> FastAPI:
         title="ENA Backend API",
         description="FastAPI backend for the fertility/medical Flutter app.",
         version="1.0.0",
+        swagger_ui_parameters={
+            "persistAuthorization": True,
+        },
     )
 
     # CORS configuration
@@ -104,6 +108,7 @@ def create_app() -> FastAPI:
     app.include_router(notifications_router, prefix="/api/v1", tags=["notifications"])
     app.include_router(health_assessment_router, prefix="/api/v1", tags=["health-assessment"])
     app.include_router(onboarding_router, prefix="/api/v1", tags=["onboarding"])
+    app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
 
     return app
 
