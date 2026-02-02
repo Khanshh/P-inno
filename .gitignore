@@ -39,6 +39,7 @@ windows/flutter/ephemeral/
 venv/
 env/
 ENV/
+data/
 
 __pycache__/
 *.py[cod]

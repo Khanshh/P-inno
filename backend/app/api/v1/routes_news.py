@@ -122,17 +122,11 @@ Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. 
             created_at=datetime.now() - timedelta(days=2),
             summary="Yoga nhẹ nhàng trước khi ngủ giúp mẹ bầu thư giãn cơ bắp, giảm đau lưng, điều hòa hơi thở and cải thiện lưu thông máu. Một số động tác gợi ý gồm tư thế con bướm, con mèo-con bò và gác chân lên tường, giúp giảm phù nề và thư giãn hiệu quả.",
         ),
-    ]
-    save_news_data()
-    print(f"✅ Initialized storage with {len(_mock_news)} items")
-
-# Initialize on module load
-init_news_data()
-    News(
-        id="news-4",
-        title="Tầm quan trọng của giấc ngủ đối với sức khỏe",
-        description="Người trưởng thành cần từ 7-9 tiếng ngủ mỗi đêm để phục hồi cơ thể và tinh thần.",
-        content="""
+        News(
+            id="news-4",
+            title="Tầm quan trọng của giấc ngủ đối với sức khỏe",
+            description="Người trưởng thành cần từ 7-9 tiếng ngủ mỗi đêm để phục hồi cơ thể và tinh thần.",
+            content="""
 **Tại sao giấc ngủ lại quan trọng?**
 
 Giấc ngủ không chỉ là thời gian nghỉ ngơi mà còn là lúc cơ thể tự sửa chữa và phục hồi. Đối với phụ nữ mang thai, giấc ngủ càng trở nên quan trọng hơn bao giờ hết vì nó ảnh hưởng trực tiếp đến sức khỏe của cả mẹ và bé.
@@ -150,16 +144,16 @@ Giấc ngủ không chỉ là thời gian nghỉ ngơi mà còn là lúc cơ th�
 *   Tránh sử dụng thiết bị điện tử trước khi ngủ ít nhất 30 phút.
 *   Sử dụng gối ôm dành cho bà bầu để tìm tư thế ngủ thoải mái nhất (thường là nằm nghiêng sang trái).
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1511295742362-92c96b50484f?auto=format&fit=crop&q=80&w=1000",
-        views=1800,
-        created_at=datetime.now() - timedelta(days=1),
-    ),
-    News(
-        id="news-5",
-        title="Khí hậu Việt Nam theo mùa và ảnh hưởng sức khỏe",
-        description="Cách phòng tránh các bệnh thường gặp khi thời tiết thay đổi thất thường.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1511295742362-92c96b50484f?auto=format&fit=crop&q=80&w=1000",
+            views=1800,
+            created_at=datetime.now() - timedelta(days=1),
+        ),
+        News(
+            id="news-5",
+            title="Khí hậu Việt Nam theo mùa và ảnh hưởng sức khỏe",
+            description="Cách phòng tránh các bệnh thường gặp khi thời tiết thay đổi thất thường.",
+            content="""
 **Đặc điểm khí hậu và sức khỏe**
 
 Việt Nam có khí hậu nhiệt đới gió mùa, thời tiết thay đổi thất thường là điều kiện thuận lợi cho vi khuẩn và virus phát triển.
@@ -175,16 +169,16 @@ Việt Nam có khí hậu nhiệt đới gió mùa, thời tiết thay đổi th
 3.  **Chế độ ăn uống:** Ăn chín uống sôi, đảm bảo vệ sinh an toàn thực phẩm.
 4.  **Trang phục:** Lựa chọn trang phục phù hợp với thời tiết, chất liệu thoáng mát vào mùa hè và giữ ấm vào mùa đông.
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1000",
-        views=950,
-        created_at=datetime.now() - timedelta(hours=12),
-    ),
-    News(
-        id="news-6",
-        title="Tập thể dục buổi sáng có tốt không?",
-        description="Những lợi ích bất ngờ của việc vận động nhẹ nhàng vào khung giờ vàng buổi sáng.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1000",
+            views=950,
+            created_at=datetime.now() - timedelta(hours=12),
+        ),
+        News(
+            id="news-6",
+            title="Tập thể dục buổi sáng có tốt không?",
+            description="Những lợi ích bất ngờ của việc vận động nhẹ nhàng vào khung giờ vàng buổi sáng.",
+            content="""
 **Khởi động ngày mới tràn đầy năng lượng**
 
 Tập thể dục buổi sáng mang lại nhiều lợi ích tuyệt vời, đặc biệt là cho mẹ bầu:
@@ -199,16 +193,16 @@ Tập thể dục buổi sáng mang lại nhiều lợi ích tuyệt vời, đ�
 *   Khởi động kỹ các khớp trước khi vào bài tập chính.
 *   Lắng nghe cơ thể, không tập quá sức. Nếu thấy mệt, khó thở hoặc đau bụng, hãy dừng lại ngay.
         """,
-        category="Tập luyện",
-        image_url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=1000",
-        views=1500,
-        created_at=datetime.now() - timedelta(hours=5),
-    ),
-    News(
-        id="news-7",
-        title="Chế độ ăn Eat Clean cho người bận rộn",
-        description="Gợi ý thực đơn nhanh gọn, đầy đủ dinh dưỡng cho dân văn phòng.",
-        content="""
+            category="Tập luyện",
+            image_url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=1000",
+            views=1500,
+            created_at=datetime.now() - timedelta(hours=5),
+        ),
+        News(
+            id="news-7",
+            title="Chế độ ăn Eat Clean cho người bận rộn",
+            description="Gợi ý thực đơn nhanh gọn, đầy đủ dinh dưỡng cho dân văn phòng.",
+            content="""
 **Eat Clean là gì?**
 
 Eat Clean là chế độ ăn ưu tiên thực phẩm tươi sống, nguyên cám và hạn chế tối đa thực phẩm chế biến sẵn, nhiều dầu mỡ, đường và phụ gia. Đây là chế độ ăn rất tốt cho sức khỏe, giúp kiểm soát cân nặng và cung cấp đầy đủ dưỡng chất.
@@ -226,16 +220,16 @@ Eat Clean là chế độ ăn ưu tiên thực phẩm tươi sống, nguyên cá
 *   **Chiều:** Một nắm hạt hạnh nhân hoặc óc chó.
 *   **Tối:** Cá hồi nướng và salad rau củ.
         """,
-        category="Dinh dưỡng",
-        image_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1000",
-        views=5500,
-        created_at=datetime.now() - timedelta(days=7),
-    ),
-    News(
-        id="news-8",
-        title="Lợi ích của việc uống đủ nước mỗi ngày",
-        description="Nước giúp thanh lọc cơ thể, làm đẹp da và hỗ trợ giảm cân hiệu quả.",
-        content="""
+            category="Dinh dưỡng",
+            image_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1000",
+            views=5500,
+            created_at=datetime.now() - timedelta(days=7),
+        ),
+        News(
+            id="news-8",
+            title="Lợi ích của việc uống đủ nước mỗi ngày",
+            description="Nước giúp thanh lọc cơ thể, làm đẹp da và hỗ trợ giảm cân hiệu quả.",
+            content="""
 **Vai trò của nước đối với cơ thể**
 
 Cơ thể chúng ta chiếm khoảng 70% là nước. Nước tham gia vào hầu hết các quá trình trao đổi chất:
@@ -258,12 +252,18 @@ Uống đủ nước càng quan trọng hơn để:
 
 Mẹ bầu nên uống khoảng 8-10 cốc nước (tương đương 2-2.5 lít) mỗi ngày. Có thể bổ sung thêm từ nước ép trái cây, canh, súp...
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000",
-        views=800,
-        created_at=datetime.now() - timedelta(days=1),
-    ),
-]
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000",
+            views=800,
+            created_at=datetime.now() - timedelta(days=1),
+        ),
+    ]
+    save_news_data()
+    print(f"✅ Initialized storage with {len(_mock_news)} items")
+
+# Initialize on module load
+init_news_data()
+
 
 
 def _format_time_ago(dt: datetime) -> str:
