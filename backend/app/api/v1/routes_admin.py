@@ -170,7 +170,7 @@ async def regenerate_summaries(
     - Default uses FREE fallback (no OpenAI cost)
     - Logs all operations for tracking
     """
-    from app.api.v1.routes_news import _mock_news
+    from app.api.v1.routes_news import _mock_news, save_news_data
     from ai.features.news_summarizer import summarize_news_content, generate_fallback_summary
     
     total = len(_mock_news)
@@ -230,6 +230,9 @@ async def regenerate_summaries(
         except Exception as e:
             failed += 1
             print(f"   ❌ Error: {e}")
+    
+    # Save the updated news with summaries to disk
+    save_news_data()
     
     print(f"\n{'='*60}")
     print(f"✅ Summary regeneration complete!")

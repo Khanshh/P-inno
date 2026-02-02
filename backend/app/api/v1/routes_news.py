@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 from fastapi import APIRouter, Query, Depends, HTTPException, status
 from typing import List, Optional
 from pydantic import BaseModel
@@ -6,17 +7,36 @@ from pydantic import BaseModel
 from app.schemas.news import NewsResponse, NewsListResponse, NewsDetailResponse
 from app.models.news import News
 from app.core.dependencies import get_admin_user
+from app.core.json_storage import save_to_json, load_from_json
 from ai.features.news_summarizer import summarize_news_content
 
 router = APIRouter()
 
-# Mock data for news
-_mock_news: List[News] = [
-    News(
-        id="news-1",
-        title="Cập nhật hướng dẫn chăm sóc thai kỳ mới",
-        description="Các bác sĩ khuyến cáo lịch khám định kỳ và chế độ dinh dưỡng hợp lý.",
-        content="""
+NEWS_STORAGE_PATH = os.path.join(os.getcwd(), "data", "news.json")
+
+def save_news_data():
+    """Helper to save current state to disk."""
+    save_to_json(_mock_news, NEWS_STORAGE_PATH)
+
+# Global state
+_mock_news: List[News] = []
+
+def init_news_data():
+    """Initialize news data from disk or hardcoded defaults."""
+    global _mock_news
+    loaded = load_from_json(NEWS_STORAGE_PATH, News)
+    if loaded:
+        _mock_news = loaded
+        print(f"📦 Loaded {len(_mock_news)} news articles from {NEWS_STORAGE_PATH}")
+        return
+
+    # Default data if no file exists
+    _mock_news = [
+        News(
+            id="news-1",
+            title="Cập nhật hướng dẫn chăm sóc thai kỳ mới",
+            description="Các bác sĩ khuyến cáo lịch khám định kỳ và chế độ dinh dưỡng hợp lý.",
+            content="""
 **1. Lịch khám thai định kỳ**
 
 Việc khám thai định kỳ là vô cùng quan trọng để theo dõi sự phát triển của thai nhi và sức khỏe của người mẹ. Theo hướng dẫn mới nhất từ Bộ Y tế, mẹ bầu nên thực hiện ít nhất 8 lần khám thai trong suốt thai kỳ, chia làm 3 giai đoạn chính:
@@ -38,17 +58,17 @@ Dinh dưỡng đóng vai trò then chốt cho sự phát triển trí não và t
 
 Trừ khi có chỉ định đặc biệt từ bác sĩ, mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga hoặc bơi lội để giảm căng thẳng, cải thiện lưu thông máu và dễ sinh hơn.
         """,
-        category="Thai kỳ",
-        image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
-        views=1200,
-        created_at=datetime.now() - timedelta(hours=2),
-        summary="Hướng dẫn mới nhất về chăm sóc thai kỳ bao gồm lịch khám định kỳ 8 lần, chế độ dinh dưỡng đầy đủ 4 nhóm chất và bổ sung axit folic, sắt, canxi. Mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga để cải thiện sức khỏe và chuẩn bị tốt cho sinh nở.",
-    ),
-    News(
-        id="news-2",
-        title="Mẹ bầu cần lưu ý gì mùa lạnh?",
-        description="Giữ ấm, bổ sung vitamin và theo dõi chỉ số sức khỏe hằng ngày.",
-        content="""
+            category="Thai kỳ",
+            image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
+            views=1200,
+            created_at=datetime.now() - timedelta(hours=2),
+            summary="Hướng dẫn mới nhất về chăm sóc thai kỳ bao gồm lịch khám định kỳ 8 lần, chế độ dinh dưỡng đầy đủ 4 nhóm chất và bổ sung axit folic, sắt, canxi. Mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga để cải thiện sức khỏe và chuẩn bị tốt cho sinh nở.",
+        ),
+        News(
+            id="news-2",
+            title="Mẹ bầu cần lưu ý gì mùa lạnh?",
+            description="Giữ ấm, bổ sung vitamin và theo dõi chỉ số sức khỏe hằng ngày.",
+            content="""
 **1. Giữ ấm cơ thể**
 
 Khi nhiệt độ xuống thấp, hệ miễn dịch của mẹ bầu thường nhạy cảm hơn. Việc giữ ấm là ưu tiên hàng đầu:
@@ -69,17 +89,17 @@ Mùa lạnh là thời điểm dễ mắc các bệnh đường hô hấp như c
 
 Không khí hanh khô có thể khiến da mẹ bầu bị nứt nẻ, ngứa ngáy, đặc biệt là vùng bụng đang căng ra. Hãy sử dụng kem dưỡng ẩm an toàn cho bà bầu và uống đủ nước để duy trì độ ẩm cho da.
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
-        views=860,
-        created_at=datetime.now() - timedelta(days=1),
-        summary="Mùa lạnh, mẹ bầu cần giữ ấm cơ thể, mặc đủ ấm và tránh tắm nước quá lạnh. Tăng cường sức đề kháng bằng cách ăn nhiều trái cây giàu Vitamin C, uống nước ấm và có thể tiêm phòng cúm. Chăm sóc làn da bằng kem dưỡng ẩm an toàn để tránh nứt nẻ, ngứa ngáy.",
-    ),
-    News(
-        id="news-3",
-        title="Bài tập nhẹ giúp ngủ ngon hơn",
-        description="Thực hiện 10 phút yoga buổi tối giúp mẹ bầu thư giãn cơ thể.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
+            views=860,
+            created_at=datetime.now() - timedelta(days=1),
+            summary="Mùa lạnh, mẹ bầu cần giữ ấm cơ thể, mặc đủ ấm và tránh tắm nước quá lạnh. Tăng cường sức đề kháng bằng cách ăn nhiều trái cây giàu Vitamin C, uống nước ấm và có thể tiêm phòng cúm. Chăm sóc làn da bằng kem dưỡng ẩm an toàn để tránh nứt nẻ, ngứa ngáy.",
+        ),
+        News(
+            id="news-3",
+            title="Bài tập nhẹ giúp ngủ ngon hơn",
+            description="Thực hiện 10 phút yoga buổi tối giúp mẹ bầu thư giãn cơ thể.",
+            content="""
 **Lợi ích của Yoga đối với giấc ngủ**
 
 Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. Tuy nhiên, sự thay đổi nội tiết tố và sự lớn lên của thai nhi thường gây khó ngủ. Yoga nhẹ nhàng trước khi ngủ giúp:
@@ -96,12 +116,18 @@ Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. 
 
 *Lưu ý: Luôn tham khảo ý kiến bác sĩ trước khi bắt đầu bất kỳ chế độ tập luyện nào.*
         """,
-        category="Tập luyện",
-        image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
-        views=2300,
-        created_at=datetime.now() - timedelta(days=2),
-        summary="Yoga nhẹ nhàng trước khi ngủ giúp mẹ bầu thư giãn cơ bắp, giảm đau lưng, điều hòa hơi thở và cải thiện lưu thông máu. Một số động tác gợi ý gồm tư thế con bướm, con mèo-con bò và gác chân lên tường, giúp giảm phù nề và thư giãn hiệu quả.",
-    ),
+            category="Tập luyện",
+            image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
+            views=2300,
+            created_at=datetime.now() - timedelta(days=2),
+            summary="Yoga nhẹ nhàng trước khi ngủ giúp mẹ bầu thư giãn cơ bắp, giảm đau lưng, điều hòa hơi thở and cải thiện lưu thông máu. Một số động tác gợi ý gồm tư thế con bướm, con mèo-con bò và gác chân lên tường, giúp giảm phù nề và thư giãn hiệu quả.",
+        ),
+    ]
+    save_news_data()
+    print(f"✅ Initialized storage with {len(_mock_news)} items")
+
+# Initialize on module load
+init_news_data()
     News(
         id="news-4",
         title="Tầm quan trọng của giấc ngủ đối với sức khỏe",
@@ -440,6 +466,7 @@ async def create_news(
     
     # Add to mock database
     _mock_news.append(new_news)
+    save_news_data()
     
     return NewsDetailResponse(
         id=new_news.id,
@@ -488,6 +515,7 @@ async def update_news(
         news.image_url = news_data.image_url
     
     news.updated_at = datetime.now()
+    save_news_data()
     
     return NewsDetailResponse(
         id=news.id,
