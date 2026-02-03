@@ -15,6 +15,7 @@ class LoginResponse(BaseModel):
     token: TokenResponse
     user_full_name: str
     patient_code: str
+    role: str
 
 
 

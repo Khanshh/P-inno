@@ -8,6 +8,7 @@ class NewsBase(BaseModel):
     description: str
     category: Optional[str] = None
     image_url: Optional[str] = None
+    summary: Optional[str] = None  # AI-generated summary
 
 
 class NewsResponse(NewsBase):
@@ -15,6 +16,7 @@ class NewsResponse(NewsBase):
     views: int
     time: str  # Formatted time like "2 giờ trước"
     created_at: Optional[datetime] = None
+    summary: Optional[str] = None  # AI-generated summary
 
     class Config:
         from_attributes = True
@@ -23,6 +25,7 @@ class NewsResponse(NewsBase):
 class NewsDetailResponse(NewsBase):
     id: str
     content: Optional[str] = None
+    summary: Optional[str] = None  # AI-generated summary
     views: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -37,4 +40,22 @@ class NewsListResponse(BaseModel):
     page: int
     limit: int
     has_next: bool
+
+
+class NewsCreateRequest(BaseModel):
+    """Schema for creating a new news article."""
+    title: str
+    description: str
+    content: str
+    category: str
+    image_url: Optional[str] = None
+
+
+class NewsUpdateRequest(BaseModel):
+    """Schema for updating a news article."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    image_url: Optional[str] = None
 

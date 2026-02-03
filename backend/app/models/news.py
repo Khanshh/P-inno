@@ -9,6 +9,7 @@ class News:
     title: str
     description: str
     content: Optional[str] = None
+    summary: Optional[str] = None  # AI-generated summary
     category: Optional[str] = None
     image_url: Optional[str] = None
     views: int = 0

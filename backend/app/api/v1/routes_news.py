@@ -1,19 +1,42 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Query
+import os
+from fastapi import APIRouter, Query, Depends, HTTPException, status
 from typing import List, Optional
+from pydantic import BaseModel
 
 from app.schemas.news import NewsResponse, NewsListResponse, NewsDetailResponse
 from app.models.news import News
+from app.core.dependencies import get_admin_user
+from app.core.json_storage import save_to_json, load_from_json
+from ai.features.news_summarizer import summarize_news_content
 
 router = APIRouter()
 
-# Mock data for news
-_mock_news: List[News] = [
-    News(
-        id="news-1",
-        title="Cập nhật hướng dẫn chăm sóc thai kỳ mới",
-        description="Các bác sĩ khuyến cáo lịch khám định kỳ và chế độ dinh dưỡng hợp lý.",
-        content="""
+NEWS_STORAGE_PATH = os.path.join(os.getcwd(), "data", "news.json")
+
+def save_news_data():
+    """Helper to save current state to disk."""
+    save_to_json(_mock_news, NEWS_STORAGE_PATH)
+
+# Global state
+_mock_news: List[News] = []
+
+def init_news_data():
+    """Initialize news data from disk or hardcoded defaults."""
+    global _mock_news
+    loaded = load_from_json(NEWS_STORAGE_PATH, News)
+    if loaded:
+        _mock_news = loaded
+        print(f"📦 Loaded {len(_mock_news)} news articles from {NEWS_STORAGE_PATH}")
+        return
+
+    # Default data if no file exists
+    _mock_news = [
+        News(
+            id="news-1",
+            title="Cập nhật hướng dẫn chăm sóc thai kỳ mới",
+            description="Các bác sĩ khuyến cáo lịch khám định kỳ và chế độ dinh dưỡng hợp lý.",
+            content="""
 **1. Lịch khám thai định kỳ**
 
 Việc khám thai định kỳ là vô cùng quan trọng để theo dõi sự phát triển của thai nhi và sức khỏe của người mẹ. Theo hướng dẫn mới nhất từ Bộ Y tế, mẹ bầu nên thực hiện ít nhất 8 lần khám thai trong suốt thai kỳ, chia làm 3 giai đoạn chính:
@@ -35,16 +58,17 @@ Dinh dưỡng đóng vai trò then chốt cho sự phát triển trí não và t
 
 Trừ khi có chỉ định đặc biệt từ bác sĩ, mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga hoặc bơi lội để giảm căng thẳng, cải thiện lưu thông máu và dễ sinh hơn.
         """,
-        category="Thai kỳ",
-        image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
-        views=1200,
-        created_at=datetime.now() - timedelta(hours=2),
-    ),
-    News(
-        id="news-2",
-        title="Mẹ bầu cần lưu ý gì mùa lạnh?",
-        description="Giữ ấm, bổ sung vitamin và theo dõi chỉ số sức khỏe hằng ngày.",
-        content="""
+            category="Thai kỳ",
+            image_url="https://images.unsplash.com/photo-1535402803947-a950d5f71474?auto=format&fit=crop&q=80&w=1000",
+            views=1200,
+            created_at=datetime.now() - timedelta(hours=2),
+            summary="Hướng dẫn mới nhất về chăm sóc thai kỳ bao gồm lịch khám định kỳ 8 lần, chế độ dinh dưỡng đầy đủ 4 nhóm chất và bổ sung axit folic, sắt, canxi. Mẹ bầu nên duy trì vận động nhẹ nhàng như đi bộ, yoga để cải thiện sức khỏe và chuẩn bị tốt cho sinh nở.",
+        ),
+        News(
+            id="news-2",
+            title="Mẹ bầu cần lưu ý gì mùa lạnh?",
+            description="Giữ ấm, bổ sung vitamin và theo dõi chỉ số sức khỏe hằng ngày.",
+            content="""
 **1. Giữ ấm cơ thể**
 
 Khi nhiệt độ xuống thấp, hệ miễn dịch của mẹ bầu thường nhạy cảm hơn. Việc giữ ấm là ưu tiên hàng đầu:
@@ -65,16 +89,17 @@ Mùa lạnh là thời điểm dễ mắc các bệnh đường hô hấp như c
 
 Không khí hanh khô có thể khiến da mẹ bầu bị nứt nẻ, ngứa ngáy, đặc biệt là vùng bụng đang căng ra. Hãy sử dụng kem dưỡng ẩm an toàn cho bà bầu và uống đủ nước để duy trì độ ẩm cho da.
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
-        views=860,
-        created_at=datetime.now() - timedelta(days=1),
-    ),
-    News(
-        id="news-3",
-        title="Bài tập nhẹ giúp ngủ ngon hơn",
-        description="Thực hiện 10 phút yoga buổi tối giúp mẹ bầu thư giãn cơ thể.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=1000",
+            views=860,
+            created_at=datetime.now() - timedelta(days=1),
+            summary="Mùa lạnh, mẹ bầu cần giữ ấm cơ thể, mặc đủ ấm và tránh tắm nước quá lạnh. Tăng cường sức đề kháng bằng cách ăn nhiều trái cây giàu Vitamin C, uống nước ấm và có thể tiêm phòng cúm. Chăm sóc làn da bằng kem dưỡng ẩm an toàn để tránh nứt nẻ, ngứa ngáy.",
+        ),
+        News(
+            id="news-3",
+            title="Bài tập nhẹ giúp ngủ ngon hơn",
+            description="Thực hiện 10 phút yoga buổi tối giúp mẹ bầu thư giãn cơ thể.",
+            content="""
 **Lợi ích của Yoga đối với giấc ngủ**
 
 Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. Tuy nhiên, sự thay đổi nội tiết tố và sự lớn lên của thai nhi thường gây khó ngủ. Yoga nhẹ nhàng trước khi ngủ giúp:
@@ -91,16 +116,17 @@ Giấc ngủ ngon là "liều thuốc" tự nhiên tốt nhất cho mẹ bầu. 
 
 *Lưu ý: Luôn tham khảo ý kiến bác sĩ trước khi bắt đầu bất kỳ chế độ tập luyện nào.*
         """,
-        category="Tập luyện",
-        image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
-        views=2300,
-        created_at=datetime.now() - timedelta(days=2),
-    ),
-    News(
-        id="news-4",
-        title="Tầm quan trọng của giấc ngủ đối với sức khỏe",
-        description="Người trưởng thành cần từ 7-9 tiếng ngủ mỗi đêm để phục hồi cơ thể và tinh thần.",
-        content="""
+            category="Tập luyện",
+            image_url="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=1000",
+            views=2300,
+            created_at=datetime.now() - timedelta(days=2),
+            summary="Yoga nhẹ nhàng trước khi ngủ giúp mẹ bầu thư giãn cơ bắp, giảm đau lưng, điều hòa hơi thở and cải thiện lưu thông máu. Một số động tác gợi ý gồm tư thế con bướm, con mèo-con bò và gác chân lên tường, giúp giảm phù nề và thư giãn hiệu quả.",
+        ),
+        News(
+            id="news-4",
+            title="Tầm quan trọng của giấc ngủ đối với sức khỏe",
+            description="Người trưởng thành cần từ 7-9 tiếng ngủ mỗi đêm để phục hồi cơ thể và tinh thần.",
+            content="""
 **Tại sao giấc ngủ lại quan trọng?**
 
 Giấc ngủ không chỉ là thời gian nghỉ ngơi mà còn là lúc cơ thể tự sửa chữa và phục hồi. Đối với phụ nữ mang thai, giấc ngủ càng trở nên quan trọng hơn bao giờ hết vì nó ảnh hưởng trực tiếp đến sức khỏe của cả mẹ và bé.
@@ -118,16 +144,16 @@ Giấc ngủ không chỉ là thời gian nghỉ ngơi mà còn là lúc cơ th�
 *   Tránh sử dụng thiết bị điện tử trước khi ngủ ít nhất 30 phút.
 *   Sử dụng gối ôm dành cho bà bầu để tìm tư thế ngủ thoải mái nhất (thường là nằm nghiêng sang trái).
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1511295742362-92c96b50484f?auto=format&fit=crop&q=80&w=1000",
-        views=1800,
-        created_at=datetime.now() - timedelta(days=1),
-    ),
-    News(
-        id="news-5",
-        title="Khí hậu Việt Nam theo mùa và ảnh hưởng sức khỏe",
-        description="Cách phòng tránh các bệnh thường gặp khi thời tiết thay đổi thất thường.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1511295742362-92c96b50484f?auto=format&fit=crop&q=80&w=1000",
+            views=1800,
+            created_at=datetime.now() - timedelta(days=1),
+        ),
+        News(
+            id="news-5",
+            title="Khí hậu Việt Nam theo mùa và ảnh hưởng sức khỏe",
+            description="Cách phòng tránh các bệnh thường gặp khi thời tiết thay đổi thất thường.",
+            content="""
 **Đặc điểm khí hậu và sức khỏe**
 
 Việt Nam có khí hậu nhiệt đới gió mùa, thời tiết thay đổi thất thường là điều kiện thuận lợi cho vi khuẩn và virus phát triển.
@@ -143,16 +169,16 @@ Việt Nam có khí hậu nhiệt đới gió mùa, thời tiết thay đổi th
 3.  **Chế độ ăn uống:** Ăn chín uống sôi, đảm bảo vệ sinh an toàn thực phẩm.
 4.  **Trang phục:** Lựa chọn trang phục phù hợp với thời tiết, chất liệu thoáng mát vào mùa hè và giữ ấm vào mùa đông.
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1000",
-        views=950,
-        created_at=datetime.now() - timedelta(hours=12),
-    ),
-    News(
-        id="news-6",
-        title="Tập thể dục buổi sáng có tốt không?",
-        description="Những lợi ích bất ngờ của việc vận động nhẹ nhàng vào khung giờ vàng buổi sáng.",
-        content="""
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&q=80&w=1000",
+            views=950,
+            created_at=datetime.now() - timedelta(hours=12),
+        ),
+        News(
+            id="news-6",
+            title="Tập thể dục buổi sáng có tốt không?",
+            description="Những lợi ích bất ngờ của việc vận động nhẹ nhàng vào khung giờ vàng buổi sáng.",
+            content="""
 **Khởi động ngày mới tràn đầy năng lượng**
 
 Tập thể dục buổi sáng mang lại nhiều lợi ích tuyệt vời, đặc biệt là cho mẹ bầu:
@@ -167,16 +193,16 @@ Tập thể dục buổi sáng mang lại nhiều lợi ích tuyệt vời, đ�
 *   Khởi động kỹ các khớp trước khi vào bài tập chính.
 *   Lắng nghe cơ thể, không tập quá sức. Nếu thấy mệt, khó thở hoặc đau bụng, hãy dừng lại ngay.
         """,
-        category="Tập luyện",
-        image_url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=1000",
-        views=1500,
-        created_at=datetime.now() - timedelta(hours=5),
-    ),
-    News(
-        id="news-7",
-        title="Chế độ ăn Eat Clean cho người bận rộn",
-        description="Gợi ý thực đơn nhanh gọn, đầy đủ dinh dưỡng cho dân văn phòng.",
-        content="""
+            category="Tập luyện",
+            image_url="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=1000",
+            views=1500,
+            created_at=datetime.now() - timedelta(hours=5),
+        ),
+        News(
+            id="news-7",
+            title="Chế độ ăn Eat Clean cho người bận rộn",
+            description="Gợi ý thực đơn nhanh gọn, đầy đủ dinh dưỡng cho dân văn phòng.",
+            content="""
 **Eat Clean là gì?**
 
 Eat Clean là chế độ ăn ưu tiên thực phẩm tươi sống, nguyên cám và hạn chế tối đa thực phẩm chế biến sẵn, nhiều dầu mỡ, đường và phụ gia. Đây là chế độ ăn rất tốt cho sức khỏe, giúp kiểm soát cân nặng và cung cấp đầy đủ dưỡng chất.
@@ -194,16 +220,16 @@ Eat Clean là chế độ ăn ưu tiên thực phẩm tươi sống, nguyên cá
 *   **Chiều:** Một nắm hạt hạnh nhân hoặc óc chó.
 *   **Tối:** Cá hồi nướng và salad rau củ.
         """,
-        category="Dinh dưỡng",
-        image_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1000",
-        views=5500,
-        created_at=datetime.now() - timedelta(days=7),
-    ),
-    News(
-        id="news-8",
-        title="Lợi ích của việc uống đủ nước mỗi ngày",
-        description="Nước giúp thanh lọc cơ thể, làm đẹp da và hỗ trợ giảm cân hiệu quả.",
-        content="""
+            category="Dinh dưỡng",
+            image_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1000",
+            views=5500,
+            created_at=datetime.now() - timedelta(days=7),
+        ),
+        News(
+            id="news-8",
+            title="Lợi ích của việc uống đủ nước mỗi ngày",
+            description="Nước giúp thanh lọc cơ thể, làm đẹp da và hỗ trợ giảm cân hiệu quả.",
+            content="""
 **Vai trò của nước đối với cơ thể**
 
 Cơ thể chúng ta chiếm khoảng 70% là nước. Nước tham gia vào hầu hết các quá trình trao đổi chất:
@@ -226,12 +252,18 @@ Uống đủ nước càng quan trọng hơn để:
 
 Mẹ bầu nên uống khoảng 8-10 cốc nước (tương đương 2-2.5 lít) mỗi ngày. Có thể bổ sung thêm từ nước ép trái cây, canh, súp...
         """,
-        category="Sức khỏe",
-        image_url="https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000",
-        views=800,
-        created_at=datetime.now() - timedelta(days=1),
-    ),
-]
+            category="Sức khỏe",
+            image_url="https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&q=80&w=1000",
+            views=800,
+            created_at=datetime.now() - timedelta(days=1),
+        ),
+    ]
+    save_news_data()
+    print(f"✅ Initialized storage with {len(_mock_news)} items")
+
+# Initialize on module load
+init_news_data()
+
 
 
 def _format_time_ago(dt: datetime) -> str:
@@ -311,6 +343,7 @@ async def get_news(
             views=n.views,
             time=_format_time_ago(n.created_at) if n.created_at else "Không xác định",
             created_at=n.created_at,
+            summary=n.summary,
         )
         for n in paginated_news
     ]
@@ -348,5 +381,178 @@ async def get_news_detail(news_id: str) -> NewsDetailResponse:
         views=news.views,
         created_at=news.created_at,
         updated_at=news.updated_at,
+        summary=news.summary,
     )
+
+
+# Admin-only endpoints
+
+class NewsCreateRequest(BaseModel):
+    """Schema for creating a new news article."""
+    title: str
+    description: str
+    content: str
+    category: str
+    image_url: Optional[str] = None
+
+
+class NewsUpdateRequest(BaseModel):
+    """Schema for updating a news article."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    image_url: Optional[str] = None
+
+
+@router.post("/news", response_model=NewsDetailResponse, status_code=status.HTTP_201_CREATED)
+async def create_news(
+    news_data: NewsCreateRequest,
+    admin_user: dict = Depends(get_admin_user)
+) -> NewsDetailResponse:
+    """
+    Create a new news article (Admin only).
+    
+    Requires admin authentication.
+    Automatically generates AI summary from content.
+    """
+    # Generate new ID
+    new_id = f"news-{len(_mock_news) + 1}"
+    
+    # Generate AI summary from content (ONLY if not already provided)
+    summary = None
+    ai_category = None
+    
+    if news_data.content and not hasattr(news_data, 'summary'):
+        # Only generate if summary not provided in request
+        try:
+            print(f"🤖 Generating AI summary and category for news: {news_data.title}")
+            ai_result = await summarize_news_content(
+                title=news_data.title,
+                content=news_data.content,
+            )
+            if ai_result:
+                summary = ai_result.get("summary")
+                ai_category = ai_result.get("category")
+                print(f"✅ AI result: Category={ai_category}, Summary={summary[:50]}...")
+            else:
+                print("⚠️  AI generation returned None")
+        except Exception as e:
+            print(f"❌ Error during AI generation: {e}")
+            summary = None
+    elif hasattr(news_data, 'summary') and news_data.summary:
+        # Use provided summary (skipping AI generation)
+        summary = news_data.summary
+        print(f"ℹ️  Using provided summary (skipping AI generation)")
+    
+    # Use AI category if admin didn't provide one or provided a placeholder
+    final_category = news_data.category
+    if (not final_category or final_category == "string") and ai_category:
+        final_category = ai_category
+        print(f"🏷️  Auto-categorized as: {final_category}")
+    
+    # Create new news object
+    new_news = News(
+        id=new_id,
+        title=news_data.title,
+        description=news_data.description,
+        content=news_data.content,
+        summary=summary,
+        category=final_category,
+        image_url=news_data.image_url,
+        views=0,
+        created_at=datetime.now(),
+    )
+    
+    # Add to mock database
+    _mock_news.append(new_news)
+    save_news_data()
+    
+    return NewsDetailResponse(
+        id=new_news.id,
+        title=new_news.title,
+        description=new_news.description,
+        content=new_news.content,
+        summary=new_news.summary,  # Return summary in response
+        category=new_news.category,
+        image_url=new_news.image_url,
+        views=new_news.views,
+        created_at=new_news.created_at,
+        updated_at=new_news.updated_at,
+    )
+
+
+@router.put("/news/{news_id}", response_model=NewsDetailResponse)
+async def update_news(
+    news_id: str,
+    news_data: NewsUpdateRequest,
+    admin_user: dict = Depends(get_admin_user)
+) -> NewsDetailResponse:
+    """
+    Update an existing news article (Admin only).
+    
+    Requires admin authentication.
+    """
+    # Find the news
+    news = next((n for n in _mock_news if n.id == news_id), None)
+    
+    if not news:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"News with id {news_id} not found",
+        )
+    
+    # Update fields if provided
+    if news_data.title is not None:
+        news.title = news_data.title
+    if news_data.description is not None:
+        news.description = news_data.description
+    if news_data.content is not None:
+        news.content = news_data.content
+    if news_data.category is not None:
+        news.category = news_data.category
+    if news_data.image_url is not None:
+        news.image_url = news_data.image_url
+    
+    news.updated_at = datetime.now()
+    save_news_data()
+    
+    return NewsDetailResponse(
+        id=news.id,
+        title=news.title,
+        description=news.description,
+        content=news.content,
+        category=news.category,
+        image_url=news.image_url,
+        views=news.views,
+        created_at=news.created_at,
+        updated_at=news.updated_at,
+    )
+
+
+@router.delete("/news/{news_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_news(
+    news_id: str,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """
+    Delete a news article (Admin only).
+    
+    Requires admin authentication.
+    """
+    global _mock_news
+    
+    # Find the news
+    news = next((n for n in _mock_news if n.id == news_id), None)
+    
+    if not news:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"News with id {news_id} not found",
+        )
+    
+    # Remove from list
+    _mock_news = [n for n in _mock_news if n.id != news_id]
+    
+    return None
 

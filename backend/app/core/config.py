@@ -26,6 +26,7 @@ class Settings:
 
     # Mock auth configuration (still using in-memory users for now)
     MOCK_ACCESS_TOKEN: str = os.getenv("MOCK_ACCESS_TOKEN", "mock-access-token")
+    ADMIN_ACCESS_TOKEN: str = os.getenv("ADMIN_ACCESS_TOKEN", "admin-token")
 
 
 settings = Settings()
