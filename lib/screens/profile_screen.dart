@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/user_model.dart';
 import 'register_patient_screen.dart';
+import 'patient_detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,6 +16,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfileModel? _profile;
   bool _isLoading = true;
   String? _error;
+  
+  // Local state for demo purposes
+  final List<Map<String, dynamic>> profiles = [];
 
   // Define the primary color
   final Color _primaryColor = const Color(0xFF73C6D9);
@@ -43,6 +47,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  // Callback when creating new patient
+  void _onPatientCreated(Map<String, dynamic> data) {
+    setState(() {
+      profiles.add(data);
+    });
   }
 
   @override
@@ -97,11 +108,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   alignment: Alignment.centerLeft,
                 ),
                 const Spacer(),
-                // Optional settings icon
-                // IconButton(
-                //   icon: const Icon(Icons.settings, color: Colors.white),
-                //   onPressed: () {},
-                // ),
               ],
             ),
             const Expanded(child: SizedBox()), // Push content to match design
@@ -167,10 +173,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const RegisterPatientScreen()),
               );
+              
+              if (result != null && result is Map<String, dynamic>) {
+                 setState(() {
+                    profiles.add(result);
+                 });
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,
@@ -257,50 +269,135 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 16),
+        if (profiles.isEmpty)
         // Empty State Container
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            // Light solid border as requested (or could be dashed if implemented)
-            border: Border.all(color: _primaryColor.withOpacity(0.3), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                spreadRadius: 2,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Icon Hospital/Profile
-              Icon(Icons.assignment_ind_outlined, size: 60, color: _primaryColor),
-              const SizedBox(height: 16),
-              const Text(
-                'Không có hồ sơ nào',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF555555),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _primaryColor.withOpacity(0.3), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tạo hồ sơ mới hoặc đăng nhập để\nđồng bộ dữ liệu',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF888888),
-                  height: 1.4,
+              ],
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.assignment_ind_outlined, size: 60, color: _primaryColor),
+                const SizedBox(height: 16),
+                const Text(
+                  'Không có hồ sơ nào',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF555555),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Tạo hồ sơ mới hoặc đăng nhập để\nđồng bộ dữ liệu',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF888888),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: profiles.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final patient = profiles[index];
+              return InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PatientDetailScreen(patientData: patient),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: _primaryColor,
+                        child: const Icon(Icons.person, color: Colors.white, size: 30),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              patient['fullName'] ?? 'Chưa đặt tên',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Mã BHYT: ${patient['bhyt']?.toString().isNotEmpty == true ? patient['bhyt'] : 'Chưa có'}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (patient['bhyt']?.toString().isNotEmpty == true)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.withOpacity(0.3)),
+                          ),
+                          child: const Text(
+                            'Có BHYT',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-        ),
       ],
     );
   }

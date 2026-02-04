@@ -67,17 +67,30 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Process data
+      // Create Mock Data Object
+      final newPatientData = {
+        'fullName': _nameController.text,
+        'dob': _dobController.text,
+        'gender': _selectedGender,
+        'cccd': _cccdController.text,
+        'bhyt': _bhytController.text,
+        'ethnicity': _selectedEthnicity,
+        'phone': _phoneController.text,
+        'email': _emailController.text,
+        'address': _addressController.text,
+      };
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đang xử lý đăng ký...')),
       );
+
       // Simulate API call or navigation
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Đăng ký thành công!')),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, newPatientData);
         }
       });
     }
