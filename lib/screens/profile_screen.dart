@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/login_dialog.dart';
 import '../services/api_service.dart';
 import '../models/user_model.dart';
-import 'medical_record_screen.dart';
+import 'register_patient_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,6 +15,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserProfileModel? _profile;
   bool _isLoading = true;
   String? _error;
+
+  // Define the primary color
+  final Color _primaryColor = const Color(0xFF73C6D9);
 
   @override
   void initState() {
@@ -46,25 +48,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF8F9FA), // Extremely light gray/white
       body: Column(
         children: [
           _buildHeader(context),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _profile != null
-                          ? _buildProfileCard(context)
-                          : _buildLoginCard(context),
-                  const SizedBox(height: 20),
-
-                  _buildBenefitsCard(),
-                  const SizedBox(height: 20),
-                  _buildSecurityCard(),
+                  _buildCreateProfileSection(),
+                  const SizedBox(height: 32),
+                  _buildProfileListSection(),
                 ],
               ),
             ),
@@ -75,316 +71,237 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    // Header takes about 20-25% of screen height.
+    double height = MediaQuery.of(context).size.height * 0.22;
+
     return Container(
-      height: 200,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF73C6D9), // Solid color as per Step 40
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
+      height: height,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      decoration: BoxDecoration(
+        color: _primaryColor,
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Positioned(
-              top: 10,
-              left: 10,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                ),
+                const Spacer(),
+                // Optional settings icon
+                // IconButton(
+                //   icon: const Icon(Icons.settings, color: Colors.white),
+                //   onPressed: () {},
+                // ),
+              ],
             ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Hồ Sơ Cá Nhân',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+            const Expanded(child: SizedBox()), // Push content to match design
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 35, color: Colors.grey[400]),
+                  // Use _profile?.avatarUrl if available
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _profile?.fullName ?? 'Nguyễn Văn A',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _profile != null ? 'Thành viên chính thức' : 'Chưa cập nhật thông tin',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Quản lý thông tin và tài khoản của bạn',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 10),
-          const SizedBox(
-            width: 80,
-            height: 80,
-            child: CircleAvatar(
-              backgroundColor: Color(0xFFE3F2FD),
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=a042581f4e29026024d'),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _profile?.fullName ?? 'Nguyễn Thị A',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Mã BN: ${_profile?.patientCode ?? 'BN0001'}',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildProfileInfoRow(Icons.email_outlined, _profile?.email ?? 'patient@example.com'),
-          const SizedBox(height: 12),
-          _buildProfileInfoRow(Icons.phone_outlined, _profile?.phone ?? '+84 912 345 678'),
-          const SizedBox(height: 12),
-          _buildProfileInfoRow(Icons.location_on_outlined, _profile?.address ?? 'Hà Nội, Việt Nam'),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const MedicalRecordScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF73C6D9),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Xem hồ sơ bệnh án',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileInfoRow(IconData icon, String text) {
-    return Row(
+  Widget _buildCreateProfileSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF73C6D9)),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+        const Text(
+          'Tạo hồ sơ bệnh nhân',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF333333),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Button 1: Register New
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RegisterPatientScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Đăng ký mới',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Button 2: Enter Profile Number
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton(
+            onPressed: () {
+              // Action: Enter Code
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: _primaryColor, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Nhập số hồ sơ',
+              style: TextStyle(
+                color: _primaryColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Button 3: Scan BHYT
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              // Action: Scan
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: _primaryColor, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: Icon(Icons.qr_code_scanner, color: _primaryColor),
+            label: Text(
+              'Quét mã BHYT',
+              style: TextStyle(
+                color: _primaryColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLoginCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  Widget _buildProfileListSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Danh sách hồ sơ',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF333333),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 10),
-          const SizedBox(
-            width: 80,
-            height: 80,
-            child: CircleAvatar(
-              backgroundColor: Color(0xFFE3F2FD),
-              child: Icon(Icons.person, size: 40, color: Color(0xFF73C6D9)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Chưa đăng nhập',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Đăng nhập để xem hồ sơ sức khỏe và\nlịch sử khám bệnh của bạn',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () => LoginDialog.show(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF73C6D9),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        ),
+        const SizedBox(height: 16),
+        // Empty State Container
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            // Light solid border as requested (or could be dashed if implemented)
+            border: Border.all(color: _primaryColor.withOpacity(0.3), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.05),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              child: const Text(
-                'Đăng nhập để tiếp tục',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBenefitsCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.star_rounded,
-                    color: Color(0xFFFFA000), size: 24),
-              ),
-              const SizedBox(width: 12),
+              // Icon Hospital/Profile
+              Icon(Icons.assignment_ind_outlined, size: 60, color: _primaryColor),
+              const SizedBox(height: 16),
               const Text(
-                'Lợi ích khi đăng nhập',
+                'Không có hồ sơ nào',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Color(0xFF555555),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Tạo hồ sơ mới hoặc đăng nhập để\nđồng bộ dữ liệu',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF888888),
+                  height: 1.4,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildBulletPoint('Xem hồ sơ bệnh án điện tử'),
-          _buildBulletPoint('Đặt lịch khám trực tuyến'),
-          _buildBulletPoint('Nhận kết quả xét nghiệm qua ứng dụng'),
-          _buildBulletPoint('Tư vấn sức khỏe với bác sĩ AI'),
-        ],
-      ),
+        ),
+      ],
     );
   }
-
-  Widget _buildBulletPoint(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: Color(0xFF73C6D9), size: 20),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.grey[800],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSecurityCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFC8E6C9)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.security, color: Color(0xFF4CAF50)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Thông tin của bạn được bảo mật tuyệt đối theo tiêu chuẩn an toàn thông tin y tế.',
-              style: TextStyle(
-                color: Colors.green[800],
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
 }
