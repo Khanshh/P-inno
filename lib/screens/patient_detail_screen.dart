@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'book_appointment_screen.dart';
 
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patientData;
@@ -246,7 +247,11 @@ class PatientDetailScreen extends StatelessWidget {
           height: 50,
           child: ElevatedButton(
             onPressed: () {
-              // Handle Booking
+               Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BookAppointmentScreen(patientData: patientData),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,
