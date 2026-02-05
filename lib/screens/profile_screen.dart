@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeader(BuildContext context) {
     // Header takes about 20-25% of screen height.
-    double height = MediaQuery.of(context).size.height * 0.22;
+    double height = MediaQuery.of(context).size.height * 0.25;
 
     return Container(
       width: double.infinity,
