@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'book_appointment_screen.dart';
+import 'treatment_process_screen.dart';
+import 'doctor_chat_screen.dart';
 
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patientData;
@@ -44,15 +46,7 @@ class PatientDetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildSectionCard(
-                    title: 'Bảo hiểm y tế',
-                    icon: Icons.medical_information_outlined,
-                    children: [
-                      _buildInfoRow('Số thẻ BHYT', patientData['bhyt']?.isNotEmpty == true ? patientData['bhyt'] : 'Chưa có'),
-                      _buildInfoRow('Nơi đăng ký', 'Bệnh viện Đa khoa'), // Mock data
-                      _buildInfoRow('Hạn sử dụng', '31/12/2026'), // Mock data
-                    ],
-                  ),
+                  _buildTreatmentProcessCard(context),
                   const SizedBox(height: 30),
                   _buildFooterButtons(context),
                   const SizedBox(height: 20),
@@ -239,6 +233,72 @@ class PatientDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTreatmentProcessCard(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TreatmentProcessScreen(patientData: patientData),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.biotech, color: _primaryColor, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Quá trình điều trị',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Đang thực hiện: IVF - Chu kỳ 1',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: _primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFooterButtons(BuildContext context) {
     return Column(
       children: [
@@ -267,6 +327,35 @@ class PatientDetailScreen extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DoctorChatScreen(patientData: patientData),
+                ),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: _primaryColor, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: Icon(Icons.chat_bubble_outline, color: _primaryColor),
+            label: Text(
+              'Trao đổi với bác sĩ',
+              style: TextStyle(
+                color: _primaryColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
