@@ -1,249 +1,106 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import '../services/api_service.dart';
-import '../models/discover_model.dart';
 
-class InfertilityDetailScreen extends StatefulWidget {
+class InfertilityDetailScreen extends StatelessWidget {
   const InfertilityDetailScreen({super.key});
 
-  @override
-  State<InfertilityDetailScreen> createState() => _InfertilityDetailScreenState();
-}
-
-class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> {
-  final ApiService _apiService = ApiService();
-  InfertilityInfoModel? _info;
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadInfo();
-  }
-
-  Future<void> _loadInfo() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final info = await _apiService.getInfertilityInfo();
-      setState(() {
-        _info = info;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
+  static const Color _primaryColor = Color(0xFF73C6D9);
+  static const Color _primaryLight = Color(0xFFE0F4F8);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF73C6D9),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Tìm hiểu về hiếm muộn',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text(_error!))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: MarkdownBody(
-                          data: _info?.content ?? '',
-                          styleSheet: MarkdownStyleSheet(
-                            h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-                            h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-                            h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                            p: TextStyle(fontSize: 16, color: Colors.grey[800], height: 1.5),
-                          ),
-                        ),
-                      ),
-                      _buildExpertAdviceSection(context),
+      backgroundColor: const Color(0xFFF8F9FB),
+      body: Column(
+        children: [
+          // ── Gradient Header ──
+          _buildHeader(context),
+          // ── Scrollable Body ──
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Section 1: Hiếm muộn là gì? ──
+                  _buildSectionHeader(Icons.favorite, 'Hiếm muộn là gì?'),
+                  const SizedBox(height: 14),
+                  _buildDefinitionCard(),
+                  const SizedBox(height: 28),
+
+                  // ── Section 2: Nguyên nhân hiếm muộn ──
+                  _buildSectionHeader(
+                      Icons.warning_amber_rounded, 'Nguyên nhân hiếm muộn'),
+                  const SizedBox(height: 14),
+                  _buildCauseCard(
+                    title: 'Nguyên nhân từ phụ nữ',
+                    percentage: '40%',
+                    items: const [
+                      'Rối loạn phóng noãn',
+                      'Tắc nghẽn vòi trứng',
+                      'Lạc nội mạc tử cung',
+                      'Rối loạn tử cung',
                     ],
                   ),
-                ),
-    );
-  }
+                  const SizedBox(height: 12),
+                  _buildCauseCard(
+                    title: 'Nguyên nhân từ nam giới',
+                    percentage: '40%',
+                    items: const [
+                      'Số lượng tinh trùng thấp',
+                      'Chất lượng tinh trùng kém',
+                      'Rối loạn cương dương',
+                      'Tắc nghẽn ống dẫn tinh',
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildCauseCard(
+                    title: 'Nguyên nhân không rõ',
+                    percentage: '20%',
+                    items: const [
+                      'Không xác định được nguyên nhân cụ thể',
+                      'Yếu tố miễn dịch',
+                      'Yếu tố tâm lý, căng thẳng',
+                      'Các yếu tố môi trường',
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _buildWarningBox(),
+                  const SizedBox(height: 28),
 
-  Widget _buildDefinitionSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.favorite_border, color: Color(0xFFE91E63), size: 28),
-              SizedBox(width: 12),
-              Text(
-                'Hiếm muộn là gì?',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontSize: 17,
-                color: Colors.grey[800],
-                height: 1.5,
-              ),
-              children: const [
-                TextSpan(text: 'Theo tổ chức Y tế Thế giới (WHO), '),
-                TextSpan(
-                  text: 'hiếm muộn',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                  text:
-                      ' là tình trạng một cặp vợ chồng không thể thụ thai tự nhiên sau 12 tháng quan hệ tình dục đều đặn, không sử dụng biện pháp tránh thai.',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFCE4EC), // Hồng nhạt
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFF8BBD0)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.info, color: Color(0xFFD81B60), size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Đối với phụ nữ trên 35 tuổi, thời gian này rút ngắn còn 6 tháng. Nếu sau 6 tháng chưa có tin vui, bạn nên đi khám sớm.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.pink[900],
-                      height: 1.4,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  // ── Section 3: Phương pháp điều trị ──
+                  _buildSectionHeader(
+                      Icons.medical_services_outlined, 'Phương pháp điều trị'),
+                  const SizedBox(height: 14),
+                  _buildTreatmentItem(
+                    icon: Icons.medication_outlined,
+                    title: 'Điều trị thuốc',
+                    subtitle: 'Sử dụng thuốc kích thích rụng trứng hoặc điều chỉnh nội tiết',
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                  _buildTreatmentItem(
+                    icon: Icons.healing_outlined,
+                    title: 'Phẫu thuật',
+                    subtitle:
+                        'Can thiệp phẫu thuật/khắc phục tắc nghẽn hoặc bất thường cấu trúc',
+                  ),
+                  _buildTreatmentItem(
+                    icon: Icons.biotech_outlined,
+                    title: 'Hỗ trợ sinh sản',
+                    subtitle:
+                        'IVF, IUI, ICSI và các kỹ thuật hỗ trợ sinh sản hiện đại',
+                  ),
+                  _buildTreatmentItem(
+                    icon: Icons.self_improvement_outlined,
+                    title: 'Thay đổi lối sống',
+                    subtitle:
+                        'Chế độ ăn uống, tập luyện và giảm căng thẳng',
+                  ),
+                  const SizedBox(height: 24),
 
-  Widget _buildCausesSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded,
-                  color: Color(0xFFFFA000), size: 28),
-              SizedBox(width: 12),
-              Text(
-                'Nguyên nhân hiếm muộn',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildCauseCard(
-            idx: 1,
-            title: 'Nguyên nhân từ vợ',
-            percentage: '40%',
-            color: const Color(0xFFEC407A),
-            items: [
-              'Rối loạn phóng noãn (không rụng trứng)',
-              'Tắc vòi trứng, lạc nội mạc tử cung',
-              'Các vấn đề về tử cung, cổ tử cung',
-              'Tuổi tác ảnh hưởng chất lượng trứng',
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildCauseCard(
-            idx: 2,
-            title: 'Nguyên nhân từ chồng',
-            percentage: '40%',
-            color: const Color(0xFF42A5F5),
-            items: [
-              'Số lượng/chất lượng tinh trùng kém',
-              'Tắc nghẽn ống dẫn tinh',
-              'Vấn đề xuất tinh, rối loạn cương dương',
-              'Yếu tố di truyền hoặc bệnh lý',
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildCauseCard(
-            idx: 3,
-            title: 'Không rõ nguyên nhân',
-            percentage: '20%',
-            color: const Color(0xFFAB47BC),
-            items: [
-              'Cả hai vợ chồng đều bình thường',
-              'Kêt hợp nguyên nhân từ cả hai phía',
-              'Do yếu tố môi trường, lối sống',
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFDE7), // Vàng nhạt
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFFFF59D)),
-            ),
-            child: Text.rich(
-              TextSpan(
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey[800],
-                  height: 1.4,
-                ),
-                children: const [
-                  TextSpan(
-                    text: 'Lưu ý: ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(
-                    text:
-                        'Việc xác định nguyên nhân chính xác đòi hỏi phải thăm khám chuyên sâu cho cả hai vợ chồng tại các cơ sở y tế uy tín.',
-                  ),
+                  // ── Section 4: Lời khuyên ──
+                  _buildExpertAdviceCard(),
+                  const SizedBox(height: 16),
+                  _buildActionButton(),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -253,172 +110,315 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> {
     );
   }
 
-  Widget _buildCauseCard({
-    required int idx,
-    required String title,
-    required String percentage,
-    required Color color,
-    required List<String> items,
-  }) {
+  // ═══════════════════════════════════════════════════════════════
+  //  Header – Gradient style giống ảnh
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+      width: double.infinity,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 8,
+        left: 12,
+        right: 16,
+        bottom: 16,
+      ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF5BB8CC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'Tìm hiểu về hiếm muộn',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Section Header – Icon + Title (giống ảnh)
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _primaryLight,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: _primaryColor, size: 22),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Section 1: Định nghĩa Card
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildDefinitionCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+                height: 1.6,
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
+              children: const [
+                TextSpan(
+                  text: 'Hiếm muộn ',
                   style: TextStyle(
-                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: Color(0xFF2D3748),
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                TextSpan(
+                  text:
+                      'là tình trạng một cặp vợ chồng không thể mang thai sau 12 tháng quan hệ tình dục thường xuyên (2-3 lần/ tuần) mà không sử dụng bất kỳ biện pháp tránh thai nào.',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Highlight box
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _primaryLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _primaryColor.withOpacity(0.2)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline, color: _primaryColor, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
                   child: Text(
-                    percentage,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                    'Đối với phụ nữ trên 35 tuổi, thời gian này được rút ngắn xuống còn 6 tháng.',
+                    style: TextStyle(
+                      color: Colors.blueGrey[700],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: items
-                  .map((item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Icon(Icons.circle,
-                                  size: 6, color: Colors.grey[400]),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                item,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[800],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildTreatmentsSection() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
+  // ═══════════════════════════════════════════════════════════════
+  //  Section 2: Cause Card
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildCauseCard({
+    required String title,
+    required String percentage,
+    required List<String> items,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row with percentage badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _primaryColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  percentage,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Bullet list
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: _primaryColor.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[700],
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Warning / Lưu ý Box
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildWarningBox() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withOpacity(0.25)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: const [
-              Icon(Icons.medication_outlined,
-                  color: Color(0xFF00ACC1), size: 28),
-              SizedBox(width: 12),
+              Icon(Icons.error_outline, color: Color(0xFFFFA000), size: 18),
+              SizedBox(width: 8),
               Text(
-                'Phương pháp điều trị',
+                'Lưu ý:',
                 style: TextStyle(
-                  fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Color(0xFFE65100),
+                  fontSize: 13,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildTreatmentItem(
-            icon: Icons.personal_injury_outlined,
-            color: Colors.orange,
-            title: 'Thay đổi lối sống',
-            subtitle: 'Dinh dưỡng, vận động, bỏ thuốc lá...',
-          ),
-          _buildTreatmentItem(
-            icon: Icons.medical_services_outlined,
-            color: Colors.blue,
-            title: 'Điều trị nội khoa/ngoại khoa',
-            subtitle: 'Dùng thuốc kích trứng hoặc phẫu thuật',
-          ),
-          _buildTreatmentItem(
-            icon: Icons.science_outlined,
-            color: Colors.purple,
-            title: 'Hỗ trợ sinh sản (ART)',
-            subtitle: 'IVF, IUI, ICSI, Đông lạnh trứng...',
+          const SizedBox(height: 6),
+          Text(
+            'Trong một số trường hợp, hiếm muộn có thể do sự kết hợp nguyên nhân từ cả vợ và chồng. Việc thăm khám và xét nghiệm kỹ lưỡng là rất quan trọng để xác định nguyên nhân chính xác.',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.orange[900],
+              height: 1.5,
+            ),
           ),
         ],
       ),
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  Section 3: Treatment Item
+  // ═══════════════════════════════════════════════════════════════
   Widget _buildTreatmentItem({
     required IconData icon,
-    required Color color,
     required String title,
     required String subtitle,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: _primaryLight,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: _primaryColor, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,17 +426,18 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Color(0xFF2D3748),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 12,
                     color: Colors.grey[600],
+                    height: 1.3,
                   ),
                 ),
               ],
@@ -447,56 +448,70 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> {
     );
   }
 
-  Widget _buildExpertAdviceSection(BuildContext context) {
+  // ═══════════════════════════════════════════════════════════════
+  //  Section 4: Expert Advice Card
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildExpertAdviceCard() {
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF3E5F5), // Tím nhạt background
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _primaryLight,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Column(
         children: [
           const Text(
             'Lời khuyên từ chuyên gia',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF8E24AA),
+              color: Color(0xFF2D3748),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
-            'Đừng ngần ngại tìm kiếm sự giúp đỡ. Y học hiện đại có rất nhiều phương pháp để hỗ trợ bạn hiện thực hóa giấc mơ làm cha mẹ. Việc phát hiện và điều trị sớm là chìa khóa thành công.',
+            'Một cặp vợ chồng có thể cải thiện tình trạng và tăng cơ hội mang thai bằng cách đi khám tại các cơ sở y tế chuyên khoa, thăm khám toàn diện và tư vấn chuyên khoa để có phương pháp điều trị phù hợp.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[800],
+              fontSize: 13,
+              color: Colors.grey[700],
               height: 1.5,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF73C6D9),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: const Text(
-                'Tham khảo bệnh viện/phòng khám',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Action Button
+  // ═══════════════════════════════════════════════════════════════
+  Widget _buildActionButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          // TODO: Navigate to hospital/clinic list
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primaryColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          elevation: 0,
+        ),
+        icon: const Icon(Icons.local_hospital_outlined, color: Colors.white,
+            size: 20),
+        label: const Text(
+          'Tham khảo bệnh viện/ phòng khám',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
