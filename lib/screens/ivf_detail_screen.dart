@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'video_player_screen.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
@@ -785,7 +786,16 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const VideoPlayerScreen(
+                                videoFileName: 'Screen Recording 2026-03-08 084531.mp4',
+                                title: 'Video mô phỏng 3D - Quy trình IVF',
+                              ),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFF0288D1),

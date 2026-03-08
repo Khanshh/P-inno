@@ -17,8 +17,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   String? _error;
   
-  // Local state for demo purposes
-  final List<Map<String, dynamic>> profiles = [];
+  // Patient profiles loaded from backend
+  List<Map<String, dynamic>> profiles = [];
 
   // Define the primary color
   final Color _primaryColor = const Color(0xFF73C6D9);
@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadProfile();
+    _loadPatients();
   }
 
   Future<void> _loadProfile() async {
@@ -49,11 +50,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Callback when creating new patient
-  void _onPatientCreated(Map<String, dynamic> data) {
-    setState(() {
-      profiles.add(data);
-    });
+  Future<void> _loadPatients() async {
+    try {
+      final patients = await _apiService.getPatients();
+      setState(() {
+        profiles = patients.map((p) {
+          // Map backend fields to local naming convention
+          return <String, dynamic>{
+            'id': p['id'],
+            'fullName': p['full_name'] ?? '',
+            'dob': p['dob'] ?? '',
+            'gender': p['gender'] ?? '',
+            'cccd': p['cccd'] ?? '',
+            'bhyt': p['bhyt'] ?? '',
+            'ethnicity': p['ethnicity'],
+            'phone': p['phone'] ?? '',
+            'email': p['email'] ?? '',
+            'address': p['address'] ?? '',
+            'created_at': p['created_at'] ?? '',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      // Silently fail – profile list can be empty
+      debugPrint('Error loading patients: $e');
+    }
   }
 
   @override
@@ -179,9 +200,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
               
               if (result != null && result is Map<String, dynamic>) {
-                 setState(() {
-                    profiles.add(result);
-                 });
+                // Reload patients from backend to stay in sync
+                _loadPatients();
               }
             },
             style: ElevatedButton.styleFrom(

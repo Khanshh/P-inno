@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
 class RegisterPatientScreen extends StatefulWidget {
   const RegisterPatientScreen({super.key});
@@ -10,6 +11,7 @@ class RegisterPatientScreen extends StatefulWidget {
 class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
   final _formKey = GlobalKey<FormState>();
   final Color _primaryColor = const Color(0xFF73C6D9);
+  final ApiService _apiService = ApiService();
 
   // Controllers
   final TextEditingController _nameController = TextEditingController();
@@ -65,9 +67,17 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
     }
   }
 
-  void _submitForm() {
+  bool _isSubmitting = false;
+
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Create Mock Data Object
+      if (_isSubmitting) return;
+
+      setState(() {
+        _isSubmitting = true;
+      });
+
+      // Build the data map matching what the backend expects
       final newPatientData = {
         'fullName': _nameController.text,
         'dob': _dobController.text,
@@ -84,15 +94,38 @@ class _RegisterPatientScreenState extends State<RegisterPatientScreen> {
         const SnackBar(content: Text('Đang xử lý đăng ký...')),
       );
 
-      // Simulate API call or navigation
-      Future.delayed(const Duration(seconds: 1), () {
+      try {
+        final result = await _apiService.registerPatient(newPatientData);
+        
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đăng ký thành công!')),
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đăng ký thành công!'),
+              backgroundColor: Color(0xFF4CAF50),
+            ),
           );
-          Navigator.pop(context, newPatientData);
+          // Return the server response (includes generated ID) back to profile screen
+          Navigator.pop(context, {
+            ...newPatientData,
+            'id': result['id'],
+            'created_at': result['created_at'],
+          });
         }
-      });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${e.toString().replaceAll('Exception: ', '')}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
