@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -111,6 +112,11 @@ def create_app() -> FastAPI:
     app.include_router(onboarding_router, prefix="/api/v1", tags=["onboarding"])
     app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
     app.include_router(patients_router, prefix="/api/v1", tags=["patients"])
+
+    # Serve video files from data/videos/ as static files
+    videos_dir = Path(__file__).parent.parent / "data" / "videos"
+    videos_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/static/videos", StaticFiles(directory=str(videos_dir)), name="videos")
 
     return app
 

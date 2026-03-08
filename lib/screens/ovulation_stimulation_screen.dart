@@ -795,7 +795,7 @@ class _OvulationStimulationScreenState extends State<OvulationStimulationScreen>
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const VideoPlayerScreen(
-                                videoId: 'X2LuZgQo4AI',
+                                videoFileName: 'ovulation_3d.mp4',
                                 title: 'Video mô phỏng 3D - Kích thích phóng noãn',
                               ),
                             ),

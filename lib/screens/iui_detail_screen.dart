@@ -797,7 +797,7 @@ class _IUIDetailScreenState extends State<IUIDetailScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const VideoPlayerScreen(
-                                videoId: 'xHkq1edP2_Y',
+                                videoFileName: 'iui_3d.mp4',
                                 title: 'Video mô phỏng 3D - Quy trình IUI',
                               ),
                             ),
