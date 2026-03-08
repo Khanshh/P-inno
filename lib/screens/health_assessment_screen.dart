@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'assessment_question_screen.dart';
+import 'assessment_form_screen.dart';
 
 class HealthAssessmentScreen extends StatelessWidget {
   const HealthAssessmentScreen({super.key});
@@ -230,7 +230,7 @@ class HealthAssessmentScreen extends StatelessWidget {
                         ),
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AssessmentQuestionScreen()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AssessmentFormScreen()));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
