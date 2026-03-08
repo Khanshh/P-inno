@@ -23,6 +23,7 @@ from app.api.v1.routes_notifications import router as notifications_router
 from app.api.v1.routes_health_assessment import router as health_assessment_router
 from app.api.v1.routes_onboarding import router as onboarding_router
 from app.api.v1.routes_admin import router as admin_router
+from app.api.v1.routes_patients import router as patients_router
 from app.core.config import settings
 
 
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
     app.include_router(health_assessment_router, prefix="/api/v1", tags=["health-assessment"])
     app.include_router(onboarding_router, prefix="/api/v1", tags=["onboarding"])
     app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
+    app.include_router(patients_router, prefix="/api/v1", tags=["patients"])
 
     return app
 
