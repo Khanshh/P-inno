@@ -799,7 +799,7 @@ class _ICSIDetailScreenState extends State<ICSIDetailScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const VideoPlayerScreen(
-                                videoId: 'dSRlFMaCMOI',
+                                videoFileName: 'icsi_3d.mp4',
                                 title: 'Video mô phỏng 3D - Quy trình ICSI',
                               ),
                             ),

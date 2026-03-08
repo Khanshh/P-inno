@@ -790,7 +790,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => const VideoPlayerScreen(
-                                videoId: 'NUaH5mFBi2A',
+                                videoFileName: 'Screen Recording 2026-03-08 084531.mp4',
                                 title: 'Video mô phỏng 3D - Quy trình IVF',
                               ),
                             ),
