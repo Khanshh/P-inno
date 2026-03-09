@@ -285,16 +285,29 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _buildHomeContent(),
+      const ChatAIScreen(),
+      const SimulationIntroScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          color: const Color(0xFF73C6D9),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: pages[_selectedIndex],
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: _loadData,
+        color: const Color(0xFF73C6D9),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               _buildGradientAppBar(),
               const SizedBox(height: 24),
               _buildSectionHeader('Chức năng'),
@@ -391,9 +404,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             ],
           ),
         ),
-        ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -530,21 +541,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 1) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ChatAIScreen()),
-          );
-        } else if (index == 2) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SimulationIntroScreen()),
-          );
-        } else if (index == 3) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          );
-        } else {
-          setState(() => _selectedIndex = index);
-        }
+        setState(() => _selectedIndex = index);
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: _primaryColor,
@@ -572,6 +569,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 }
 
 class _FeatureCard extends StatelessWidget {
+
   const _FeatureCard({
     required this.feature,
     required this.primaryColor,

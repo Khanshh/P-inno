@@ -288,17 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                  padding: EdgeInsets.zero,
-                  alignment: Alignment.centerLeft,
-                ),
-                const Spacer(),
-              ],
-            ),
+            const SizedBox(height: 12), // Extra space instead of back button Row
             const SizedBox(height: 12), // Push content to match design
             Row(
               children: [
