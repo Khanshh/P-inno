@@ -1,3 +1,5 @@
+import json
+import os
 from fastapi import APIRouter, HTTPException, status
 
 from app.core.config import settings
@@ -6,15 +8,22 @@ from app.schemas.auth import LoginRequest, LoginResponse, TokenResponse
 
 router = APIRouter()
 
+# Load users from shared JSON file
+_users_path = os.path.join(os.getcwd(), "data", "users.json")
+try:
+    with open(_users_path, "r", encoding="utf-8") as f:
+        _users_list = json.load(f)
+except Exception as e:
+    print(f"Error loading users for auth: {e}")
+    _users_list = []
+
 
 @router.post("/auth/login", response_model=LoginResponse)
 async def login(payload: LoginRequest) -> LoginResponse:
     """
-    Mock login endpoint with role-based authentication.
+    Login endpoint with role-based authentication.
     
-    Mock users:
-    - admin / admin123 -> role: "admin"
-    - user / user123 -> role: "user"
+    Users are loaded from data/users.json.
     """
     if not payload.username or not payload.password:
         raise HTTPException(
@@ -22,30 +31,17 @@ async def login(payload: LoginRequest) -> LoginResponse:
             detail="Username and password are required.",
         )
     
-    # Mock user database
-    mock_users = {
-        "admin": {
-            "password": "admin123",
-            "full_name": "Admin User",
-            "patient_code": "ADMIN001",
-            "role": "admin"
-        },
-        "user": {
-            "password": "user123",
-            "full_name": "Nguyễn Thị A",
-            "patient_code": "BN0001",
-            "role": "user"
-        }
-    }
+    # Find user by username
+    user_data = next(
+        (u for u in _users_list if u["username"] == payload.username),
+        None,
+    )
     
-    # Check if user exists
-    if payload.username not in mock_users:
+    if not user_data:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password.",
         )
-    
-    user_data = mock_users[payload.username]
     
     # Check password
     if payload.password != user_data["password"]:
@@ -64,6 +60,4 @@ async def login(payload: LoginRequest) -> LoginResponse:
         patient_code=user_data["patient_code"],
         role=user_data["role"],
     )
-
-
 
