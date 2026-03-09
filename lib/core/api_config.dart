@@ -25,6 +25,4 @@ class ApiConfig {
   static String get onboarding => '$baseUrl$apiPrefix/onboarding';
   static String get profileMe => '$baseUrl$apiPrefix/profile/me';
   static String get medicalRecords => '$baseUrl$apiPrefix/medical-records';
-  static String get patients => '$baseUrl$apiPrefix/patients';
-  static String get authLogin => '$baseUrl$apiPrefix/auth/login';
 }
