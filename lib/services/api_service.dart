@@ -218,5 +218,78 @@ class ApiService {
       throw Exception('Error fetching medical records: \$e');
     }
   }
-}
 
+  /// Register a new patient via POST /api/v1/patients
+  Future<Map<String, dynamic>> registerPatient(Map<String, dynamic> patientData) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.patients),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'full_name': patientData['fullName'] ?? '',
+          'dob': patientData['dob'] ?? '',
+          'gender': patientData['gender'] ?? 'Nam',
+          'cccd': patientData['cccd'] ?? '',
+          'bhyt': patientData['bhyt'] ?? '',
+          'ethnicity': patientData['ethnicity'],
+          'phone': patientData['phone'] ?? '',
+          'email': patientData['email'] ?? '',
+          'address': patientData['address'] ?? '',
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      } else {
+        final body = json.decode(response.body);
+        throw Exception(body['detail'] ?? 'Failed to register patient: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error registering patient: $e');
+    }
+  }
+
+  /// Get all registered patients via GET /api/v1/patients
+  Future<List<Map<String, dynamic>>> getPatients() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.patients));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to load patients: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching patients: $e');
+    }
+  }
+
+  /// Login via POST /api/v1/auth/login
+  Future<Map<String, dynamic>> login(String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.authLogin),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'username': username,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      } else {
+        final body = json.decode(response.body);
+        throw Exception(body['detail'] ?? 'Đăng nhập thất bại');
+      }
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
+}
