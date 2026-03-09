@@ -19,8 +19,8 @@ _mock_features: List[Feature] = [
     ),
     Feature(
         id="feature-2",
-        title="Đánh giá sức khỏe",
-        icon="monitor_heart_outlined",
+        title="Gợi ý bệnh viện",
+        icon="medical_services_outlined",
         description="Đánh giá tình trạng sức khỏe của bạn",
         route="/health-assessment",
         order=2,

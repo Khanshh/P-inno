@@ -191,8 +191,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           ),
           FeatureModel(
             id: 'feature-2',
-            title: 'Đánh giá sức khỏe',
-            icon: 'monitor_heart_outlined',
+            title: 'Gợi ý bệnh viện',
+            icon: 'medical_services_outlined',
             order: 2,
           ),
           FeatureModel(
@@ -265,6 +265,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         return Icons.search;
       case 'monitor_heart_outlined':
         return Icons.monitor_heart_outlined;
+      case 'medical_services_outlined':
+        return Icons.local_hospital;
       case 'tips_and_updates_outlined':
         return Icons.tips_and_updates_outlined;
       default:
