@@ -3,8 +3,10 @@ import 'infertility_detail_screen.dart';
 import 'ivf_detail_screen.dart';
 import 'icsi_detail_screen.dart';
 import 'iui_detail_screen.dart';
-import 'ovulation_stimulation_screen.dart';
+
 import 'discover_method_detail_screen.dart';
+import 'ktpn_detail_screen.dart';
+
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
 
@@ -157,9 +159,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
+          Navigator.push(
+            context,
             MaterialPageRoute(
-              builder: (_) => InfertilityDetailScreen(),
+              builder: (context) => const InfertilityDetailScreen(),
             ),
           );
         },
@@ -271,33 +274,38 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               OutlinedButton(
                 onPressed: () {
                    if (method.title == 'IVF') {
-                    Navigator.of(context).push(
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => const IVFDetailScreen(),
+                        builder: (context) => const IVFDetailScreen(),
                       ),
                     );
                   } else if (method.title == 'ICSI') {
-                    Navigator.of(context).push(
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => const ICSIDetailScreen(),
+                        builder: (context) => const ICSIDetailScreen(),
                       ),
                     );
                   } else if (method.title == 'IUI') {
-                    Navigator.of(context).push(
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => const IUIDetailScreen(),
+                        builder: (context) => const IUIDetailScreen(),
                       ),
                     );
-                  } else if (method.title == 'Đông trứng' || method.title == 'Kích trứng') {
-                    Navigator.of(context).push(
+                  } else if (method.title == 'Kích thích phóng noãn') {
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => OvulationStimulationScreen(methodId: method.id),
+                        builder: (context) => const KTPNDetailScreen(),
                       ),
                     );
                   } else {
-                    Navigator.of(context).push(
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
-                        builder: (_) => DiscoverMethodDetailScreen(
+                        builder: (context) => DiscoverMethodDetailScreen(
                           methodId: method.id,
                           title: method.title,
                         ),
@@ -416,6 +424,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         return Icons.ac_unit_outlined;
       case 'bubble_chart_outlined':
         return Icons.bubble_chart_outlined;
+      case 'vaccines':
+        return Icons.vaccines;
+      case 'medication_liquid':
+        return Icons.medication_liquid;
       default:
         return Icons.help_outline;
     }

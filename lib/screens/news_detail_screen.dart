@@ -57,17 +57,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black87),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.bookmark_border, color: Colors.black87),
-            onPressed: () {},
-          ),
-        ],
+        )
+        
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
