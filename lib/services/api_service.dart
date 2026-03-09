@@ -266,4 +266,30 @@ class ApiService {
       throw Exception('Error fetching patients: $e');
     }
   }
+
+  /// Login via POST /api/v1/auth/login
+  Future<Map<String, dynamic>> login(String username, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.authLogin),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'username': username,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body) as Map<String, dynamic>;
+      } else {
+        final body = json.decode(response.body);
+        throw Exception(body['detail'] ?? 'Đăng nhập thất bại');
+      }
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
 }
