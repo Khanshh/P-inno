@@ -7,6 +7,7 @@ import 'profile_screen.dart';
 import 'health_assessment_screen.dart';
 import 'simulation_screen.dart';
 import 'simulation_intro_screen.dart';
+import 'hospital_list_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
@@ -323,6 +324,12 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (_) => const HealthAssessmentScreen(),
+                                          ),
+                                        );
+                                      } else if (item.title == 'Gợi ý bệnh viện') {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => const HospitalListScreen(),
                                           ),
                                         );
                                       } else if (item.title == 'Mẹo hôm nay') {
