@@ -13,6 +13,8 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -20,6 +22,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _birthDateController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -188,6 +192,138 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                             const SizedBox(height: 20),
+                            // Ngày sinh
+                            TextFormField(
+  controller: _birthDateController,
+  readOnly: true, // Quan trọng: Ngăn bàn phím hiện lên khi bấm vào
+  style: GoogleFonts.nunito(color: Colors.white),
+  decoration: InputDecoration(
+    labelText: 'Ngày sinh',
+    labelStyle: GoogleFonts.nunito(color: Colors.white),
+    prefixIcon: const Icon(Icons.calendar_today, color: Colors.white),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(
+        color: Colors.white.withOpacity(0.5),
+        width: 2,
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(
+        color: Colors.white,
+        width: 2,
+      ),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(
+        color: Colors.redAccent,
+        width: 2,
+      ),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(
+        color: Colors.redAccent,
+        width: 2,
+      ),
+    ),
+    filled: true,
+    fillColor: Colors.white.withOpacity(0.15),
+  ),
+  onTap: () async {
+    // 1. Hiển thị Dialog chọn ngày
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime(1995), // Mặc định mở lịch ở năm 1995 (hợp lý cho form nhập ngày sinh)
+      firstDate: DateTime(1900),   // Năm nhỏ nhất có thể chọn
+      lastDate: DateTime.now(),    // Không cho chọn ngày trong tương lai
+      builder: (context, child) {
+        // 2. Custom màu sắc cho bảng lịch để hợp với Theme app
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF73C6D9), // Màu chủ đạo của app bạn
+              onPrimary: Colors.white,    // Màu chữ trên nền primary
+              onSurface: Colors.black87,  // Màu chữ của các ngày trên lịch
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    // 3. Xử lý sau khi người dùng chọn ngày
+    if (pickedDate != null) {
+      // Format ngày thành chuỗi dạng DD/MM/YYYY
+      String formattedDate = 
+          "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
+      
+      // Gán vào controller để hiển thị lên TextField
+      setState(() {
+        _birthDateController.text = formattedDate;
+      });
+    }
+  },
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'Vui lòng chọn ngày sinh';
+    }
+    return null;
+  },
+),
+const SizedBox(height: 20),
+
+                            // Phone field
+                            TextFormField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              style: GoogleFonts.nunito(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: 'Số điện thoại',
+                                labelStyle: GoogleFonts.nunito(color: Colors.white),
+                                prefixIcon: const Icon(Icons.phone, color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withOpacity(0.5),
+                                    width: 2,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                    width: 2,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.15),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Vui lòng nhập số điện thoại';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            
 
                             // Email field
                             TextFormField(
