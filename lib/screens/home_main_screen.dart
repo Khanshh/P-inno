@@ -6,6 +6,7 @@ import 'news_screen.dart';
 import 'profile_screen.dart';
 import 'health_assessment_screen.dart';
 import 'simulation_screen.dart';
+import 'simulation_intro_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
@@ -526,7 +527,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           );
         } else if (index == 2) {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SimulationScreen()),
+            MaterialPageRoute(builder: (_) => const SimulationIntroScreen()),
           );
         } else if (index == 3) {
           Navigator.of(context).push(
