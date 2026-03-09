@@ -427,25 +427,25 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               size: 28,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chào mừng, Admin',
+                  'Nguyễn Văn A',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  'Quản trị viên hệ thống',
+                  'Thành viên ',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

@@ -3,7 +3,7 @@ import 'infertility_detail_screen.dart';
 import 'ivf_detail_screen.dart';
 import 'icsi_detail_screen.dart';
 import 'iui_detail_screen.dart';
-import 'ovulation_stimulation_screen.dart';
+
 import 'discover_method_detail_screen.dart';
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
@@ -289,10 +289,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       ),
                     );
                   } else if (method.title == 'Đông trứng' || method.title == 'Kích trứng') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => OvulationStimulationScreen(methodId: method.id),
-                      ),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Tính năng đang phát triển')),
                     );
                   } else {
                     Navigator.of(context).push(
