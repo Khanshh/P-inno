@@ -14,6 +14,7 @@ from app.schemas.simulation import (
     HunaultResponse,
     HunaultModelInfoResponse,
     SimulationModelListResponse,
+    UnifiedSimulationRequest,
 )
 from ai.features.fertility_simulation.hunault_model import (
     predict as hunault_predict,
@@ -26,13 +27,122 @@ from ai.features.fertility_simulation.hunault_model import (
     StressLevel,
     MEDICAL_DISCLAIMER,
 )
+from ai.features.fertility_simulation.adapter import map_profile_to_hunault
 
 router = APIRouter()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Helpers – map Pydantic schema → domain dataclass
+# Endpoints
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+@router.post(
+    "/simulation/unified",
+    summary="Chạy mô phỏng hợp nhất (Dùng Hồ sơ 33 câu hỏi)",
+    description=(
+        "Chuyển đổi dữ liệu từ 33 câu hỏi khảo sát sang các thông số "
+        "mô hình tương ứng (Hunault hoặc SART)."
+    ),
+)
+async def run_unified_simulation(request: UnifiedSimulationRequest):
+    """
+    Chạy mô phỏng dựa trên model_id và hồ sơ 33 câu hỏi.
+    """
+    from ai.features.fertility_simulation.adapter import (
+        interpret_symptoms_with_ai, 
+        map_profile_to_sart,
+        generate_final_report_ai
+    )
+    
+    # Common: Define standard diagnosis for Hunault using rule-based initially
+    # (Hunault doesn't strictly need diagnosis but report looks better with it)
+    ai_diagnosis = await interpret_symptoms_with_ai(request.profile)
+    
+    if request.model_id == "hunault":
+        domain_input = map_profile_to_hunault(request.profile)
+        result = hunault_predict(domain_input)
+        
+        # Supercharge result interpretation with AI
+        ai_report = await generate_final_report_ai("Hunault (Tự nhiên)", result.probability_percent, request.profile, ai_diagnosis)
+        result.interpretation = ai_report
+        
+        return result
+        
+    elif request.model_id == "sart_ivf":
+        # 1. Map to SART predictor format
+        sart_input = map_profile_to_sart(request.profile, ai_diagnosis)
+        
+        # 2. Running mock SART logic (Ready for full SART math integration)
+        prob = 35.0
+        if sart_input["female_age"] < 30: prob = 45.0
+        elif sart_input["female_age"] > 40: prob = 15.0
+        
+        # 3. Supercharge with AI Report
+        ai_report = await generate_final_report_ai("SART (IVF)", prob, request.profile, ai_diagnosis)
+        
+        return {
+            "probability_percent": prob,
+            "risk_level": "moderate",
+            "interpretation": ai_report,
+            "recommendations": ["Nên tư vấn bác sĩ chuyên khoa IVF", "Khám sàng lọc vòi trứng"],
+            "factors_summary": {
+                "age": {"value": sart_input["female_age"], "impact": "neutral"},
+                "bmi": {"value": round(sart_input["bmi"], 1), "impact": "neutral"},
+                "diagnosis": {"value": ai_diagnosis, "label": "Nhóm bệnh lý (AI xác định)"}
+            },
+            "disclaimer": MEDICAL_DISCLAIMER
+        }
+    else:
+        raise HTTPException(status_code=400, detail="Model ID không hợp lệ.")
+
+
+@router.post(
+    "/simulation/hunault",
+    response_model=HunaultResponse,
+    summary="Dự đoán khả năng thụ thai tự nhiên (Hunault Model)",
+    description=(
+        "Sử dụng mô hình Hunault (2004) để ước tính xác suất thụ thai tự nhiên "
+        "trong 12 tháng tới.\n\n"
+        "**Lưu ý về tinh dịch đồ:**\n"
+        "- Nếu bạn đã có kết quả xét nghiệm: đặt `has_test_result = true` "
+        "và cung cấp `motile_sperm_percent`.\n"
+        "- Nếu chưa xét nghiệm: đặt `has_test_result = false` và cung cấp "
+        "`lifestyle` (tuổi nam, hút thuốc, rượu bia, BMI, tập thể dục, stress). "
+        "Hệ thống sẽ ước tính dựa trên lối sống."
+    ),
+)
+async def run_hunault_simulation(request: HunaultRequest) -> HunaultResponse:
+    """
+    Chạy mô phỏng Hunault Model.
+
+    Trả về xác suất thụ thai tự nhiên cùng với:
+    - Giải thích chi tiết bằng tiếng Việt
+    - Khuyến nghị cá nhân hóa
+    - Tóm tắt các yếu tố ảnh hưởng
+    """
+    try:
+        # Helper to convert local schema to domain input
+        # Note: We reuse original logic here for backward compatibility
+        from app.api.v1.routes_simulation import _to_domain_input
+        domain_input = _to_domain_input(request)
+        result = hunault_predict(domain_input)
+
+        return HunaultResponse(
+            probability_percent=result.probability_percent,
+            risk_level=result.risk_level.value,
+            interpretation=result.interpretation,
+            recommendations=result.recommendations,
+            factors_summary=result.factors_summary,
+            motility_used=result.motility_used,
+            motility_source=result.motility_source,
+            disclaimer=result.disclaimer,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Lỗi khi chạy mô phỏng Hunault: {str(e)}",
+        )
 
 
 def _to_domain_input(req: HunaultRequest) -> HunaultInput:
@@ -65,58 +175,6 @@ def _to_domain_input(req: HunaultRequest) -> HunaultInput:
         sperm_data=sperm_input,
         is_referred=req.is_referred,
     )
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Endpoints
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-@router.post(
-    "/simulation/hunault",
-    response_model=HunaultResponse,
-    summary="Dự đoán khả năng thụ thai tự nhiên (Hunault Model)",
-    description=(
-        "Sử dụng mô hình Hunault (2004) để ước tính xác suất thụ thai tự nhiên "
-        "trong 12 tháng tới.\n\n"
-        "**Lưu ý về tinh dịch đồ:**\n"
-        "- Nếu bạn đã có kết quả xét nghiệm: đặt `has_test_result = true` "
-        "và cung cấp `motile_sperm_percent`.\n"
-        "- Nếu chưa xét nghiệm: đặt `has_test_result = false` và cung cấp "
-        "`lifestyle` (tuổi nam, hút thuốc, rượu bia, BMI, tập thể dục, stress). "
-        "Hệ thống sẽ ước tính dựa trên lối sống."
-    ),
-)
-async def run_hunault_simulation(request: HunaultRequest) -> HunaultResponse:
-    """
-    Chạy mô phỏng Hunault Model.
-
-    Trả về xác suất thụ thai tự nhiên cùng với:
-    - Giải thích chi tiết bằng tiếng Việt
-    - Khuyến nghị cá nhân hóa
-    - Tóm tắt các yếu tố ảnh hưởng
-    """
-    try:
-        domain_input = _to_domain_input(request)
-        result = hunault_predict(domain_input)
-
-        return HunaultResponse(
-            probability_percent=result.probability_percent,
-            risk_level=result.risk_level.value,
-            interpretation=result.interpretation,
-            recommendations=result.recommendations,
-            factors_summary=result.factors_summary,
-            motility_used=result.motility_used,
-            motility_source=result.motility_source,
-            disclaimer=result.disclaimer,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Lỗi khi chạy mô phỏng Hunault: {str(e)}",
-        )
 
 
 @router.get(
@@ -199,11 +257,18 @@ async def list_simulation_models() -> SimulationModelListResponse:
                 "status": "active",
             },
             {
+                "id": "unified",
+                "name": "Unified Model (New)",
+                "description": "Mô phỏng từ bộ câu hỏi 33 câu",
+                "endpoint": "/api/v1/simulation/unified",
+                "status": "active",
+            },
+            {
                 "id": "sart_ivf",
                 "name": "SART IVF Model",
                 "description": "Dự đoán tỷ lệ thành công IVF",
-                "endpoint": "/api/v1/simulation/sart-ivf",
-                "status": "coming_soon",
+                "endpoint": "/api/v1/simulation/unified",
+                "status": "testing",
             },
         ]
     )

@@ -202,16 +202,28 @@ def estimate_motility_from_lifestyle(lifestyle: LifestyleFactors) -> float:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-# Hunault 2004 – Simplified model coefficients
-# Derived from the synthesis of van Noord-Zaadstra, Collins, and Eimers models.
+# Hunault 2004 – Model Coefficients
+# Model 1: History Only (Pre-test)
+# Model 2: History + Semen Analysis (Post-test)
 _COEFFICIENTS = {
-    "intercept": 0.4553,
-    "age_linear": -0.7138,        # per 5-year unit from age 31
-    "age_cubic": 0.0614,          # cubic transformation of age
-    "duration": -0.1494,          # per year of subfertility
-    "secondary": 0.2586,          # bonus if secondary subfertility
-    "motility": 0.0077,           # per % motile sperm
-    "referral": -0.4550,          # penalty if referred by GP
+    "model_1": {
+        "intercept": 0.8171,
+        "age_linear": -0.4777,
+        "age_cubic": 0.0526,
+        "duration": -0.1982,
+        "secondary": 0.3152,
+        "referral": -0.5843,
+        "motility": 0.0, # Not used in Model 1
+    },
+    "model_2": {
+        "intercept": 0.4553,
+        "age_linear": -0.7138,
+        "age_cubic": 0.0614,
+        "duration": -0.1494,
+        "secondary": 0.2586,
+        "referral": -0.4550,
+        "motility": 0.0077,
+    }
 }
 
 
@@ -221,20 +233,16 @@ def _compute_prognostic_index(
     is_secondary: bool,
     motile_sperm_pct: float,
     is_referred: bool,
+    has_semen_data: bool = False
 ) -> float:
     """
     Tính Prognostic Index (PI) theo Hunault 2004.
-
-    PI = β0
-       + β1 × [(age − 31) / 5]
-       + β2 × [(age − 31) / 5]³
-       + β3 × duration_years
-       + β4 × secondary
-       + β5 × motile_sperm_%
-       + β6 × referral
+    Tự động chọn Model 1 (nếu chưa khám) hoặc Model 2 (nếu đã khám).
     """
-    c = _COEFFICIENTS
-    age_z = (female_age - 31.0) / 5.0  # Chuẩn hóa tuổi
+    model_key = "model_2" if has_semen_data else "model_1"
+    c = _COEFFICIENTS[model_key]
+    
+    age_z = (female_age - 31.0) / 5.0  # Normalized age
 
     pi = (
         c["intercept"]
@@ -242,9 +250,13 @@ def _compute_prognostic_index(
         + c["age_cubic"] * (age_z ** 3)
         + c["duration"] * duration_years
         + c["secondary"] * (1.0 if is_secondary else 0.0)
-        + c["motility"] * motile_sperm_pct
         + c["referral"] * (1.0 if is_referred else 0.0)
     )
+    
+    # Only add motility factor if using Model 2
+    if has_semen_data:
+        pi += c["motility"] * motile_sperm_pct
+        
     return pi
 
 
@@ -462,6 +474,7 @@ def predict(input_data: HunaultInput) -> HunaultResult:
         is_secondary=input_data.is_secondary_subfertility,
         motile_sperm_pct=motility,
         is_referred=input_data.is_referred,
+        has_semen_data=sperm.has_test_result
     )
 
     # ── Step 3: Tính xác suất ──────────────────────────────────────────────

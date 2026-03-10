@@ -269,6 +269,75 @@ class HunaultModelInfoResponse(BaseModel):
     disclaimer: str
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Comprehensive Profile (Common Survey)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class FrequencyEnum(str, Enum):
+    none = "Không"
+    sometimes = "Thỉnh thoảng"
+    frequently = "Thường xuyên"
+
+class ExerciseFreqEnum(str, Enum):
+    none = "Ít vận động"
+    light = "1-2 lần"
+    moderate = "3-4 lần"
+    heavy = "Hàng ngày"
+
+class FemaleProfile(BaseModel):
+    age: float = Field(..., description="Câu 1: Tuổi")
+    height: float = Field(..., description="Câu 2: Chiều cao (cm)")
+    weight: float = Field(..., description="Câu 3: Cân nặng (kg)")
+    trying_duration: str = Field(..., description="Câu 4: Thời gian cố gắng")
+    pregnancy_count: str = Field(..., description="Câu 5: Số lần mang thai")
+    live_births: str = Field(..., description="Câu 6: Số lần sinh con đủ tháng")
+    miscarriages: str = Field(..., description="Câu 7: Số lần sảy thai")
+    done_ivf: str = Field(..., description="Câu 8: Đã từng làm IVF chưa")
+    menstrual_cycle: str = Field(..., description="Câu 9: Chu kỳ kinh nguyệt")
+    tracking_ovulation: str = Field(..., description="Câu 10: Theo dõi rụng trứng")
+    amh_level: str = Field(..., description="Câu 11: Chỉ số AMH")
+    afc_count: str = Field(..., description="Câu 12: Số lượng nang noãn AFC")
+    hsg_result: str = Field(..., description="Câu 13: Chụp tử cung vòi trứng HSG")
+    has_pcos: str = Field(..., description="Câu 14: Hội chứng buồng trứng đa nang")
+    has_endometriosis: str = Field(..., description="Câu 15: Lạc nội mạc tử cung")
+    has_thyroid_issues: str = Field(..., description="Câu 16: Vấn đề tuyến giáp")
+    smoking: str = Field(..., description="Câu 17: Hút thuốc")
+    alcohol: str = Field(..., description="Câu 18: Rượu bia")
+    exercise: str = Field(..., description="Câu 19: Tập thể dục")
+    stress: str = Field(..., description="Câu 20: Mức độ stress")
+
+class MaleProfile(BaseModel):
+    age: float = Field(..., description="Câu 1: Tuổi")
+    has_children: str = Field(..., description="Câu 2: Đã từng có con chưa")
+    semen_test: str = Field(..., description="Câu 3: Xét nghiệm tinh dịch đồ")
+    testosterone: str = Field(..., description="Câu 4: Chỉ số testosterone")
+    testicular_issues: str = Field(..., description="Câu 5: Vấn đề tinh hoàn")
+    varicocele: str = Field(..., description="Câu 6: Giãn tĩnh mạch thừng tinh")
+    erectile_dysfunction: str = Field(..., description="Câu 7: Rối loạn cương dương")
+    ejaculation_issues: str = Field(..., description="Câu 8: Vấn đề xuất tinh")
+    smoking: str = Field(..., description="Câu 9: Hút thuốc")
+    alcohol: str = Field(..., description="Câu 10: Rượu bia")
+    exercise: str = Field(..., description="Câu 11: Tập thể dục")
+    environment: str = Field(..., description="Câu 12: Môi trường làm việc")
+    stress: str = Field(..., description="Câu 13: Mức độ stress")
+
+class ComprehensiveFertilityProfile(BaseModel):
+    """
+    Hồ sơ sinh sản toàn diện gom 33 câu hỏi từ Frontend.
+    Được dùng làm 'Single Source of Truth' cho mọi mô hình AI.
+    """
+    female: FemaleProfile
+    male: MaleProfile
+
+class UnifiedSimulationRequest(BaseModel):
+    """
+    Yêu cầu mô phỏng hợp nhất. 
+    Frontend chỉ cần gửi profile này lên, backend sẽ tự 'nhặt' dữ liệu 
+    để chạy model tương ứng.
+    """
+    model_id: str = Field(..., description="ID của model muốn chạy (hunault hoặc sart_ivf)")
+    profile: ComprehensiveFertilityProfile
+
 class SimulationModelListResponse(BaseModel):
     """Danh sách các mô hình mô phỏng hiện có."""
     models: List[Dict[str, str]]
