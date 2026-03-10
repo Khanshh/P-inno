@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'natural_result_screen.dart';
 import 'ivf_result_screen.dart';
 import '../services/api_service.dart';
@@ -12,7 +13,15 @@ class PartnerAssessmentFormScreen extends StatefulWidget {
 }
 
 class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScreen> {
-  static const Color _primaryColor = Color(0xFF73C6D9);
+  // Premium Theme Colors
+  final Color _primaryColor = const Color(0xFF1D4E56);
+  final Color _accentColor = const Color(0xFF73C6D9);
+  
+  // Soft UI / Neumorphism Colors
+  final Color _bgColor = const Color(0xFFF8FBFF);
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6);
+  
   final ApiService _apiService = ApiService();
 
   // Mảng lưu trạng thái của 13 câu
@@ -56,29 +65,29 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: _bgColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Đang phân tích dữ liệu tự nhiên...',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    color: _primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Vui lòng đợi trong giây lát',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -118,29 +127,29 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: _bgColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Đang phân tích dữ liệu IVF...',
-                  style: TextStyle(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    color: _primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Vui lòng đợi trong giây lát',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -182,30 +191,32 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: _bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: _primaryColor, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
           children: [
-            const Text(
+            Text(
               'Thông tin bạn đời',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+              style: GoogleFonts.plusJakartaSans(
+                color: _primaryColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               'Bước 2/2',
-              style: TextStyle(
+              style: GoogleFonts.plusJakartaSans(
                 color: Colors.grey.shade600,
                 fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -214,183 +225,123 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       ),
       body: Column(
         children: [
-          // Linear Progress Indicator
-          const LinearProgressIndicator(
-            value: 1.0,
-            minHeight: 3,
-            backgroundColor: Color(0xFFE0E0E0),
-            valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
+          Container(
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            decoration: BoxDecoration(
+              color: _darkShadow.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width - 48,
+                  decoration: BoxDecoration(
+                    color: _accentColor,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInfoBox(),
                   
                   _buildInputField(
-                    question: 'Câu 1: Bạn bao nhiêu tuổi?',
+                    question: '1. Bạn bao nhiêu tuổi?',
                     hint: 'VD: 30',
                     controller: _ageCtrl,
                   ),
                   _buildDropdownField(
-                    question: 'Câu 2: Bạn  đã từng có con chưa?',
+                    question: '2. Bạn  đã từng có con chưa?',
                     value: _q2Value,
                     options: ["Vui lòng chọn", "Chưa từng", "Đã có"],
                     onChanged: (val) => setState(() => _q2Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 3: Bạn đã từng làm xét nghiệm tinh dịch đồ (semen analysis) chưa?',
+                    question: '3. Bạn đã từng làm xét nghiệm tinh dịch đồ (semen analysis) chưa?',
                     value: _q3Value,
                     options: ["Vui lòng chọn", "Chưa từng làm", "Bình thường", "Bất thường"],
                     onChanged: (val) => setState(() => _q3Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 4: Bạn có biết chỉ số testosterone (nội tiết tố nam) không?',
+                    question: '4. Bạn có biết chỉ số testosterone (nội tiết tố nam) không?',
                     subtext: 'Nếu đã xét nghiệm, vui lòng cho biết kết quả.',
                     value: _q4Value,
                     options: ["Vui lòng chọn", "Bình thường", "Thấp", "Cao", "Không rõ"],
                     onChanged: (val) => setState(() => _q4Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 5: Bạn có từng gặp vấn đề về tinh hoàn không?',
+                    question: '5. Bạn có từng gặp vấn đề về tinh hoàn không?',
                     subtext: 'Ví dụ: tinh hoàn ẩn, chấn thương, viêm...',
                     value: _q5Value,
                     options: ["Vui lòng chọn", "Không", "Có"],
                     onChanged: (val) => setState(() => _q5Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 6: Bạn có bị giãn tĩnh mạch thừng tinh (varicocele) không?',
+                    question: '6. Bạn có bị giãn tĩnh mạch thừng tinh (varicocele) không?',
                     subtext: 'Giãn tĩnh mạch ở bìu, có thể ảnh hưởng đến chất lượng tinh trùng.',
                     value: _q6Value,
                     options: ["Vui lòng chọn", "Không", "Có", "Không rõ"],
                     onChanged: (val) => setState(() => _q6Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 7: Bạn có gặp vấn đề về rối loạn cương dương không?',
+                    question: '7. Bạn có gặp vấn đề về rối loạn cương dương không?',
                     value: _q7Value,
                     options: ["Vui lòng chọn", "Không", "Có"],
                     onChanged: (val) => setState(() => _q7Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 8: Bạn có gặp vấn đề về xuất tinh không?',
+                    question: '8. Bạn có gặp vấn đề về xuất tinh không?',
                     subtext: 'Ví dụ: xuất tinh sớm, xuất tinh ngược...',
                     value: _q8Value,
                     options: ["Vui lòng chọn", "Không", "Có"],
                     onChanged: (val) => setState(() => _q8Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 9: Tình trạng hút thuốc lá của bạn?',
+                    question: '9. Tình trạng hút thuốc lá của bạn?',
                     value: _q9Value,
                     options: ["Vui lòng chọn", "Không", "Thỉnh thoảng", "Thường xuyên"],
                     onChanged: (val) => setState(() => _q9Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 10: Bạn có uống rượu/bia thường xuyên không?',
+                    question: '10. Bạn có uống rượu/bia thường xuyên không?',
                     value: _q10Value,
                     options: ["Vui lòng chọn", "Không", "Thỉnh thoảng", "Thường xuyên"],
                     onChanged: (val) => setState(() => _q10Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 11: Bạn tập thể dục bao nhiêu lần/tuần?',
+                    question: '11. Bạn tập thể dục bao nhiêu lần/tuần?',
                     value: _q11Value,
                     options: ["Vui lòng chọn", "Ít vận động", "1-2 lần", "3-4 lần", "Hàng ngày"],
                     onChanged: (val) => setState(() => _q11Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 12: Môi trường làm việc của bạn ?',
+                    question: '12. Môi trường làm việc của bạn ?',
                     subtext: 'Một số môi trường có thể ảnh hưởng đến khả năng sinh sản.',
                     value: _q12Value,
                     options: ["Vui lòng chọn", "Văn phòng (Ít độc hại)", "Tiếp xúc hóa chất/Nhiệt độ cao", "Khác"],
                     onChanged: (val) => setState(() => _q12Value = val),
                   ),
                   _buildDropdownField(
-                    question: 'Câu 13: Mức độ căng thẳng (stress) của bạn ?',
+                    question: '13. Mức độ căng thẳng (stress) của bạn ?',
                     value: _q13Value,
                     options: ["Vui lòng chọn", "Thấp", "Trung bình", "Cao"],
                     onChanged: (val) => setState(() => _q13Value = val),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
           ),
           
-          // Footer buttons
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton(
-                      onPressed: _onShowNaturalResultPressed,
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: _primaryColor, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: Colors.white,
-                      ),
-                      child: const Text(
-                        'Xem kết quả Tự nhiên',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: _primaryColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _onShowIVFResultPressed,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Xem kết quả IVF',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Miễn phí • Bảo mật thông tin cá nhân',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildFooterButtons(),
         ],
       ),
     );
@@ -398,24 +349,36 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
 
   Widget _buildInfoBox() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _accentColor.withOpacity(0.5), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 8, offset: const Offset(4, 4)),
+          BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Icon(Icons.lightbulb_outline, color: Colors.orange),
-          SizedBox(width: 12),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _accentColor.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.lightbulb_outline_rounded, color: _primaryColor, size: 22),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               'Phần này dành cho bạn đời (nam giới) của bạn. Vui lòng nhập thông tin của người đó.',
-              style: TextStyle(
-                color: Colors.black87,
+              style: GoogleFonts.plusJakartaSans(
+                color: _primaryColor,
                 fontSize: 14,
+                fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
             ),
@@ -432,22 +395,25 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
     String? subtext,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 10, offset: const Offset(4, 4)),
+          BoxShadow(color: _lightShadow, blurRadius: 10, offset: const Offset(-4, -4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             question,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _primaryColor,
               height: 1.4,
             ),
           ),
@@ -455,32 +421,29 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
             const SizedBox(height: 4),
             Text(
               subtext,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
             ),
           ],
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            style: const TextStyle(fontSize: 15, color: Colors.black87),
-            onChanged: (v) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _primaryColor, width: 1.5),
+          const SizedBox(height: 16),
+          Container(
+            decoration: BoxDecoration(
+              color: _bgColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 6, offset: const Offset(3, 3), blurStyle: BlurStyle.inner),
+                BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-3, -3), blurStyle: BlurStyle.inner),
+              ],
+            ),
+            child: TextFormField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.plusJakartaSans(fontSize: 15, color: _primaryColor, fontWeight: FontWeight.w600),
+              onChanged: (v) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: GoogleFonts.plusJakartaSans(color: Colors.grey.shade400, fontSize: 14, fontWeight: FontWeight.w500),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                border: InputBorder.none,
               ),
             ),
           ),
@@ -497,22 +460,25 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 10, offset: const Offset(4, 4)),
+          BoxShadow(color: _lightShadow, blurRadius: 10, offset: const Offset(-4, -4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             question,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _primaryColor,
               height: 1.4,
             ),
           ),
@@ -520,25 +486,28 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
             const SizedBox(height: 4),
             Text(
               subtext,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
+              color: _bgColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 6, offset: const Offset(3, 3), blurStyle: BlurStyle.inner),
+                BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-3, -3), blurStyle: BlurStyle.inner),
+              ],
             ),
             child: DropdownButtonFormField<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+              icon: Icon(Icons.keyboard_arrow_down_rounded, color: _accentColor),
               iconSize: 24,
-              dropdownColor: Colors.white,
-              style: const TextStyle(fontSize: 15, color: Colors.black87),
+              dropdownColor: _bgColor,
+              style: GoogleFonts.plusJakartaSans(fontSize: 15, color: _primaryColor, fontWeight: FontWeight.w600),
               decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 border: InputBorder.none,
               ),
               items: options.map((String option) {
@@ -551,6 +520,116 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFooterButtons() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _bgColor,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: _primaryColor, width: 2),
+                  boxShadow: [
+                    BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: _onShowNaturalResultPressed,
+                    child: Center(
+                      child: Text(
+                        'Xem kết quả Tự nhiên',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_primaryColor, _accentColor],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: _primaryColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: _onShowIVFResultPressed,
+                    child: Center(
+                      child: Text(
+                        'Xem kết quả IVF',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.verified_user_rounded, size: 14, color: _primaryColor.withOpacity(0.6)),
+                const SizedBox(width: 8),
+                Text(
+                  'Miễn phí • Bảo mật thông tin cá nhân',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: _primaryColor.withOpacity(0.6),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
