@@ -73,10 +73,9 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
         # 1. Map to SART predictor format
         sart_input = map_profile_to_sart(request.profile, ai_diagnosis)
         
-        # 2. Running mock SART logic (Ready for full SART math integration)
-        prob = 35.0
-        if sart_input["female_age"] < 30: prob = 45.0
-        elif sart_input["female_age"] > 40: prob = 15.0
+        # 2. Calculate real SART IVF prob instead of mocking
+        from ai.features.fertility_simulation.sart_ivf_model import predict_ivf_success
+        prob = predict_ivf_success(sart_input)
         
         # 3. Supercharge with AI Report
         ai_report = await generate_final_report_ai("SART (IVF)", prob, request.profile, ai_diagnosis)
