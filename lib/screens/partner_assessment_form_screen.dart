@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'natural_result_screen.dart';
 import 'ivf_result_screen.dart';
+import '../services/api_service.dart';
 
 class PartnerAssessmentFormScreen extends StatefulWidget {
-  const PartnerAssessmentFormScreen({super.key});
+  final Map<String, dynamic> femaleData;
+  const PartnerAssessmentFormScreen({super.key, required this.femaleData});
 
   @override
   State<PartnerAssessmentFormScreen> createState() => _PartnerAssessmentFormScreenState();
@@ -11,6 +13,7 @@ class PartnerAssessmentFormScreen extends StatefulWidget {
 
 class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScreen> {
   static const Color _primaryColor = Color(0xFF73C6D9);
+  final ApiService _apiService = ApiService();
 
   // Mảng lưu trạng thái của 13 câu
   final TextEditingController _ageCtrl = TextEditingController();
@@ -27,6 +30,24 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
   String? _q11Value = 'Vui lòng chọn';
   String? _q12Value = 'Vui lòng chọn';
   String? _q13Value = 'Vui lòng chọn';
+
+  Map<String, dynamic> _gatherMaleData() {
+    return {
+      "age": double.tryParse(_ageCtrl.text) ?? 0.0,
+      "has_children": _q2Value ?? "",
+      "semen_test": _q3Value ?? "",
+      "testosterone": _q4Value ?? "",
+      "testicular_issues": _q5Value ?? "",
+      "varicocele": _q6Value ?? "",
+      "erectile_dysfunction": _q7Value ?? "",
+      "ejaculation_issues": _q8Value ?? "",
+      "smoking": _q9Value ?? "",
+      "alcohol": _q10Value ?? "",
+      "exercise": _q11Value ?? "",
+      "environment": _q12Value ?? "",
+      "stress": _q13Value ?? "",
+    };
+  }
 
   void _onShowNaturalResultPressed() async {
     // Hiện popup loading
@@ -66,14 +87,28 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       },
     );
 
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      final maleData = _gatherMaleData();
+      final result = await _apiService.runSimulation('hunault', widget.femaleData, maleData);
 
-    if (!mounted) return;
-    Navigator.pop(context); // Close dialog
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const NaturalResultScreen()),
-    );
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   void _onShowIVFResultPressed() async {
@@ -114,14 +149,28 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       },
     );
 
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      final maleData = _gatherMaleData();
+      final result = await _apiService.runSimulation('sart_ivf', widget.femaleData, maleData);
 
-    if (!mounted) return;
-    Navigator.pop(context); // Close dialog
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const IVFResultScreen()),
-    );
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override

@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'ivf_result_screen.dart';
 
 class NaturalResultScreen extends StatelessWidget {
-  const NaturalResultScreen({super.key});
+  final Map<String, dynamic>? resultData;
+  const NaturalResultScreen({super.key, this.resultData});
 
   static const Color _primaryColor = Color(0xFF73C6D9);
   static const Color _bgColor = Color(0xFFF5F7FA);
 
   @override
   Widget build(BuildContext context) {
+    final double probability = resultData?['probability_percent']?.toDouble() ?? 42.0;
+    final String interpretation = resultData?['interpretation'] ?? 'Dựa trên thống kê tổng quát, bạn có 42% cơ hội thụ thai tự nhiên.';
+
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
@@ -44,7 +48,7 @@ class NaturalResultScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           children: [
-            _buildChartCard(),
+            _buildChartCard(probability),
             const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -72,6 +76,7 @@ class NaturalResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            _buildInterpretationCard(interpretation),
             _buildFactorsCard(),
             _buildSuggestionsCard(),
             _buildCompareCard(context),
@@ -128,12 +133,40 @@ class NaturalResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChartCard() {
+  Widget _buildInterpretationCard(String interpretation) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Phân tích của AI',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            interpretation,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade800,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChartCard(double probability) {
+    int percentage = probability.round();
     return _buildCard(
       child: Column(
         children: [
           const Text(
-            'Khả năng thành công trong 3 tháng',
+            'Khả năng thành công trong 1 năm tới',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -148,7 +181,7 @@ class NaturalResultScreen extends StatelessWidget {
                 width: 160,
                 height: 160,
                 child: CircularProgressIndicator(
-                  value: 0.42,
+                  value: probability / 100.0,
                   strokeWidth: 16,
                   backgroundColor: Colors.grey.shade200,
                   valueColor: const AlwaysStoppedAnimation<Color>(_primaryColor),
@@ -157,9 +190,9 @@ class NaturalResultScreen extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '42%',
-                    style: TextStyle(
+                   Text(
+                    '$percentage%',
+                    style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       color: _primaryColor,
@@ -179,12 +212,13 @@ class NaturalResultScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
             children: [
-              _buildLegendItem(_primaryColor, 'Thành công (42%)'),
-              const SizedBox(width: 24),
-              _buildLegendItem(Colors.grey.shade300, 'Chưa thành công (58%)'),
+              _buildLegendItem(_primaryColor, 'Thành công ($percentage%)'),
+              _buildLegendItem(Colors.grey.shade300, 'Chưa thành công (${100 - percentage}%)'),
             ],
           ),
         ],
@@ -194,6 +228,7 @@ class NaturalResultScreen extends StatelessWidget {
 
   Widget _buildLegendItem(Color color, String text) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 12,

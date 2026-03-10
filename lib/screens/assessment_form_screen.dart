@@ -62,52 +62,36 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
     return count;
   }
 
-  void _onContinuePressed() async {
-    // Hiện popup loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'AI đang tính toán dữ liệu...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Vui lòng đợi trong giây lát',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  void _onContinuePressed() {
+    // Collect data
+    final femaleData = {
+      "age": double.tryParse(_ageCtrl.text) ?? 0.0,
+      "height": double.tryParse(_heightCtrl.text) ?? 0.0,
+      "weight": double.tryParse(_weightCtrl.text) ?? 0.0,
+      "trying_duration": _q4Value ?? "",
+      "pregnancy_count": _q5Value ?? "",
+      "live_births": _q6Value ?? "",
+      "miscarriages": _q7Value ?? "",
+      "done_ivf": _q8Value ?? "",
+      "menstrual_cycle": _q9Value ?? "",
+      "tracking_ovulation": _q10Value ?? "",
+      "amh_level": _q11Value ?? "",
+      "afc_count": _q12Value ?? "",
+      "hsg_result": _q13Value ?? "",
+      "has_pcos": _q14Value ?? "",
+      "has_endometriosis": _q15Value ?? "",
+      "has_thyroid_issues": _q16Value ?? "",
+      "smoking": _q17Value ?? "",
+      "alcohol": _q18Value ?? "",
+      "exercise": _q19Value ?? "",
+      "stress": _q20Value ?? "",
+    };
 
-    // Giả lập thời gian AI tính toán
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (!mounted) return;
-    Navigator.pop(context); // Close dialog
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PartnerAssessmentFormScreen()),
+      MaterialPageRoute(
+        builder: (_) => PartnerAssessmentFormScreen(femaleData: femaleData),
+      ),
     );
   }
 

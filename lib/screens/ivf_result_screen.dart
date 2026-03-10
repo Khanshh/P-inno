@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'natural_result_screen.dart';
 
 class IVFResultScreen extends StatelessWidget {
-  const IVFResultScreen({super.key});
+  final Map<String, dynamic>? resultData;
+  const IVFResultScreen({super.key, this.resultData});
 
   static const Color _primaryColor = Color(0xFF73C6D9);
   static const Color _bgColor = Color(0xFFF5F7FA);
 
   @override
   Widget build(BuildContext context) {
+    final double probability = resultData?['probability_percent']?.toDouble() ?? 58.0;
+    final String interpretation = resultData?['interpretation'] ?? 'Bạn có cơ hội 58% thành công khi sử dụng phương pháp IVF.';
+
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
@@ -44,7 +48,7 @@ class IVFResultScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           children: [
-            _buildChartCard(),
+            _buildChartCard(probability),
             const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -72,7 +76,8 @@ class IVFResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildEfficiencyCompareCard(),
+            _buildInterpretationCard(interpretation),
+            _buildEfficiencyCompareCard(probability),
             _buildProcedureCard(),
             _buildProsConsCard(),
             _buildCompareCard(context),
@@ -110,6 +115,33 @@ class IVFResultScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildInterpretationCard(String interpretation) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Phân tích của AI',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            interpretation,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade800,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCard({required Widget child}) {
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -129,12 +161,14 @@ class IVFResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChartCard() {
+  Widget _buildChartCard(double probability) {
+    int percentage = probability.round();
     return _buildCard(
       child: Column(
         children: [
           const Text(
-            'Khả năng thành công với IVF',
+            'Khả năng thành công với IVF trên mỗi chu kì (mỗi phôi)',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -149,7 +183,7 @@ class IVFResultScreen extends StatelessWidget {
                 width: 160,
                 height: 160,
                 child: CircularProgressIndicator(
-                  value: 0.58,
+                  value: probability / 100.0,
                   strokeWidth: 16,
                   backgroundColor: Colors.grey.shade200,
                   valueColor: const AlwaysStoppedAnimation<Color>(_primaryColor),
@@ -158,9 +192,9 @@ class IVFResultScreen extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '58%',
-                    style: TextStyle(
+                  Text(
+                    '$percentage%',
+                    style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       color: _primaryColor,
@@ -180,12 +214,13 @@ class IVFResultScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
             children: [
-              _buildLegendItem(_primaryColor, 'Thành công (58%)'),
-              const SizedBox(width: 24),
-              _buildLegendItem(Colors.grey.shade300, 'Chưa thành công (42%)'),
+              _buildLegendItem(_primaryColor, 'Thành công ($percentage%)'),
+              _buildLegendItem(Colors.grey.shade300, 'Chưa thành công (${100 - percentage}%)'),
             ],
           ),
         ],
@@ -195,6 +230,7 @@ class IVFResultScreen extends StatelessWidget {
 
   Widget _buildLegendItem(Color color, String text) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 12,
@@ -213,7 +249,8 @@ class IVFResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEfficiencyCompareCard() {
+  Widget _buildEfficiencyCompareCard(double probability) {
+    int percentage = probability.round();
     return _buildCard(
       child: Column(
         children: [
@@ -239,8 +276,9 @@ class IVFResultScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       const Text(
-                        'Tự nhiên',
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                        'Tự nhiên\n(Dự tính trung bình)',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.black87),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -267,17 +305,18 @@ class IVFResultScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       const Text(
-                        'IVF',
+                        'IVF\n(Trường hợp của bạn)',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: _primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        '58%',
-                        style: TextStyle(
+                      Text(
+                        '$percentage%',
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: _primaryColor,
@@ -288,22 +327,6 @@ class IVFResultScreen extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text(
-              'IVF tăng khả năng thành công +16%',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: _primaryColor,
-              ),
-            ),
           ),
         ],
       ),

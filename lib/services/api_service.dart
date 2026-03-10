@@ -292,4 +292,35 @@ class ApiService {
       throw Exception('Lỗi kết nối: $e');
     }
   }
+
+  /// Run unified simulation via POST /api/v1/simulation/unified
+  Future<Map<String, dynamic>> runSimulation(String modelId, Map<String, dynamic> femaleData, Map<String, dynamic> maleData) async {
+    try {
+      final requestBody = {
+        "model_id": modelId,
+        "profile": {
+          "female": femaleData,
+          "male": maleData,
+        }
+      };
+      
+      final response = await http.post(
+        Uri.parse(ApiConfig.simulationUnified),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      } else {
+        final body = json.decode(utf8.decode(response.bodyBytes));
+        throw Exception(body['detail'] ?? 'Lỗi khi mô phỏng: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
 }

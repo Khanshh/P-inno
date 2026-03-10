@@ -9,6 +9,7 @@ from ai.features.fertility_simulation.hunault_model import (
     HunaultInput, SpermInput, LifestyleFactors, SmokingStatus, 
     AlcoholConsumption, ExerciseFrequency, StressLevel
 )
+from ai.core.clients.llm_client import get_llm_client
 
 # You would ideally use your existing LLM client here
 # For this implementation, I will simulate the AI interpretation logic 
