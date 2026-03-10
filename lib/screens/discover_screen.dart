@@ -1,12 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'infertility_detail_screen.dart';
 import 'ivf_detail_screen.dart';
 import 'icsi_detail_screen.dart';
 import 'iui_detail_screen.dart';
-
 import 'discover_method_detail_screen.dart';
 import 'ktpn_detail_screen.dart';
-
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
 
@@ -17,16 +17,37 @@ class DiscoverScreen extends StatefulWidget {
   State<DiscoverScreen> createState() => _DiscoverScreenState();
 }
 
-class _DiscoverScreenState extends State<DiscoverScreen> {
+class _DiscoverScreenState extends State<DiscoverScreen> with TickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   List<DiscoverMethodModel> _methods = [];
   bool _isLoading = true;
   String? _error;
 
+  late AnimationController _backgroundController;
+
+  // Premium Theme Colors (Modern Health-Tech)
+  final Color _primaryColor = const Color(0xFF1D4E56); // Deep Teal
+  final Color _accentColor = const Color(0xFF73C6D9); // Hopeful gradient start
+  
+  // Soft UI / Neumorphism Colors
+  final Color _bgColor = const Color(0xFFF8FBFF); // Matches Onboarding
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6); // Soft blue-grey shadow
+
   @override
   void initState() {
     super.initState();
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat(reverse: true);
     _loadMethods();
+  }
+
+  @override
+  void dispose() {
+    _backgroundController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMethods() async {
@@ -52,88 +73,151 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      body: Column(
+      backgroundColor: _bgColor,
+      body: Stack(
         children: [
-          _buildHeader(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBannerCard(context),
-                  const SizedBox(height: 25),
-                  const Text(
-                    'Phương pháp hỗ trợ sinh sản',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Các giải pháp y học hiện đại giúp tăng tỷ lệ thụ thai',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _error != null
-                          ? Center(child: Text(_error!))
-                          : _buildGridOptions(),
-                  const SizedBox(height: 25),
-                  _buildConsultationCard(),
-                  const SizedBox(height: 20),
-                ],
+          _buildAnimatedBackground(),
+          Column(
+            children: [
+              _buildGlassHeader(),
+              Expanded(
+                child: _isLoading
+                    ? Center(child: CircularProgressIndicator(color: _primaryColor))
+                    : RefreshIndicator(
+                        onRefresh: _loadMethods,
+                        color: _primaryColor,
+                        backgroundColor: _bgColor,
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHighlightCard(),
+                              const SizedBox(height: 32),
+                              _buildSectionTitle('Phương pháp hỗ trợ sinh sản'),
+                              const SizedBox(height: 8),
+                              _buildSectionSubtitle('Các giải pháp y học hiện đại giúp tăng tỷ lệ thụ thai'),
+                              const SizedBox(height: 24),
+                              _buildGridCards(),
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
+                      ),
               ),
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _backgroundController,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned(
+              top: 50 + (30 * _backgroundController.value),
+              right: -100 + (20 * _backgroundController.value),
+              child: _buildOrb(400, const Color(0xFFE2F1AF).withOpacity(0.4)),
+            ),
+            Positioned(
+              bottom: -150 + (40 * _backgroundController.value),
+              left: -120 + (30 * _backgroundController.value),
+              child: _buildOrb(450, const Color(0xFFD1F1F1).withOpacity(0.6)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOrb(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+        child: Container(color: Colors.transparent),
+      ),
+    );
+  }
+
+  Widget _buildGlassHeader() {
     return Container(
       width: double.infinity,
-      color: const Color(0xFF73C6D9),
-      padding: const EdgeInsets.only(
-        top: 60,
-        left: 20,
-        right: 20,
-        bottom: 24,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], // Hopeful gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryColor.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 24,
+        right: 24,
+        bottom: 32,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              InkWell(
+              GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
-                child: const Icon(Icons.arrow_back, color: Colors.white),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    size: 28,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Tìm Hiểu',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Tìm Hiểu',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           Text(
             'Kiến thức về hiếm muộn và các phương pháp hỗ trợ sinh sản',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.white.withOpacity(0.9),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 17, // +3
+              color: Colors.white.withOpacity(0.95),
+              fontWeight: FontWeight.w600,
               height: 1.4,
             ),
           ),
@@ -142,59 +226,59 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildBannerCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF73C6D9), // Xanh chủ đạo
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF73C6D9).withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const InfertilityDetailScreen(),
-            ),
-          );
-        },
+  Widget _buildHighlightCard() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const InfertilityDetailScreen()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: _bgColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: _darkShadow, blurRadius: 12, offset: const Offset(6, 6)),
+            BoxShadow(color: _lightShadow, blurRadius: 12, offset: const Offset(-6, -6)),
+          ],
+        ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: _bgColor,
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 4, offset: const Offset(2, 2)),
+                  BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+                ],
               ),
-              child: const Icon(
-                Icons.favorite,
-                color: Colors.white,
+              child: Icon(
+                Icons.auto_stories_rounded,
+                color: _primaryColor,
                 size: 28,
               ),
             ),
-            const SizedBox(width: 16),
-            const Expanded(
+            const SizedBox(width: 20),
+            Expanded(
               child: Text(
                 'Tìm hiểu về hiếm muộn',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 21, // +3
+                  fontWeight: FontWeight.w800,
+                  color: _primaryColor,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
-              size: 18,
+            Icon(
+              Icons.chevron_right_rounded,
+              color: _primaryColor.withOpacity(0.5),
+              size: 32,
             ),
           ],
         ),
@@ -202,214 +286,186 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildGridOptions() {
-    if (_methods.isEmpty) {
-      return const Center(child: Text('Không có phương pháp nào'));
-    }
-
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      children: _methods.map((method) => _buildOptionCard(method)).toList(),
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 21, // +3
+        fontWeight: FontWeight.w800,
+        color: _primaryColor,
+        letterSpacing: -0.5,
+      ),
     );
   }
 
-  Widget _buildOptionCard(DiscoverMethodModel method) {
+  Widget _buildSectionSubtitle(String subtitle) {
+    return Text(
+      subtitle,
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 17, // +3
+        color: Colors.grey.shade700,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  Widget _buildGridCards() {
+    if (_methods.isEmpty) {
+      return Center(
+        child: Text(
+          'Không có phương pháp nào',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 17,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate width for 2 columns with spacing
-        // Screen width - padding (40) - spacing (16) / 2
-        final double itemWidth = (MediaQuery.of(context).size.width - 40 - 16) / 2;
-        
-        return Container(
-          width: itemWidth,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _parseColor(method.color).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _getIconData(method.icon),
-                  color: _parseColor(method.color),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                method.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                method.subtitle,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
-                  height: 1.3,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () {
-                   if (method.title == 'IVF') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IVFDetailScreen(),
-                      ),
-                    );
-                  } else if (method.title == 'ICSI') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ICSIDetailScreen(),
-                      ),
-                    );
-                  } else if (method.title == 'IUI') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IUIDetailScreen(),
-                      ),
-                    );
-                  } else if (method.title == 'Kích thích phóng noãn') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const KTPNDetailScreen(),
-                      ),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DiscoverMethodDetailScreen(
-                          methodId: method.id,
-                          title: method.title,
-                        ),
-                      ),
-                    );
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  side: BorderSide(color: Colors.grey.shade300),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
-                  'Tìm hiểu thêm',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        final double itemWidth = (constraints.maxWidth - 16) / 2;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 24,
+          children: _methods.map((method) => _buildMethodCard(method, itemWidth)).toList(),
         );
       },
     );
   }
 
-  Widget _buildConsultationCard() {
+  Widget _buildMethodCard(DiscoverMethodModel method, double width) {
+    String displayTitle = method.title;
+    if (displayTitle.contains('Kích thích')) {
+      displayTitle = 'FSH';
+    }
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: width,
       decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(20),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: _darkShadow, blurRadius: 10, offset: const Offset(5, 5)),
+          BoxShadow(color: _lightShadow, blurRadius: 10, offset: const Offset(-5, -5)),
+        ],
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.phone_in_talk,
-                  color: Color(0xFF73C6D9),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Cần tư vấn trực tiếp?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () => _navigateToDetail(context, method),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _bgColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: [
+                          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 4, offset: const Offset(2, 2)),
+                          BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+                        ],
+                      ),
+                      child: Icon(
+                        _getIconData(method.icon),
+                        color: const Color(0xFF4A9EAD), // Slightly vibrant teal
+                        size: 24,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Liên hệ với bác sĩ chuyên khoa để được giải đáp',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black54,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        displayTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                          letterSpacing: -0.2,
+                          height: 1.2,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF73C6D9),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 12),
+                Text(
+                  method.subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15, // +2
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-              child: const Text(
-                'Tham khảo ngay',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: _bgColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 4, offset: const Offset(2, 2)),
+                      BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Chi tiết',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 16, color: _primaryColor),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
+  }
+
+  void _navigateToDetail(BuildContext context, DiscoverMethodModel method) {
+    final title = method.title;
+    if (title == 'IVF') {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const IVFDetailScreen()));
+    } else if (title == 'ICSI') {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const ICSIDetailScreen()));
+    } else if (title == 'IUI') {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const IUIDetailScreen()));
+    } else if (title.contains('Kích thích')) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const KTPNDetailScreen()));
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DiscoverMethodDetailScreen(
+            methodId: method.id,
+            title: title,
+          ),
+        ),
+      );
+    }
   }
 
   IconData _getIconData(String iconName) {
@@ -425,22 +481,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       case 'bubble_chart_outlined':
         return Icons.bubble_chart_outlined;
       case 'vaccines':
-        return Icons.vaccines;
+        return Icons.vaccines_outlined;
       case 'medication_liquid':
-        return Icons.medication_liquid;
+        return Icons.medication_liquid_outlined;
       default:
-        return Icons.help_outline;
-    }
-  }
-
-  Color _parseColor(String colorString) {
-    try {
-      if (colorString.startsWith('#')) {
-        return Color(int.parse(colorString.replaceFirst('#', '0xFF')));
-      }
-      return Colors.blue;
-    } catch (e) {
-      return Colors.blue;
+        return Icons.health_and_safety_outlined;
     }
   }
 }
