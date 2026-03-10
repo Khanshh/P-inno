@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/chat_message_model.dart';
 import '../services/ai_chat_service.dart';
@@ -11,40 +13,52 @@ class ChatAIScreen extends StatefulWidget {
   State<ChatAIScreen> createState() => _ChatAIScreenState();
 }
 
-class _ChatAIScreenState extends State<ChatAIScreen> {
-  final Color _primaryColor = const Color(0xFF73C6D9);
+class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final AiChatService _aiChatService = AiChatService();
 
-  final List<ChatMessage> _messages = [];
-  final bool _isLoading = false;
-  String? _errorMessage;
+  late AnimationController _backgroundController;
 
-  final List<String> _quickReplies = const [];
+  // Premium Theme Colors (Modern Health-Tech)
+  final Color _primaryColor = const Color(0xFF1D4E56); // Deep Teal
+  final Color _accentColor = const Color(0xFF73C6D9); // Hopeful gradient start
+  
+  // Soft UI / Neumorphism Colors
+  final Color _bgColor = const Color(0xFFF8FBFF); // Matches Onboarding
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6); // Soft blue-grey shadow
+
+  final List<ChatMessage> _messages = [];
+  bool _isThinking = false; // "..." state
+  bool _isTyping = false;   // Streaming text state
+  Timer? _typingTimer;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat(reverse: true);
+
     // Add welcome message
     _messages.add(
       ChatMessage.assistant(
-        'Xin chào! Tôi là trợ lý AI sức khỏe. Tôi có thể giúp gì cho bạn hôm nay?',
+        'Xin chào! Tôi là trợ lý AI sức khỏe. Tôi có thể giải đáp mọi thắc mắc của bạn về hiếm muộn và IVF.',
       ),
     );
   }
 
   @override
   void dispose() {
+    _backgroundController.dispose();
     _textController.dispose();
     _scrollController.dispose();
     _typingTimer?.cancel();
     super.dispose();
   }
-
-  bool _isThinking = false; // "..." state
-  bool _isTyping = false;   // Streaming text state
-  Timer? _typingTimer;
 
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
@@ -66,7 +80,6 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
 
     try {
       // 2. Thinking Delay (Simulate processing + Real API call)
-      // Wait for at least 1.5 seconds AND the API response
       final minDelay = Future.delayed(const Duration(milliseconds: 1500));
       final apiCall = _aiChatService.sendMessage(messages: _messages);
       
@@ -89,9 +102,11 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red,
+            content: Text(_errorMessage!, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.red.shade400,
             duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         );
       }
@@ -140,7 +155,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 60, 
+          _scrollController.position.maxScrollExtent + 90, 
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -155,70 +170,130 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Column(
+      backgroundColor: _bgColor,
+      body: Stack(
         children: [
-          Expanded(
-            child: _buildChatBody(),
+          _buildAnimatedBackground(),
+          Column(
+            children: [
+              _buildGlassHeader(),
+              Expanded(
+                child: _buildChatBody(),
+              ),
+              _buildInputBar(),
+            ],
           ),
-          _buildInputBar(),
         ],
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      title: Row(
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _backgroundController,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned(
+              top: 50 + (30 * _backgroundController.value),
+              right: -100 + (20 * _backgroundController.value),
+              child: _buildOrb(400, const Color(0xFFE2F1AF).withOpacity(0.3)),
+            ),
+            Positioned(
+              bottom: -150 + (40 * _backgroundController.value),
+              left: -120 + (30 * _backgroundController.value),
+              child: _buildOrb(450, const Color(0xFFD1F1F1).withOpacity(0.5)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOrb(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+        child: Container(color: Colors.transparent),
+      ),
+    );
+  }
+
+  Widget _buildGlassHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], // Hopeful gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryColor.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 20,
+        right: 20,
+        bottom: 24,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.15),
+              color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
             ),
-            child: const Icon(
-              Icons.smart_toy,
-              color: Color(0xFF73C6D9),
-              size: 24,
-            ),
+            child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 28),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Trợ lý AI sức khỏe',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                Text(
+                  'Trợ lý AI',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     Container(
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF4CAF50),
+                        color: Color(0xFFE2F1AF),
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Text(
+                    Text(
                       'Đang hoạt động',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF4CAF50),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.95),
                       ),
                     ),
                   ],
@@ -234,12 +309,10 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
   Widget _buildChatBody() {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      // Add thinking bubble at the end if _isThinking is true
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       itemCount: _messages.length + (_isThinking ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == _messages.length) {
-          // This must be the thinking bubble
           return _buildTypingIndicator();
         }
 
@@ -248,7 +321,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
 
         if (message.isUser) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 24),
             child: _buildUserChatBubble(
               message: message.content,
               time: time,
@@ -256,7 +329,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
           );
         } else {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 24),
             child: _buildAIChatBubble(
               message: message.content,
               time: time,
@@ -274,40 +347,35 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Container(
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.only(bottom: 4),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.15),
+              color: _bgColor,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: _darkShadow, blurRadius: 6, offset: const Offset(2, 2)),
+                BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
+              ],
             ),
-            child: const Icon(
-              Icons.smart_toy,
-              color: Color(0xFF73C6D9),
-              size: 18,
-            ),
+            child: Icon(Icons.smart_toy_rounded, color: _accentColor, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(18).copyWith(
-                bottomLeft: const Radius.circular(4),
-              ),
+              color: _bgColor,
+              borderRadius: BorderRadius.circular(24).copyWith(bottomLeft: const Radius.circular(8)),
+              boxShadow: [
+                BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 8, offset: const Offset(4, 4)),
+                BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+              ],
             ),
-            child: _TypingDots(), // Custom widget for animated dots
+            child: const _TypingDots(), 
           ),
         ],
       ),
     );
   }
-  
-  // Removed _buildLoadingIndicator as requested
-
 
   Widget _buildUserChatBubble({
     required String message,
@@ -321,22 +389,25 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
           children: [
             Flexible(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: _primaryColor,
-                  borderRadius: BorderRadius.circular(18).copyWith(
-                    bottomRight: const Radius.circular(4),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(28).copyWith(bottomRight: const Radius.circular(8)),
+                  boxShadow: [
+                    BoxShadow(color: _primaryColor.withOpacity(0.2), blurRadius: 10, offset: const Offset(3, 3)),
+                  ],
                 ),
                 child: Text(
                   message,
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                     color: Colors.white,
-                    height: 1.4,
+                    height: 1.5,
                   ),
                 ),
               ),
@@ -346,9 +417,10 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
         const SizedBox(height: 8),
         Text(
           time,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
           ),
         ),
       ],
@@ -363,40 +435,40 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
-                color: _primaryColor.withOpacity(0.15),
+                color: _bgColor,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: _darkShadow, blurRadius: 6, offset: const Offset(2, 2)),
+                  BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
+                ],
               ),
-              child: const Icon(
-                Icons.smart_toy,
-                color: Color(0xFF73C6D9),
-                size: 18,
-              ),
+              child: Icon(Icons.smart_toy_rounded, color: _accentColor, size: 20),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Flexible(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(18).copyWith(
-                    bottomLeft: const Radius.circular(4),
-                  ),
+                  color: _bgColor,
+                  borderRadius: BorderRadius.circular(28).copyWith(bottomLeft: const Radius.circular(8)),
+                  boxShadow: [
+                    BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 8, offset: const Offset(4, 4)),
+                    BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+                  ],
                 ),
                 child: Text(
                   message,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.black87,
-                    height: 1.4,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _primaryColor,
+                    height: 1.6,
                   ),
                 ),
               ),
@@ -405,12 +477,13 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
         ),
         const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsets.only(left: 42),
+          padding: const EdgeInsets.only(left: 48),
           child: Text(
             time,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade500,
             ),
           ),
         ),
@@ -418,51 +491,20 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
     );
   }
 
-  Widget _buildQuickReplies() {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: _quickReplies.map((reply) {
-        return InkWell(
-          onTap: () {
-            // TODO: Handle quick reply tap
-            _textController.text = reply;
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: _primaryColor,
-                width: 1.5,
-              ),
-            ),
-            child: Text(
-              reply,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: _primaryColor,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildInputBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(40),
+          topRight: Radius.circular(40),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
@@ -470,56 +512,71 @@ class _ChatAIScreenState extends State<ChatAIScreen> {
         top: false,
         child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: Colors.black87),
-              onPressed: () {
-                // TODO: Show attachment options
-              },
+            Container(
+              decoration: BoxDecoration(
+                color: _bgColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: _darkShadow, blurRadius: 6, offset: const Offset(2, 2)),
+                  BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
+                ],
+              ),
+              child: IconButton(
+                icon: Icon(Icons.add_rounded, color: _primaryColor, size: 26),
+                onPressed: () {},
+              ),
             ),
+            const SizedBox(width: 16),
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        decoration: const InputDecoration(
-                          hintText: 'Aa',
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        style: const TextStyle(fontSize: 16),
-                        maxLines: null,
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.emoji_emotions_outlined,
-                          color: Colors.grey),
-                      onPressed: () {
-                        // TODO: Show emoji picker
-                      },
-                    ),
+                  color: _bgColor,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 4, offset: const Offset(2, 2)),
+                    BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
                   ],
+                ),
+                child: TextField(
+                  controller: _textController,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _primaryColor,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Nhập tin nhắn...',
+                    hintStyle: GoogleFonts.plusJakartaSans(
+                      color: Colors.grey.shade400,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
-                Icons.send,
-                color: _isLoading ? Colors.grey : const Color(0xFF73C6D9),
+            const SizedBox(width: 16),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: _primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(2, 4)),
+                ],
               ),
-              onPressed: _isLoading ? null : _sendMessage,
+              child: IconButton(
+                icon: const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                onPressed: _isThinking || _isTyping ? null : _sendMessage,
+              ),
             ),
           ],
         ),
@@ -559,9 +616,9 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildDot(0),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
         _buildDot(1),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
         _buildDot(2),
       ],
     );
@@ -573,15 +630,19 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
       builder: (context, child) {
         final double t = (_controller.value + index * 0.2) % 1.0;
         final double opacity = (t < 0.5) ? 1.0 : 0.3;
+        final double scale = (t < 0.5) ? 1.2 : 0.8;
         
-        return Opacity(
-          opacity: opacity,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.grey,
-              shape: BoxShape.circle,
+        return Transform.scale(
+          scale: scale,
+          child: Opacity(
+            opacity: opacity,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Color(0xFF4A9EAD),
+                shape: BoxShape.circle,
+              ),
             ),
           ),
         );
@@ -589,4 +650,3 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
     );
   }
 }
-
