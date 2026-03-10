@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(
             'Xin chào, ${result['user_full_name']}!',
-            style: GoogleFonts.nunito(),
+            style: GoogleFonts.plusJakartaSans(),
           ),
           backgroundColor: const Color(0xFF73C6D9),
         ),
@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(
             errorMsg,
-            style: GoogleFonts.nunito(),
+            style: GoogleFonts.plusJakartaSans(),
           ),
           backgroundColor: Colors.redAccent,
         ),
@@ -151,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Text(
                               'Đăng Nhập',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Text(
                               'Chào mừng bạn quay trở lại',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 color: Colors.white,
                               ),
@@ -173,10 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _usernameController,
                       keyboardType: TextInputType.text,
-                      style: GoogleFonts.nunito(color: Colors.white),
+                      style: GoogleFonts.plusJakartaSans(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Tên đăng nhập',
-                        labelStyle: GoogleFonts.nunito(color: Colors.white),
+                        labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                         prefixIcon: const Icon(Icons.person, color: Colors.white),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -222,10 +222,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: GoogleFonts.nunito(color: Colors.white),
+                      style: GoogleFonts.plusJakartaSans(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Mật khẩu',
-                        labelStyle: GoogleFonts.nunito(color: Colors.white),
+                        labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                         prefixIcon: const Icon(Icons.lock, color: Colors.white),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -307,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(
                                 'Đăng Nhập',
-                                style: GoogleFonts.nunito(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -324,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             SnackBar(
                               content: Text(
                                 'Tính năng quên mật khẩu đang được phát triển',
-                                style: GoogleFonts.nunito(),
+                                style: GoogleFonts.plusJakartaSans(),
                               ),
                               backgroundColor: const Color(0xFF73C6D9),
                             ),
@@ -332,7 +332,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: Text(
                           'Quên mật khẩu?',
-                          style: GoogleFonts.nunito(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
                             color: Colors.white,
                             decoration: TextDecoration.underline,
@@ -350,7 +350,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Text(
                               'Chưa có tài khoản? ',
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 color: Colors.white,
                               ),
@@ -365,7 +365,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: Text(
                                 'Đăng ký ngay',
-                                style: GoogleFonts.nunito(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 16,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

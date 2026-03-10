@@ -43,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         SnackBar(
           content: Text(
             'Đăng ký thành công!',
-            style: GoogleFonts.nunito(),
+            style: GoogleFonts.plusJakartaSans(),
           ),
           backgroundColor: const Color(0xFF73C6D9),
         ),
@@ -127,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Text(
                               'Đăng Ký',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -138,7 +138,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Text(
                               'Tham gia cùng chúng tôi ngay hôm nay',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 color: Colors.white,
                               ),
@@ -148,10 +148,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             // Name field
                             TextFormField(
                               controller: _nameController,
-                              style: GoogleFonts.nunito(color: Colors.white),
+                              style: GoogleFonts.plusJakartaSans(color: Colors.white),
                               decoration: InputDecoration(
                                 labelText: 'Họ và tên',
-                                labelStyle: GoogleFonts.nunito(color: Colors.white),
+                                labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                                 prefixIcon: const Icon(Icons.person, color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -196,10 +196,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             TextFormField(
   controller: _birthDateController,
   readOnly: true, // Quan trọng: Ngăn bàn phím hiện lên khi bấm vào
-  style: GoogleFonts.nunito(color: Colors.white),
+  style: GoogleFonts.plusJakartaSans(color: Colors.white),
   decoration: InputDecoration(
     labelText: 'Ngày sinh',
-    labelStyle: GoogleFonts.nunito(color: Colors.white),
+    labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
     prefixIcon: const Icon(Icons.calendar_today, color: Colors.white),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
@@ -279,10 +279,10 @@ const SizedBox(height: 20),
                             TextFormField(
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
-                              style: GoogleFonts.nunito(color: Colors.white),
+                              style: GoogleFonts.plusJakartaSans(color: Colors.white),
                               decoration: InputDecoration(
                                 labelText: 'Số điện thoại',
-                                labelStyle: GoogleFonts.nunito(color: Colors.white),
+                                labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                                 prefixIcon: const Icon(Icons.phone, color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -329,10 +329,10 @@ const SizedBox(height: 20),
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              style: GoogleFonts.nunito(color: Colors.white),
+                              style: GoogleFonts.plusJakartaSans(color: Colors.white),
                               decoration: InputDecoration(
                                 labelText: 'Email',
-                                labelStyle: GoogleFonts.nunito(color: Colors.white),
+                                labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                                 prefixIcon: const Icon(Icons.email, color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -381,10 +381,10 @@ const SizedBox(height: 20),
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
-                              style: GoogleFonts.nunito(color: Colors.white),
+                              style: GoogleFonts.plusJakartaSans(color: Colors.white),
                               decoration: InputDecoration(
                                 labelText: 'Mật khẩu',
-                                labelStyle: GoogleFonts.nunito(color: Colors.white),
+                                labelStyle: GoogleFonts.plusJakartaSans(color: Colors.white),
                                 prefixIcon: const Icon(Icons.lock, color: Colors.white),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -457,7 +457,7 @@ const SizedBox(height: 20),
                                 ),
                                 child: Text(
                                   'Đăng Ký',
-                                  style: GoogleFonts.nunito(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -473,7 +473,7 @@ const SizedBox(height: 20),
                           children: [
                             Text(
                               'Đã có tài khoản? ',
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 16,
                                 color: Colors.white,
                               ),
@@ -488,7 +488,7 @@ const SizedBox(height: 20),
                               },
                               child: Text(
                                 'Đăng nhập ngay',
-                                style: GoogleFonts.nunito(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 16,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

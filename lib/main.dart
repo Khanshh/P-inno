@@ -16,9 +16,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF73C6D9), // Màu xanh ngọc
+          seedColor: const Color(0xFF1D4E56),
           brightness: Brightness.light,
         ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(),
         useMaterial3: true,
       ),
       home: const OnboardingScreen(),
