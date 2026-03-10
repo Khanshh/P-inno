@@ -12,14 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sức Khỏe Thai Sản',
+      title: 'ENA',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF73C6D9), // Màu xanh ngọc
           brightness: Brightness.light,
         ),
-        textTheme: GoogleFonts.nunitoTextTheme(),
         useMaterial3: true,
       ),
       home: const OnboardingScreen(),

@@ -1,3 +1,5 @@
+import json
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from datetime import datetime
@@ -10,42 +12,14 @@ from app.schemas.user import UserProfile
 router = APIRouter()
 
 
-# Mock user database
-_mock_users = [
-    {
-        "id": "user-1",
-        "username": "admin",
-        "full_name": "Admin User",
-        "patient_code": "ADMIN001",
-        "role": "admin",
-        "email": "admin@example.com",
-        "phone": "+84 900 000 001",
-        "age": 35,
-        "address": "Hà Nội, Việt Nam",
-    },
-    {
-        "id": "user-2",
-        "username": "user",
-        "full_name": "Nguyễn Thị A",
-        "patient_code": "BN0001",
-        "role": "user",
-        "email": "patient@example.com",
-        "phone": "+84 912 345 678",
-        "age": 28,
-        "address": "Hà Nội, Việt Nam",
-    },
-    {
-        "id": "user-3",
-        "username": "user2",
-        "full_name": "Trần Văn B",
-        "patient_code": "BN0002",
-        "role": "user",
-        "email": "user2@example.com",
-        "phone": "+84 912 345 679",
-        "age": 32,
-        "address": "Hồ Chí Minh, Việt Nam",
-    },
-]
+# Load mock user database from JSON
+_users_path = os.path.join(os.getcwd(), "data", "users.json")
+try:
+    with open(_users_path, "r", encoding="utf-8") as f:
+        _mock_users = json.load(f)
+except Exception as e:
+    print(f"Error loading users: {e}")
+    _mock_users = []
 
 
 @router.get("/admin/users", response_model=List[UserProfile])

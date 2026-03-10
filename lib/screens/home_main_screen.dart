@@ -5,7 +5,9 @@ import 'notification_screen.dart';
 import 'news_screen.dart';
 import 'profile_screen.dart';
 import 'health_assessment_screen.dart';
-import 'community_screen.dart';
+import 'simulation_screen.dart';
+import 'simulation_intro_screen.dart';
+import 'hospital_list_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
@@ -191,8 +193,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           ),
           FeatureModel(
             id: 'feature-2',
-            title: 'Đánh giá sức khỏe',
-            icon: 'monitor_heart_outlined',
+            title: 'Gợi ý bệnh viện',
+            icon: 'medical_services_outlined',
             order: 2,
           ),
           FeatureModel(
@@ -265,6 +267,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         return Icons.search;
       case 'monitor_heart_outlined':
         return Icons.monitor_heart_outlined;
+      case 'medical_services_outlined':
+        return Icons.local_hospital;
       case 'tips_and_updates_outlined':
         return Icons.tips_and_updates_outlined;
       default:
@@ -281,16 +285,29 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _buildHomeContent(),
+      const ChatAIScreen(),
+      const SimulationIntroScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadData,
-          color: const Color(0xFF73C6D9),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: pages[_selectedIndex],
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: _loadData,
+        color: const Color(0xFF73C6D9),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               _buildGradientAppBar(),
               const SizedBox(height: 24),
               _buildSectionHeader('Chức năng'),
@@ -320,6 +337,12 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (_) => const HealthAssessmentScreen(),
+                                          ),
+                                        );
+                                      } else if (item.title == 'Gợi ý bệnh viện') {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => const HospitalListScreen(),
                                           ),
                                         );
                                       } else if (item.title == 'Mẹo hôm nay') {
@@ -381,9 +404,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             ],
           ),
         ),
-        ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -424,25 +445,25 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               size: 28,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chào mừng, Admin',
+                  'Nguyễn Văn A',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  'Quản trị viên hệ thống',
+                  'Thành viên ',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -520,21 +541,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        if (index == 1) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ChatAIScreen()),
-          );
-        } else if (index == 2) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const CommunityScreen()),
-          );
-        } else if (index == 3) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          );
-        } else {
-          setState(() => _selectedIndex = index);
-        }
+        setState(() => _selectedIndex = index);
       },
       type: BottomNavigationBarType.fixed,
       selectedItemColor: _primaryColor,
@@ -549,8 +556,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           label: 'Chat AI',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.groups_outlined),
-          label: 'Cộng đồng',
+          icon: Icon(Icons.analytics_outlined),
+          label: 'Mô phỏng',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
@@ -562,6 +569,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 }
 
 class _FeatureCard extends StatelessWidget {
+
   const _FeatureCard({
     required this.feature,
     required this.primaryColor,

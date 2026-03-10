@@ -153,7 +153,10 @@ class _MedicalRecordScreenState extends State<MedicalRecordScreen> {
                   ),
                   TextButton.icon(
                     onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
                     },
                     icon: const Icon(Icons.logout, color: Colors.white, size: 18),
                     label: const Text(
