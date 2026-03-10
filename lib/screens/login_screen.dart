@@ -50,10 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => const HomeMainScreen(),
         ),
+        (route) => false,
       );
     } catch (e) {
       if (!mounted) return;
@@ -135,10 +136,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     width: 3,
                                   ),
                                 ),
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color: Colors.white,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(18.0),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
                             ),

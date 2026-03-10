@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo/Icon
+                  // Logo
                   Container(
                     width: 160,
                     height: 160,
@@ -40,24 +40,27 @@ class HomeScreen extends StatelessWidget {
                         width: 3,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.favorite,
-                      size: 90,
-                      color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(25.0),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
 
                   // Title
                   Text(
-                    'Sức Khỏe Thai Sản',
+                    'ENA',
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.nunito(
-                      fontSize: 32,
+                      fontSize: 48,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      letterSpacing: 2.0,
                     ),
                   ),
                   const SizedBox(height: 60),
