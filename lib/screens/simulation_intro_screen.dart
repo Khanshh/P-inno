@@ -1,43 +1,181 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'assessment_form_screen.dart';
 
-class SimulationIntroScreen extends StatelessWidget {
+class SimulationIntroScreen extends StatefulWidget {
   const SimulationIntroScreen({super.key});
+
+  @override
+  State<SimulationIntroScreen> createState() => _SimulationIntroScreenState();
+}
+
+class _SimulationIntroScreenState extends State<SimulationIntroScreen> with TickerProviderStateMixin {
+  late AnimationController _backgroundController;
+
+  // Premium Theme Colors
+  final Color _primaryColor = const Color(0xFF1D4E56);
+  final Color _accentColor = const Color(0xFF73C6D9);
+  
+  // Soft UI / Neumorphism Colors
+  final Color _bgColor = const Color(0xFFF8FBFF);
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6);
+
+  @override
+  void initState() {
+    super.initState();
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _backgroundController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _backgroundController,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned(
+              top: -100 + (50 * _backgroundController.value),
+              left: -150 + (30 * _backgroundController.value),
+              child: _buildOrb(450, const Color(0xFFE0F7F7).withOpacity(0.6)),
+            ),
+            Positioned(
+              top: 300 - (20 * _backgroundController.value),
+              right: -120 + (40 * _backgroundController.value),
+              child: _buildOrb(380, const Color(0xFFFAF1E2).withOpacity(0.5)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOrb(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+        child: Container(color: Colors.transparent),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Mô phỏng cá nhân',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
+      backgroundColor: _bgColor,
+      body: Stack(
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 24, top: 8),
-              child: Column(
-                children: [
-                  _buildHeroCard(),
-                  const SizedBox(height: 16),
-                  _buildWarningCard(),
-                  const SizedBox(height: 16),
-                  _buildStepsCard(),
-                ],
+          _buildAnimatedBackground(),
+          Column(
+            children: [
+              _buildGlassHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                  child: Column(
+                    children: [
+                      _buildHeroCard(),
+                      const SizedBox(height: 24),
+                      _buildWarningCard(),
+                      const SizedBox(height: 24),
+                      _buildStepsCard(),
+                      const SizedBox(height: 100), // Khoảng trống cho footer
+                    ],
+                  ),
+                ),
               ),
+            ],
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildFooter(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlassHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], // Hopeful gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryColor.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 20,
+        right: 20,
+        bottom: 24,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+            ),
+            child: const Icon(Icons.auto_graph_rounded, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mô phỏng cá nhân',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Công cụ dự đoán sinh sản',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.95),
+                  ),
+                ),
+              ],
             ),
           ),
-          _buildFooter(context),
         ],
       ),
     );
@@ -45,36 +183,53 @@ class SimulationIntroScreen extends StatelessWidget {
 
   Widget _buildHeroCard() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF73C6D9), Color(0xFF2C5F7C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.6), blurRadius: 16, offset: const Offset(8, 8)),
+          BoxShadow(color: _lightShadow, blurRadius: 16, offset: const Offset(-8, -8)),
+        ],
       ),
       child: Column(
         children: [
-          const Text(
-            'Mô phỏng khả năng có thai',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _bgColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 8, offset: const Offset(4, 4)),
+                BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+              ],
+            ),
+            child: Icon(Icons.monitor_heart_rounded, size: 48, color: _primaryColor),
+          ),
+          const SizedBox(height: 24),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              'Mô phỏng khả năng có thai',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                color: _primaryColor,
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                height: 1.3,
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
-            'Công cụ dự đoán dựa trên dữ liệu y khoa, giúp bạn hiểu rõ hơn về khả năng sinh sản và lựa chọn phương pháp phù hợp',
+            'Công cụ dự đoán dựa trên dữ liệu y khoa, giúp bạn hiểu rõ hơn về khả năng sinh sản và lựa chọn phương pháp phù hợp.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 15,
-              height: 1.5,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.grey.shade700,
+              fontSize: 16,
+              height: 1.6,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -84,37 +239,50 @@ class SimulationIntroScreen extends StatelessWidget {
 
   Widget _buildWarningCard() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.orange.shade200, width: 1.5),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 12, offset: const Offset(4, 4)),
+          BoxShadow(color: _lightShadow, blurRadius: 12, offset: const Offset(-4, -4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.info_outline, color: Colors.orange),
-              SizedBox(width: 8),
-              Text(
-                'Lưu ý quan trọng',
-                style: TextStyle(
-                  color: Colors.deepOrange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.info_outline_rounded, color: Colors.orange.shade700, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Lưu ý quan trọng',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.orange.shade800,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Text(
+          const SizedBox(height: 12),
+          Text(
             'Kết quả chỉ mang tính chất tham khảo, dựa trên dữ liệu thống kê. Không thay thế cho tư vấn y tế chuyên nghiệp.',
-            style: TextStyle(
-              color: Colors.brown,
-              fontSize: 14,
-              height: 1.5,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.brown.shade700,
+              fontSize: 15,
+              height: 1.6,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -124,88 +292,117 @@ class SimulationIntroScreen extends StatelessWidget {
 
   Widget _buildStepsCard() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0F7FA), // Xanh dương cực nhạt
-        borderRadius: BorderRadius.circular(16),
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.6), blurRadius: 16, offset: const Offset(8, 8)),
+          BoxShadow(color: _lightShadow, blurRadius: 16, offset: const Offset(-8, -8)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Cách thức hoạt động',
-            style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+            style: GoogleFonts.plusJakartaSans(
+              color: _primaryColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
             ),
           ),
-          const SizedBox(height: 20),
-          _buildStepItem(1, 'Hoàn thành khảo sát với các câu hỏi về tuổi, tiền sử bệnh và lối sống.'),
+          const SizedBox(height: 24),
+          _buildStepItem(1, 'Hoàn thành khảo sát', 'Trả lời các câu hỏi về thông tin cá nhân và y tế.'),
           const SizedBox(height: 16),
-          _buildStepItem(2, 'Hệ thống phân tích dựa trên tiêu chuẩn y khoa và dữ liệu thống kê.'),
+          _buildStepItem(2, 'Hệ thống phân tích', 'Xử lý dữ liệu dựa trên mô hình thuật toán tiên tiến.'),
           const SizedBox(height: 16),
-          _buildStepItem(3, 'Nhận kết quả chi tiết với biểu đồ trực quan, dự đoán và lời khuyên.'),
-          const SizedBox(height: 20),
-          const Divider(height: 1, color: Colors.white),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.access_time, color: Colors.grey.shade600, size: 20),
-              const SizedBox(width: 8),
-              RichText(
-                text: TextSpan(
-                  text: 'Thời gian hoàn thành: ',
-                  style: TextStyle(color: Colors.grey.shade800, fontSize: 14),
-                  children: const [
-                    TextSpan(
-                      text: '3-5 phút',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
+          _buildStepItem(3, 'Nhận kết quả', 'Xem chi tiết đánh giá về tình trạng sức khỏe sinh sản.'),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _primaryColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.access_time_rounded, color: _primaryColor, size: 20),
+                const SizedBox(width: 8),
+                RichText(
+                  text: TextSpan(
+                    text: 'Thời gian hoàn thành: ',
+                    style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade700, fontSize: 14, fontWeight: FontWeight.w600),
+                    children: [
+                      TextSpan(
+                        text: '3-5 phút',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: _primaryColor),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStepItem(int step, String text) {
+  Widget _buildStepItem(int step, String title, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 26,
-          height: 26,
-          margin: const EdgeInsets.only(top: 2),
-          decoration: const BoxDecoration(
-            color: Color(0xFF73C6D9),
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: _primaryColor.withOpacity(0.3), blurRadius: 6, offset: const Offset(2, 2)),
+            ],
           ),
           child: Center(
             child: Text(
               step.toString(),
-              style: const TextStyle(
+              style: GoogleFonts.plusJakartaSans(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 16),
         Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 14.5,
-              height: 1.5,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  color: _primaryColor,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                text,
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.grey.shade700,
+                  fontSize: 14,
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -214,18 +411,18 @@ class SimulationIntroScreen extends StatelessWidget {
 
   Widget _buildFooter(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(40),
+          topRight: Radius.circular(40),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, -2),
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
@@ -234,7 +431,7 @@ class SimulationIntroScreen extends StatelessWidget {
         children: [
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: 56,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -243,29 +440,45 @@ class SimulationIntroScreen extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF73C6D9),
+                backgroundColor: _primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
-                elevation: 0,
+                elevation: 4,
+                shadowColor: _primaryColor.withOpacity(0.5),
               ),
-              child: const Text(
-                'Bắt đầu khảo sát ->',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Bắt đầu khảo sát',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            'Miễn phí • Bảo mật thông tin cá nhân',
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 13,
-            ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.shield_rounded, color: Colors.grey.shade500, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Miễn phí & Bảo mật tuyệt đối',
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),

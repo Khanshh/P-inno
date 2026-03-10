@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/medical_record_screen.dart';
 
 class LoginDialog extends StatelessWidget {
   const LoginDialog({super.key});
@@ -244,11 +243,6 @@ class LoginDialog extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           Navigator.of(context).pop(); // Close dialog
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const MedicalRecordScreen(),
-            ),
-          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,

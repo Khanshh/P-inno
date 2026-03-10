@@ -5,47 +5,64 @@ import 'assessment_form_screen.dart';
 class HealthAssessmentScreen extends StatelessWidget {
   const HealthAssessmentScreen({super.key});
 
-  final Color _primaryColor = const Color(0xFF73C6D9); // Main color
+  // Premium Theme Colors
+  final Color _primaryColor = const Color(0xFF1D4E56);
+  final Color _accentColor = const Color(0xFF73C6D9);
+
+  // Soft UI / Neumorphism Colors
+  final Color _bgColor = const Color(0xFFF8FBFF);
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: _bgColor,
       body: Stack(
         children: [
           // 1. Header Background
           Container(
-            height: 260, // Slightly taller to be safe
+            height: 280,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: _primaryColor, // Unified color
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+              gradient: LinearGradient(
+                colors: [_primaryColor, _accentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryColor.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Placeholder for Moved Back button
-                    const SizedBox(height: 36),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 56), // Placeholder for Back button
                     Text(
                       "Theo Dõi Sức Khỏe",
-                      style: GoogleFonts.nunito(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
+                        letterSpacing: -1,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Đánh giá tình trạng của bạn",
-                      style: GoogleFonts.nunito(
-                        fontSize: 18,
+                      "Đánh giá chi tiết tình trạng của bạn",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
                         color: Colors.white.withOpacity(0.9),
                         fontWeight: FontWeight.w500,
                       ),
@@ -60,69 +77,68 @@ class HealthAssessmentScreen extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: SingleChildScrollView(
-              // Remove topmost padding, use SizedBox instead
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  const SizedBox(height: 140), // Adjusted spacing to reveal header text
+                  const SizedBox(height: 160), // Adjusted spacing to reveal header text
 
                   // Card 1: Intro
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        color: _bgColor,
+                        borderRadius: BorderRadius.circular(32),
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
+                          BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 16, offset: const Offset(8, 8)),
+                          BoxShadow(color: _lightShadow, blurRadius: 16, offset: const Offset(-8, -8)),
                         ],
                       ),
                       child: Column(
                         children: [
                           // Icon Container
                           Container(
-                            width: 80,
-                            height: 80,
+                            width: 88,
+                            height: 88,
                             decoration: BoxDecoration(
-                              color: _primaryColor, // Unified color
-                              borderRadius: BorderRadius.circular(20),
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [_primaryColor, _accentColor],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               boxShadow: [
-                                BoxShadow(
-                                  color: _primaryColor.withOpacity(0.4),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
+                                BoxShadow(color: _primaryColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
                               ],
                             ),
                             child: const Icon(
-                              Icons.auto_awesome,
+                              Icons.auto_awesome_rounded,
                               color: Colors.white,
-                              size: 40,
+                              size: 44,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             "Đánh giá sức khỏe sinh sản",
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF333333),
+                              fontWeight: FontWeight.w800,
+                              color: _primaryColor,
+                              letterSpacing: -0.5,
                             ),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             "Chỉ mất 5 phút để hoàn thành bảng đánh giá và nhận được báo cáo chi tiết về tình trạng sức khỏe của bạn.",
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(
-                              fontSize: 16,
-                              color: Colors.grey[600],
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              color: Colors.blueGrey.shade600,
                               height: 1.5,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -130,42 +146,45 @@ class HealthAssessmentScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // Card 2: Benefits
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _primaryColor.withOpacity(0.2), width: 1), // Light border
+                        color: _bgColor,
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(color: _accentColor.withOpacity(0.3), width: 1.5),
                         boxShadow: [
-                          BoxShadow(
-                            color: _primaryColor.withOpacity(0.05),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
+                          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 12, offset: const Offset(4, 4)),
+                          BoxShadow(color: _lightShadow, blurRadius: 12, offset: const Offset(-4, -4)),
                         ],
                       ),
                       child: Column(
                         children: [
                           _buildBenefitItem(
-                            icon: Icons.analytics_outlined,
+                            icon: Icons.analytics_rounded,
                             title: "Phân tích rủi ro",
                             subtitle: "Nhận diện sớm các nguy cơ tiềm ẩn",
                           ),
-                          Divider(height: 24, thickness: 0.5, color: _primaryColor.withOpacity(0.2)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Divider(height: 1, thickness: 1, color: _accentColor.withOpacity(0.2)),
+                          ),
                           _buildBenefitItem(
-                            icon: Icons.local_hospital_outlined,
+                            icon: Icons.local_hospital_rounded,
                             title: "Gợi ý bệnh viện",
                             subtitle: "Đề xuất địa chỉ uy tín phù hợp",
                           ),
-                          Divider(height: 24, thickness: 0.5, color: _primaryColor.withOpacity(0.2)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Divider(height: 1, thickness: 1, color: _accentColor.withOpacity(0.2)),
+                          ),
                           _buildBenefitItem(
-                            icon: Icons.bolt_outlined,
+                            icon: Icons.bolt_rounded,
                             title: "Kết quả tức thì",
                             subtitle: "Nhận báo cáo ngay sau khi hoàn thành",
                           ),
@@ -174,32 +193,39 @@ class HealthAssessmentScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   // Card 3: Warning
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFDE7),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFFF9C4), width: 1),
+                        color: const Color(0xFFFFFBE6),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFFE58F), width: 1.5),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.lightbulb_outline, color: Color(0xFFFBC02D), size: 24),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFF1B8),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFFFAAD14), size: 20),
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               "Lưu ý: Kết quả mang tính tham khảo, không thay thế chẩn đoán của bác sĩ chuyên khoa.",
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
-                                color: const Color(0xFFF57F17),
-                                height: 1.4,
-                                fontStyle: FontStyle.italic,
+                                color: const Color(0xFFD4380D),
+                                height: 1.5,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -208,50 +234,56 @@ class HealthAssessmentScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 40),
 
                   // Action Button
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 64,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _primaryColor, // Unified color
-                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [_primaryColor, _accentColor],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
                           boxShadow: [
-                            BoxShadow(
-                              color: _primaryColor.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
+                            BoxShadow(color: _primaryColor.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 8)),
                           ],
                         ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const AssessmentFormScreen()));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            "Bắt đầu đánh giá ngay",
-                            style: GoogleFonts.nunito(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const AssessmentFormScreen()));
+                            },
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "Bắt đầu đánh giá ngay",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 48),
                 ],
               ),
             ),
@@ -263,16 +295,17 @@ class HealthAssessmentScreen extends StatelessWidget {
             left: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.only(top: 12, left: 16),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Container(
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                    child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
                   ),
                 ),
               ),
@@ -287,13 +320,13 @@ class HealthAssessmentScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: _primaryColor.withOpacity(0.1), // Unified light color
-            borderRadius: BorderRadius.circular(12),
+            color: _accentColor.withOpacity(0.15),
+            shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: _primaryColor, size: 24), // Unified color
+          child: Icon(icon, color: _primaryColor, size: 26),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -302,18 +335,20 @@ class HealthAssessmentScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF333333),
+                  fontWeight: FontWeight.w800,
+                  color: _primaryColor,
+                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: Colors.blueGrey.shade600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
