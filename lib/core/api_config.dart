@@ -27,5 +27,6 @@ class ApiConfig {
   static String get medicalRecords => '$baseUrl$apiPrefix/medical-records';
   static String get patients => '$baseUrl$apiPrefix/patients';
   static String get authLogin => '$baseUrl$apiPrefix/auth/login';
+  static String get authRegister => '$baseUrl$apiPrefix/auth/register';
   static String get simulationUnified => '$baseUrl$apiPrefix/simulation/unified';
 }

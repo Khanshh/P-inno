@@ -86,11 +86,15 @@ async def interpret_symptoms_with_ai(profile: ComprehensiveFertilityProfile) -> 
     # Construction of a prompt for OpenAI to act as a Clinical Classifier
     # In a real app, you would call: await llm_client.chat(...)
     
+    bmi_val = 22.0
+    if f.height and float(f.height) > 0:
+        bmi_val = float(f.weight) / ((float(f.height)/100)**2)
+
     symptoms_summary = f"""
     - Menstrual Cycle: {f.menstrual_cycle}
     - Ovulation Tracking: {f.tracking_ovulation}
     - Known Conditions: PCOS ({f.has_pcos}), Endometriosis ({f.has_endometriosis}), Thyroid ({f.has_thyroid_issues})
-    - BMI: {round(f.weight / ((f.height/100)**2), 1)}
+    - BMI: {round(bmi_val, 1)}
     """
     
     # LOGIC (Representing what AI would return based on Rotterdam/SART criteria)
@@ -188,7 +192,9 @@ def map_profile_to_sart(profile: ComprehensiveFertilityProfile, ai_diagnosis: Di
     f = profile.female
     
     # Calculate BMI
-    bmi = f.weight / ((f.height/100)**2)
+    bmi = 22.0
+    if f.height and float(f.height) > 0:
+        bmi = float(f.weight) / ((float(f.height)/100)**2)
     
     return {
         "female_age": f.age,

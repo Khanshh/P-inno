@@ -219,28 +219,25 @@ class ApiService {
     }
   }
 
-  /// Register a new patient via POST /api/v1/patients
+  /// Register a new user via POST /api/v1/auth/register
   Future<Map<String, dynamic>> registerPatient(Map<String, dynamic> patientData) async {
     try {
       final response = await http.post(
-        Uri.parse(ApiConfig.patients),
+        Uri.parse(ApiConfig.authRegister),
         headers: {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'full_name': patientData['fullName'] ?? '',
-          'dob': patientData['dob'] ?? '',
-          'gender': patientData['gender'] ?? 'Nam',
-          'cccd': patientData['cccd'] ?? '',
-          'bhyt': patientData['bhyt'] ?? '',
-          'ethnicity': patientData['ethnicity'],
+          'fullname': patientData['fullName'] ?? '',
+          'username': patientData['email'] ?? patientData['phone'] ?? '',
+          'password': patientData['password'] ?? '123456',
           'phone': patientData['phone'] ?? '',
+          'dob': patientData['dob'] ?? '',
           'email': patientData['email'] ?? '',
-          'address': patientData['address'] ?? '',
         }),
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
       } else {
         final body = json.decode(response.body);

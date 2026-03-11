@@ -120,6 +120,11 @@ def create_app() -> FastAPI:
     videos_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/static/videos", StaticFiles(directory=str(videos_dir)), name="videos")
 
+    # Serve image files from data/images/ as static files
+    images_dir = Path(__file__).parent.parent / "data" / "images"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/static/images", StaticFiles(directory=str(images_dir)), name="images")
+
     return app
 
 
