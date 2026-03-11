@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'video_player_screen.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:markdown/markdown.dart' as md;
 import '../services/api_service.dart';
 import '../models/discover_model.dart';
 
@@ -122,10 +123,14 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> with TickerProviderSt
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
-        child: Container(color: Colors.transparent),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color,
+            color.withOpacity(0.0),
+          ],
+        ),
       ),
     );
   }
@@ -281,13 +286,26 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> with TickerProviderSt
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionTitle(Icons.menu_book_rounded, 'Chi tiết phương pháp'),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               MarkdownBody(
                 data: _detail?.content ?? 'Đang cập nhật nội dung...',
                 styleSheet: MarkdownStyleSheet(
-                  p: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.blueGrey.shade800, height: 1.6),
+                  p: GoogleFonts.plusJakartaSans(fontSize: 16, color: Colors.blueGrey.shade800, height: 1.6, fontWeight: FontWeight.w500),
                   strong: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, color: _primaryColor),
+                  h1: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: _primaryColor),
+                  h1Padding: const EdgeInsets.only(top: 0, bottom: 0),
+                  h2: GoogleFonts.plusJakartaSans(fontSize: 20, fontWeight: FontWeight.w800, color: _primaryColor),
+                  h2Padding: const EdgeInsets.only(top: 12, bottom: 8),
+                  h3: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: _primaryColor),
+                  h3Padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  listBullet: TextStyle(color: _primaryColor),
                 ),
+                extensionSet: md.ExtensionSet.gitHubFlavored,
+                builders: {
+                  'h1': TitleHeadingBuilder(_primaryColor),
+                  'h2': CustomHeadingBuilder(_primaryColor),
+                  'h3': CustomHeadingBuilder(_primaryColor),
+                },
               ),
             ],
           ),
@@ -319,19 +337,16 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> with TickerProviderSt
   Widget _buildGlassCard({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
-          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(color: _darkShadow.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(padding: const EdgeInsets.all(24), child: child),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: child,
       ),
     );
   }
@@ -585,6 +600,57 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> with TickerProviderSt
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CustomHeadingBuilder extends MarkdownElementBuilder {
+  final Color primaryColor;
+
+  CustomHeadingBuilder(this.primaryColor);
+
+  @override
+  Widget visitText(md.Text text, TextStyle? preferredStyle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.label_important_rounded, color: primaryColor, size: preferredStyle?.fontSize ?? 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text.text,
+            style: preferredStyle,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class TitleHeadingBuilder extends MarkdownElementBuilder {
+  final Color primaryColor;
+
+  TitleHeadingBuilder(this.primaryColor);
+
+  @override
+  Widget visitText(md.Text text, TextStyle? preferredStyle) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 0, bottom: 4),
+      padding: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: primaryColor.withOpacity(0.15), width: 2)),
+      ),
+      child: Text(
+        text.text,
+        style: preferredStyle?.copyWith(
+          fontSize: 26,
+          fontWeight: FontWeight.w900,
+          color: primaryColor,
+          letterSpacing: -0.5,
+          height: 1.3,
+        ),
       ),
     );
   }
