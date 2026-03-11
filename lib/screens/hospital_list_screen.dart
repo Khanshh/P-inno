@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HospitalListScreen extends StatefulWidget {
   const HospitalListScreen({super.key});
@@ -9,7 +10,8 @@ class HospitalListScreen extends StatefulWidget {
   State<HospitalListScreen> createState() => _HospitalListScreenState();
 }
 
-class _HospitalListScreenState extends State<HospitalListScreen> with TickerProviderStateMixin {
+class _HospitalListScreenState extends State<HospitalListScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late AnimationController _backgroundController;
 
@@ -25,35 +27,40 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
       'address': '43 Tràng Thi, Hoàn Kiếm, Hà Nội',
       'distance': 2.5,
       'rating': 4.8,
-      'image': 'https://images.unsplash.com/photo-1586773860418-d37222d8fce2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+      'image':
+          'https://images.unsplash.com/photo-1586773860418-d37222d8fce2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
     },
     {
       'name': 'Bệnh viện Từ Dũ',
       'address': '284 Cống Quỳnh, Quận 1, TP.HCM',
       'distance': 5.0,
       'rating': 4.9,
-      'image': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+      'image':
+          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
     },
     {
       'name': 'Bệnh viện Bưu Điện',
       'address': '49 Trần Điền, Hoàng Mai, Hà Nội',
       'distance': 1.2,
       'rating': 4.7,
-      'image': 'https://images.unsplash.com/photo-1512678080530-7760d81faba6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+      'image':
+          'https://images.unsplash.com/photo-1512678080530-7760d81faba6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
     },
     {
       'name': 'Bệnh viện Phụ sản Hà Nội',
       'address': '929 La Thành, Ba Đình, Hà Nội',
       'distance': 3.8,
       'rating': 4.6,
-      'image': 'https://images.unsplash.com/photo-1516549655169-df83a0774514?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+      'image':
+          'https://images.unsplash.com/photo-1516549655169-df83a0774514?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
     },
     {
       'name': 'Bệnh viện Phụ sản Mekong',
       'address': '243-243A-243B Hoàng Văn Thụ, Tân Bình, TP.HCM',
       'distance': 4.2,
       'rating': 4.5,
-      'image': 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
+      'image':
+          'https://images.unsplash.com/photo-1504439468489-c8920d796a29?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
     },
   ];
 
@@ -82,7 +89,8 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
     String query = _searchController.text.toLowerCase();
     setState(() {
       _filteredHospitals = _allHospitals.where((h) {
-        return h['name'].toLowerCase().contains(query) || h['address'].toLowerCase().contains(query);
+        return h['name'].toLowerCase().contains(query) ||
+            h['address'].toLowerCase().contains(query);
       }).toList();
     });
   }
@@ -131,7 +139,9 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                 title: 'Khoảng cách gần nhất',
                 onTap: () {
                   setState(() {
-                    _filteredHospitals.sort((a, b) => a['distance'].compareTo(b['distance']));
+                    _filteredHospitals.sort(
+                      (a, b) => a['distance'].compareTo(b['distance']),
+                    );
                   });
                   Navigator.pop(context);
                 },
@@ -142,7 +152,9 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                 title: 'Đánh giá cao nhất',
                 onTap: () {
                   setState(() {
-                    _filteredHospitals.sort((a, b) => b['rating'].compareTo(a['rating']));
+                    _filteredHospitals.sort(
+                      (a, b) => b['rating'].compareTo(a['rating']),
+                    );
                   });
                   Navigator.pop(context);
                 },
@@ -155,7 +167,11 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
     );
   }
 
-  Widget _buildSortOption({required IconData icon, required String title, required VoidCallback onTap}) {
+  Widget _buildSortOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -208,7 +224,11 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.search_off_rounded, size: 80, color: Colors.grey.withOpacity(0.3)),
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 80,
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Không tìm thấy bệnh viện nào',
@@ -312,7 +332,11 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
-                  child: const Icon(Icons.arrow_back_rounded, size: 28, color: Colors.white),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    size: 28,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -337,7 +361,11 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
-                  child: const Icon(Icons.tune_rounded, size: 24, color: Colors.white),
+                  child: const Icon(
+                    Icons.tune_rounded,
+                    size: 24,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -369,9 +397,16 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
-                prefixIcon: Icon(Icons.search_rounded, color: _accentColor, size: 26),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: _accentColor,
+                  size: 26,
+                ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 20,
+                ),
               ),
             ),
           ),
@@ -381,130 +416,432 @@ class _HospitalListScreenState extends State<HospitalListScreen> with TickerProv
   }
 
   Widget _buildHospitalCard(Map<String, dynamic> hospital) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: _darkShadow.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () => _showHospitalMap(hospital),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: _darkShadow.withOpacity(0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                hospital['image'],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: _accentColor.withOpacity(0.1),
-                  child: Icon(Icons.local_hospital_rounded, color: _accentColor, size: 40),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.network(
+                  hospital['image'],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: _accentColor.withOpacity(0.1),
+                    child: Icon(
+                      Icons.local_hospital_rounded,
+                      color: _accentColor,
+                      size: 40,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hospital['name'],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: _primaryColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Icon(Icons.location_on_rounded, color: _accentColor, size: 14),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        hospital['address'],
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          color: Colors.blueGrey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hospital['name'],
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: _primaryColor,
                     ),
-                  ],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_rounded,
+                        color: _accentColor,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          hospital['address'],
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.blueGrey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              hospital['rating'].toString(),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.amber.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _accentColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${hospital['distance']} km',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: _accentColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showHospitalMap(Map<String, dynamic> hospital) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Swipe Handle
+              Container(
+                width: 40,
+                height: 5,
+                margin: const EdgeInsets.only(top: 16, bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(height: 12),
-                Row(
+              ),
+
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16),
+                        image: DecorationImage(
+                          image: NetworkImage(hospital['image']),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      child: Row(
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
                           Text(
-                            hospital['rating'].toString(),
+                            hospital['name'],
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
+                              fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: Colors.amber.shade800,
+                              color: _primaryColor,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                color: Colors.amber,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${hospital['rating']}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.amber.shade800,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Cách bạn ${hospital['distance']} km',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: _accentColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _accentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Map Illustration
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F7F8),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: _accentColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: _darkShadow.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.my_location_rounded,
+                            color: Colors.blue.shade500,
+                          ),
+                        ),
+                        Container(
+                          height: 40,
+                          width: 2,
+                          color: _accentColor.withOpacity(0.5),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: _accentColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: _accentColor.withOpacity(0.4),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.location_on_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Vị trí của bạn',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                          Text(
+                            'Đang định vị...',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          Text(
+                            'Điểm đến',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: _primaryColor,
+                            ),
+                          ),
+                          Text(
+                            hospital['address'],
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: Colors.blueGrey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        '${hospital['distance']} km',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: _accentColor,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Action Buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: _accentColor),
+                        ),
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.close_rounded, color: _primaryColor),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 3,
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            final String query = Uri.encodeComponent(
+                              hospital['address'],
+                            );
+                            final Uri mapUri = Uri.parse(
+                              'https://www.google.com/maps/search/?api=1&query=$query',
+                            );
+                            if (await canLaunchUrl(mapUri)) {
+                              await launchUrl(mapUri);
+                            } else {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Không thể mở Google Maps',
+                                    style: GoogleFonts.plusJakartaSans(),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _accentColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          icon: const Icon(Icons.directions_rounded),
+                          label: Text(
+                            'Chỉ đường',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              // SafeArea padding
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

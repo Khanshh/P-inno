@@ -8,10 +8,12 @@ class InfertilityDetailScreen extends StatefulWidget {
   const InfertilityDetailScreen({super.key});
 
   @override
-  State<InfertilityDetailScreen> createState() => _InfertilityDetailScreenState();
+  State<InfertilityDetailScreen> createState() =>
+      _InfertilityDetailScreenState();
 }
 
-class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with TickerProviderStateMixin {
+class _InfertilityDetailScreenState extends State<InfertilityDetailScreen>
+    with TickerProviderStateMixin {
   late AnimationController _backgroundController;
 
   final Color _primaryColor = const Color(0xFF1D4E56);
@@ -19,6 +21,10 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
   final Color _bgColor = const Color(0xFFF8FBFF);
   final Color _lightShadow = Colors.white;
   final Color _darkShadow = const Color(0xFFD1D9E6);
+
+  bool _isNutritionExpanded = false;
+  bool _isARTExpanded = false;
+  bool _isLifestyleExpanded = false;
 
   @override
   void initState() {
@@ -55,7 +61,10 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSectionTitle(Icons.favorite_rounded, 'Hiếm muộn là gì?'),
+                          _buildSectionTitle(
+                            Icons.favorite_rounded,
+                            'Hiếm muộn là gì?',
+                          ),
                           const SizedBox(height: 16),
                           RichText(
                             text: TextSpan(
@@ -90,12 +99,19 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                     const SizedBox(height: 32),
 
                     // Section 2: Nguyên nhân hiếm muộn
-                    _buildSectionTitle(Icons.warning_amber_rounded, 'Nguyên nhân hiếm muộn', isTitleOnly: true),
+                    _buildSectionTitle(
+                      Icons.warning_amber_rounded,
+                      'Nguyên nhân hiếm muộn',
+                      isTitleOnly: true,
+                    ),
                     const SizedBox(height: 16),
                     _buildCauseCard(
                       title: 'Nguyên nhân từ phụ nữ',
                       percentage: '40%',
-                      colors: [const Color(0xFFE3F2FD), const Color(0xFF1976D2)],
+                      colors: [
+                        const Color(0xFFE3F2FD),
+                        const Color(0xFF1976D2),
+                      ],
                       causes: [
                         'Rối loạn phóng noãn',
                         'Tắc nghẽn vòi trứng',
@@ -107,7 +123,10 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                     _buildCauseCard(
                       title: 'Nguyên nhân từ nam giới',
                       percentage: '40%',
-                      colors: [const Color(0xFFE8F5E9), const Color(0xFF388E3C)],
+                      colors: [
+                        const Color(0xFFE8F5E9),
+                        const Color(0xFF388E3C),
+                      ],
                       causes: [
                         'Số lượng tinh trùng thấp',
                         'Chất lượng tinh trùng kém',
@@ -119,7 +138,10 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                     _buildCauseCard(
                       title: 'Nguyên nhân không rõ',
                       percentage: '20%',
-                      colors: [const Color(0xFFFFF3E0), const Color(0xFFF57C00)],
+                      colors: [
+                        const Color(0xFFFFF3E0),
+                        const Color(0xFFF57C00),
+                      ],
                       causes: [
                         'Không xác định được nguyên nhân cụ thể',
                         'Yếu tố miễn dịch',
@@ -134,31 +156,17 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                     const SizedBox(height: 32),
 
                     // Section 3: Phương pháp điều trị
-                    _buildSectionTitle(Icons.medical_services_outlined, 'Phương pháp điều trị', isTitleOnly: true),
-                    const SizedBox(height: 16),
-                    _buildTreatmentMethodCard(
-                      icon: Icons.medication_rounded,
-                      title: 'Điều trị thuốc',
-                      subtitle: 'Sử dụng thuốc kích thích rụng trứng hoặc điều chỉnh nội tiết',
+                    _buildSectionTitle(
+                      Icons.medical_services_outlined,
+                      'Phương pháp điều trị',
+                      isTitleOnly: true,
                     ),
                     const SizedBox(height: 16),
-                    _buildTreatmentMethodCard(
-                      icon: Icons.healing_rounded,
-                      title: 'Phẫu thuật',
-                      subtitle: 'Can thiệp phẫu thuật khắc phục các bất thường cấu trúc',
-                    ),
+                    _buildNutritionCard(),
                     const SizedBox(height: 16),
-                    _buildTreatmentMethodCard(
-                      icon: Icons.biotech_rounded,
-                      title: 'Hỗ trợ sinh sản (ART)',
-                      subtitle: 'IVF, IUI, ICSI và các kỹ thuật sinh sản hiện đại',
-                    ),
+                    _buildARTCard(),
                     const SizedBox(height: 16),
-                    _buildTreatmentMethodCard(
-                      icon: Icons.self_improvement_rounded,
-                      title: 'Thay đổi lối sống',
-                      subtitle: 'Chế độ ăn uống, tập luyện và giảm căng thẳng',
-                    ),
+                    _buildLifestyleCard(),
                     const SizedBox(height: 32),
 
                     // Section 4: Lời khuyên
@@ -248,7 +256,11 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white.withOpacity(0.3)),
               ),
-              child: const Icon(Icons.arrow_back_rounded, size: 28, color: Colors.white),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                size: 28,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -268,7 +280,11 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
     );
   }
 
-  Widget _buildSectionTitle(IconData icon, String title, {bool isTitleOnly = false}) {
+  Widget _buildSectionTitle(
+    IconData icon,
+    String title, {
+    bool isTitleOnly = false,
+  }) {
     return Row(
       children: [
         Container(
@@ -310,10 +326,7 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
         borderRadius: BorderRadius.circular(28),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: child,
-          ),
+          child: Padding(padding: const EdgeInsets.all(24), child: child),
         ),
       ),
     );
@@ -330,7 +343,11 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded, color: Color(0xFF1976D2), size: 22),
+          const Icon(
+            Icons.info_outline_rounded,
+            color: Color(0xFF1976D2),
+            size: 22,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -383,7 +400,10 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: colors[0],
                   borderRadius: BorderRadius.circular(16),
@@ -400,36 +420,38 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
             ],
           ),
           const SizedBox(height: 20),
-          ...causes.map((cause) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: colors[1].withOpacity(0.6),
-                          shape: BoxShape.circle,
-                        ),
+          ...causes.map(
+            (cause) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: colors[1].withOpacity(0.6),
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        cause,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          color: Colors.blueGrey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      cause,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 15,
+                        color: Colors.blueGrey.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -516,7 +538,473 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 24),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.grey.shade400,
+            size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNutritionCard() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isNutritionExpanded = !_isNutritionExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: _darkShadow.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.apple_rounded,
+                    color: Colors.green.shade600,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bổ sung dưỡng chất',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Bữa ăn và trái cây hàng ngày',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _isNutritionExpanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  color: Colors.grey.shade400,
+                  size: 24,
+                ),
+              ],
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.green.shade200.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoRow(
+                        Icons.restaurant_menu_rounded,
+                        'Thực phẩm khuyên dùng',
+                        'Rau xanh đậm (cải bó xôi, măng tây), ngũ cốc nguyên hạt, cá hồi giàu Omega-3, và các loại hạt.',
+                        Colors.green.shade600,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.eco_rounded,
+                        'Hoa quả tươi',
+                        'Quả mọng (dâu tây, việt quất), quả bơ (giàu chất béo tốt), các loại quả mọng nước giàu vitamin C.',
+                        Colors.green.shade600,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.water_drop_rounded,
+                        'Lời khuyên',
+                        'Hãy uống đủ 2 lít nước mỗi ngày, hạn chế tối đa đồ ăn nhanh và tinh bột tinh chế.',
+                        Colors.teal.shade600,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              crossFadeState: _isNutritionExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildARTCard() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isARTExpanded = !_isARTExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: _darkShadow.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.biotech_rounded,
+                    color: Colors.purple.shade500,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hỗ trợ sinh sản (ART)',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'IVF, IUI, ICSI và các kỹ thuật hiện đại',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _isARTExpanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  color: Colors.grey.shade400,
+                  size: 24,
+                ),
+              ],
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _bgColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.purple.shade200.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoRow(
+                        Icons.check_circle_outline_rounded,
+                        'Công dụng',
+                        'Giúp thụ thai thành công bằng cách can thiệp vào quy trình của tinh trùng, trứng, hoặc phôi.',
+                        Colors.purple.shade400,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.access_time_rounded,
+                        'Thời gian dự kiến',
+                        'Thường kéo dài từ 3 đến 6 tuần cho mỗi chu kỳ điều trị, tuỳ phương pháp cụ thể.',
+                        Colors.purple.shade400,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              crossFadeState: _isARTExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLifestyleCard() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isLifestyleExpanded = !_isLifestyleExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: _darkShadow.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.self_improvement_rounded,
+                    color: Colors.orange.shade700,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Thay đổi lối sống',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Cải thiện bản thân để tăng khả năng sinh sản',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _isLifestyleExpanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  color: Colors.grey.shade400,
+                  size: 24,
+                ),
+              ],
+            ),
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity, height: 0),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildGenderAdviceColumn(
+                        title: 'Vợ',
+                        icon: Icons.face_3_rounded,
+                        color: Colors.pink.shade400,
+                        bgColor: Colors.pink.shade50.withValues(alpha: 0.5),
+                        advices: [
+                          'Bổ sung Axit folic, Vitamin',
+                          'Tập Yoga, giảm stress',
+                          'Ngủ đủ 7-8 tiếng/đêm',
+                          'Cân nặng hợp lý',
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildGenderAdviceColumn(
+                        title: 'Chồng',
+                        icon: Icons.face_rounded,
+                        color: Colors.blue.shade500,
+                        bgColor: Colors.blue.shade50.withValues(alpha: 0.5),
+                        advices: [
+                          'Bổ sung Kẽm, Vitamin C',
+                          'Bỏ rượu bia, thuốc lá',
+                          'Đồ lót rộng rãi thoải mái',
+                          'Thể dục đều đặn',
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              crossFadeState: _isLifestyleExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    IconData icon,
+    String title,
+    String content,
+    Color iconColor,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: iconColor),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  color: _primaryColor,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                content,
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blueGrey.shade700,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGenderAdviceColumn({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required Color bgColor,
+    required List<String> advices,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: color.withOpacity(0.9),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...advices.map(
+            (advice) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.stars_rounded,
+                    color: color.withValues(alpha: 0.8),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      advice,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _primaryColor.withValues(alpha: 0.8),
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -543,7 +1031,11 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
       ),
       child: Column(
         children: [
-          const Icon(Icons.tips_and_updates_rounded, color: Color(0xFFE2F1AF), size: 32),
+          const Icon(
+            Icons.tips_and_updates_rounded,
+            color: Color(0xFFE2F1AF),
+            size: 32,
+          ),
           const SizedBox(height: 16),
           Text(
             'Lời khuyên từ chuyên gia',
@@ -585,9 +1077,9 @@ class _InfertilityDetailScreenState extends State<InfertilityDetailScreen> with 
       ),
       child: ElevatedButton.icon(
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const HospitalListScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const HospitalListScreen()));
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: _accentColor,
