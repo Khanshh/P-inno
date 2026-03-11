@@ -12,13 +12,16 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _nameController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  String? _gender;
   bool _obscurePassword = true;
   bool _isLoading = false;
   late AnimationController _backgroundController;
@@ -35,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   @override
   void dispose() {
     _backgroundController.dispose();
+    _usernameController.dispose();
     _nameController.dispose();
     _birthDateController.dispose();
     _phoneController.dispose();
@@ -73,9 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       );
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const HomeMainScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const HomeMainScreen()),
         (route) => false,
       );
     } catch (e) {
@@ -142,17 +144,26 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             Positioned(
               top: -120 + (40 * _backgroundController.value),
               left: -80 + (30 * _backgroundController.value),
-              child: _buildOrb(450, const Color(0xFFD6F3F3).withValues(alpha: 0.6)),
+              child: _buildOrb(
+                450,
+                const Color(0xFFD6F3F3).withValues(alpha: 0.6),
+              ),
             ),
             Positioned(
               top: 250 - (30 * _backgroundController.value),
               right: -100 + (20 * _backgroundController.value),
-              child: _buildOrb(400, const Color(0xFFFEF9E7).withValues(alpha: 0.5)),
+              child: _buildOrb(
+                400,
+                const Color(0xFFFEF9E7).withValues(alpha: 0.5),
+              ),
             ),
             Positioned(
               bottom: -150 + (50 * _backgroundController.value),
               left: -50 - (20 * _backgroundController.value),
-              child: _buildOrb(500, const Color(0xFFF5EFDF).withValues(alpha: 0.7)),
+              child: _buildOrb(
+                500,
+                const Color(0xFFF5EFDF).withValues(alpha: 0.7),
+              ),
             ),
           ],
         );
@@ -166,12 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withOpacity(0.0),
-          ],
-        ),
+        gradient: RadialGradient(colors: [color, color.withOpacity(0.0)]),
       ),
     );
   }
@@ -186,9 +192,15 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           decoration: BoxDecoration(
             color: const Color(0xFF1D4E56).withValues(alpha: 0.05),
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+            border: Border.all(
+              color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+            ),
           ),
-          child: const Icon(Icons.arrow_back, color: Color(0xFF1D4E56), size: 24),
+          child: const Icon(
+            Icons.arrow_back,
+            color: Color(0xFF1D4E56),
+            size: 24,
+          ),
         ),
       ),
     );
@@ -202,10 +214,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       builder: (context, value, child) {
         return Opacity(
           opacity: value.clamp(0.0, 1.0),
-          child: Transform.scale(
-            scale: value,
-            child: child,
-          ),
+          child: Transform.scale(scale: value, child: child),
         );
       },
       child: Center(
@@ -247,6 +256,13 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   Widget _buildInputFields() {
     return Column(
       children: [
+        // Username field
+        _buildTextField(
+          controller: _usernameController,
+          hint: 'Tên đăng nhập',
+          icon: Icons.account_circle_outlined,
+        ),
+        const SizedBox(height: 16),
         // Name field
         _buildTextField(
           controller: _nameController,
@@ -268,8 +284,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           hint: 'Số điện thoại',
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
-          prefixText: '+84 | ',
         ),
+        const SizedBox(height: 16),
+        // Gender field
+        _buildGenderField(),
         const SizedBox(height: 16),
         // Birth Date field
         _buildDateField(),
@@ -293,19 +311,31 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       style: const TextStyle(color: Color(0xFF1D4E56)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: const Color(0xFF1D4E56).withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: const Color(0xFF1D4E56).withValues(alpha: 0.7)),
+        hintStyle: TextStyle(
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.5),
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.7),
+        ),
         prefixText: prefixText,
-        prefixStyle: const TextStyle(color: Color(0xFF1D4E56), fontWeight: FontWeight.w600),
+        prefixStyle: const TextStyle(
+          color: Color(0xFF1D4E56),
+          fontWeight: FontWeight.w600,
+        ),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -320,6 +350,88 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     );
   }
 
+  Widget _buildGenderField() {
+    return FormField<String>(
+      validator: (value) => _gender == null ? 'Vui lòng chọn giới tính' : null,
+      builder: (FormFieldState<String> state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(child: _buildGenderOption('Nam', Icons.male_rounded)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildGenderOption('Nữ', Icons.female_rounded)),
+              ],
+            ),
+            if (state.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 16),
+                child: Text(
+                  state.errorText!,
+                  style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGenderOption(String value, IconData icon) {
+    bool isSelected = _gender == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _gender = value;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1D4E56) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF1D4E56)
+                : const Color(0xFF1D4E56).withValues(alpha: 0.1),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF1D4E56).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? Colors.white
+                  : const Color(0xFF1D4E56).withValues(alpha: 0.7),
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: GoogleFonts.plusJakartaSans(
+                color: isSelected ? Colors.white : const Color(0xFF1D4E56),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDateField() {
     return TextFormField(
       controller: _birthDateController,
@@ -327,17 +439,26 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       style: const TextStyle(color: Color(0xFF1D4E56)),
       decoration: InputDecoration(
         hintText: 'Ngày sinh',
-        hintStyle: TextStyle(color: const Color(0xFF1D4E56).withValues(alpha: 0.5)),
-        prefixIcon: Icon(Icons.calendar_today_outlined, color: const Color(0xFF1D4E56).withValues(alpha: 0.7)),
+        hintStyle: TextStyle(
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.5),
+        ),
+        prefixIcon: Icon(
+          Icons.calendar_today_outlined,
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.7),
+        ),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -366,11 +487,13 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         );
         if (pickedDate != null) {
           setState(() {
-            _birthDateController.text = "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
+            _birthDateController.text =
+                "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
           });
         }
       },
-      validator: (value) => (value == null || value.isEmpty) ? 'Vui lòng chọn ngày sinh' : null,
+      validator: (value) =>
+          (value == null || value.isEmpty) ? 'Vui lòng chọn ngày sinh' : null,
     );
   }
 
@@ -381,11 +504,18 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       style: const TextStyle(color: Color(0xFF1D4E56)),
       decoration: InputDecoration(
         hintText: 'Mật khẩu',
-        hintStyle: TextStyle(color: const Color(0xFF1D4E56).withValues(alpha: 0.5)),
-        prefixIcon: Icon(Icons.lock_outline, color: const Color(0xFF1D4E56).withValues(alpha: 0.7)),
+        hintStyle: TextStyle(
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.5),
+        ),
+        prefixIcon: Icon(
+          Icons.lock_outline,
+          color: const Color(0xFF1D4E56).withValues(alpha: 0.7),
+        ),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            _obscurePassword
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: const Color(0xFF1D4E56).withValues(alpha: 0.7),
           ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -394,11 +524,15 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: const Color(0xFF1D4E56).withValues(alpha: 0.1)),
+          borderSide: BorderSide(
+            color: const Color(0xFF1D4E56).withValues(alpha: 0.1),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -433,7 +567,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             ? const SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -463,12 +600,19 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         },
         child: RichText(
           text: TextSpan(
-            style: GoogleFonts.plusJakartaSans(fontSize: 15, color: const Color(0xFF1D4E56).withValues(alpha: 0.7), fontWeight: FontWeight.w600),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15,
+              color: const Color(0xFF1D4E56).withValues(alpha: 0.7),
+              fontWeight: FontWeight.w600,
+            ),
             children: const [
               TextSpan(text: 'Đã có tài khoản? '),
               TextSpan(
                 text: 'Đăng nhập',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1D4E56)),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1D4E56),
+                ),
               ),
             ],
           ),
