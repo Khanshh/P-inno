@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/api_config.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
@@ -182,42 +183,50 @@ class ApiService {
 
   Future<UserProfileModel> getMyProfile() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+      
       final response = await http.get(
         Uri.parse(ApiConfig.profileMe),
         headers: {
-          'Authorization': 'Bearer mock-access-token',
+          'Authorization': 'Bearer $token',
         },
       );
       
       if (response.statusCode == 200) {
-        return UserProfileModel.fromJson(json.decode(response.body));
+        return UserProfileModel.fromJson(json.decode(utf8.decode(response.bodyBytes)));
       } else {
-        throw Exception('Failed to load profile: \${response.statusCode}');
+        throw Exception('Failed to load profile: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error fetching profile: \$e');
+      throw Exception('Error fetching profile: $e');
     }
   }
 
   Future<List<MedicalRecordModel>> getMedicalRecords() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+
       final response = await http.get(
         Uri.parse(ApiConfig.medicalRecords),
         headers: {
-          'Authorization': 'Bearer mock-access-token',
+          'Authorization': 'Bearer $token',
         },
       );
       
       if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
+        final List<dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
         return jsonData.map((json) => MedicalRecordModel.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to load medical records: \${response.statusCode}');
+        throw Exception('Failed to load medical records: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error fetching medical records: \$e');
+      throw Exception('Error fetching medical records: $e');
     }
   }
+
+  // Hàm getAppointments đã bị xóa vì không còn dùng tới.
 
   /// Register a new user via POST /api/v1/auth/register
   Future<Map<String, dynamic>> registerPatient(Map<String, dynamic> patientData) async {
@@ -229,11 +238,12 @@ class ApiService {
         },
         body: json.encode({
           'fullname': patientData['fullName'] ?? '',
-          'username': patientData['email'] ?? patientData['phone'] ?? '',
+          'username': patientData['username'] ?? patientData['email'] ?? patientData['phone'] ?? '',
           'password': patientData['password'] ?? '123456',
           'phone': patientData['phone'] ?? '',
           'dob': patientData['dob'] ?? '',
           'email': patientData['email'] ?? '',
+          'gender': patientData['gender'] ?? '',
         }),
       );
 
@@ -293,8 +303,12 @@ class ApiService {
   /// Run unified simulation via POST /api/v1/simulation/unified
   Future<Map<String, dynamic>> runSimulation(String modelId, Map<String, dynamic> femaleData, Map<String, dynamic> maleData) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('access_token') ?? '';
+
       final requestBody = {
         "model_id": modelId,
+        "user_id": userId,
         "profile": {
           "female": femaleData,
           "male": maleData,
@@ -318,6 +332,41 @@ class ApiService {
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Lỗi kết nối: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getHospitals() async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.hospitals));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+        return jsonData.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to load hospitals: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching hospitals: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSimulationHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('access_token');
+      if (userId == null) return [];
+
+      final uri = Uri.parse('${ApiConfig.simulationUnified}/../history?user_id=$userId');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(utf8.decode(response.bodyBytes));
+        return (decoded['history'] as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print("Error loading simulation history: $e");
+      return [];
     }
   }
 }

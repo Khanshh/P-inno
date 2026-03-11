@@ -26,6 +26,7 @@ from app.api.v1.routes_onboarding import router as onboarding_router
 from app.api.v1.routes_admin import router as admin_router
 from app.api.v1.routes_patients import router as patients_router
 from app.api.v1.routes_simulation import router as simulation_router
+from app.api.v1.routes_hospitals import router as hospitals_router
 from app.core.config import settings
 
 
@@ -114,6 +115,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
     app.include_router(patients_router, prefix="/api/v1", tags=["patients"])
     app.include_router(simulation_router, prefix="/api/v1", tags=["simulation"])
+    app.include_router(hospitals_router, prefix="/api/v1/hospitals", tags=["hospitals"])
 
     # Serve video files from data/videos/ as static files
     videos_dir = Path(__file__).parent.parent / "data" / "videos"

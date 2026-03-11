@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/chat_message_model.dart';
+import '../services/ai_chat_service.dart';
 import '../services/ai_chat_service.dart';
 
 class ChatAIScreen extends StatefulWidget {
@@ -35,6 +37,8 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
   Timer? _typingTimer;
   String? _errorMessage;
 
+  String _sessionId = 'user_demo';
+
   @override
   void initState() {
     super.initState();
@@ -43,12 +47,30 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
 
-    // Add welcome message
-    _messages.add(
-      ChatMessage.assistant(
-        'Xin chào! Tôi là trợ lý AI sức khỏe. Tôi có thể giải đáp mọi thắc mắc của bạn về hiếm muộn và IVF.',
-      ),
-    );
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    _sessionId = prefs.getString('access_token') ?? 'user_demo';
+    
+    final history = await _aiChatService.getChatHistory(_sessionId);
+    if (mounted) {
+      if (history.isEmpty) {
+        setState(() {
+          _messages.add(
+            ChatMessage.assistant(
+              'Xin chào${prefs.getString('user_full_name') != null ? ' ${prefs.getString('user_full_name')}' : ''}! Tôi là trợ lý AI sức khỏe. Tôi có thể giải đáp mọi thắc mắc của bạn về hiếm muộn và sinh sản.',
+            ),
+          );
+        });
+      } else {
+        setState(() {
+          _messages.addAll(history);
+        });
+        Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
+      }
+    }
   }
 
   @override
@@ -81,7 +103,10 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
     try {
       // 2. Thinking Delay (Simulate processing + Real API call)
       final minDelay = Future.delayed(const Duration(milliseconds: 1500));
-      final apiCall = _aiChatService.sendMessage(messages: _messages);
+      final apiCall = _aiChatService.sendMessage(
+        messages: _messages,
+        sessionId: _sessionId,
+      );
       
       final results = await Future.wait([minDelay, apiCall]);
       final response = results[1] as ChatResponse;

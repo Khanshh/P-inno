@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../models/user_model.dart';
 import 'account_info_screen.dart';
 import 'login_screen.dart';
+import 'simulation_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   UserProfileModel? _profile;
   bool _isLoading = true;
   String? _error;
+  String _fallbackName = 'Khách';
   
   late AnimationController _backgroundController;
 
@@ -47,7 +50,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   }
 
   Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
+      _fallbackName = prefs.getString('user_full_name') ?? 'Khách';
       _isLoading = true;
       _error = null;
     });
@@ -91,7 +96,17 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AccountInfoScreen()),
+                          MaterialPageRoute(builder: (context) => AccountInfoScreen(profile: _profile)),
+                        );
+                      },
+                    ),
+                    _buildMenuCard(
+                      icon: Icons.history_rounded,
+                      title: 'Lịch sử đánh giá',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SimulationHistoryScreen()),
                         );
                       },
                     ),
@@ -213,7 +228,11 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             ),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+
+              if (!context.mounted) return;
               Navigator.pop(context); // Close dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -566,7 +585,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _profile?.fullName ?? 'Nguyễn Văn A',
+                      _profile?.fullName ?? _fallbackName,
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white,
                         fontSize: 26, // +2

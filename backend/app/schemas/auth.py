@@ -22,5 +22,6 @@ class RegisterRequest(BaseModel):
     username: str
     password: str
     phone: str
+    gender: str = ""
     dob: str = ""
     email: str = ""

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_main_screen.dart';
 import 'register_screen.dart';
 import '../services/api_service.dart';
@@ -50,6 +51,11 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       );
 
       if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', result['token']['access_token']);
+      await prefs.setString('user_full_name', result['user_full_name']);
+      await prefs.setString('username', _usernameController.text.trim());
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

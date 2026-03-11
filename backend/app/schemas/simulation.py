@@ -336,6 +336,7 @@ class UnifiedSimulationRequest(BaseModel):
     để chạy model tương ứng.
     """
     model_id: str = Field(..., description="ID của model muốn chạy (hunault hoặc sart_ivf)")
+    user_id: str = Field(default="", description="ID của user")
     profile: ComprehensiveFertilityProfile
 
 class SimulationModelListResponse(BaseModel):

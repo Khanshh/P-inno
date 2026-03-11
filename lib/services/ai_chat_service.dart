@@ -46,6 +46,28 @@ class AiChatService {
     }
   }
 
+  Future<List<ChatMessage>> getChatHistory(String sessionId) async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.aiChatHistory(sessionId)));
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(utf8.decode(response.bodyBytes));
+        final List<dynamic> messagesJson = jsonData['messages'];
+        return messagesJson.map((m) {
+          if (m['role'] == 'user') {
+            return ChatMessage.user(m['content']);
+          } else {
+            return ChatMessage.assistant(m['content']);
+          }
+        }).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Lỗi load chat history: $e");
+      return [];
+    }
+  }
+
   /// Send a simple text message (convenience method)
   /// 
   /// This creates a single user message and sends it to the AI

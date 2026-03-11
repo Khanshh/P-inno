@@ -14,6 +14,8 @@ class UserProfile(UserBase):
     phone: Optional[str] = None
     age: Optional[int] = None
     address: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
 
 
 

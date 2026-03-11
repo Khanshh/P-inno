@@ -48,6 +48,8 @@ async def register(payload: RegisterRequest) -> LoginResponse:
         "role": "user",
         "email": payload.email,
         "phone": payload.phone,
+        "gender": payload.gender,
+        "dob": payload.dob,
         "age": 30,
         "address": "Chưa cập nhật"
     }
@@ -55,7 +57,7 @@ async def register(payload: RegisterRequest) -> LoginResponse:
     users_list.append(new_user)
     save_users(users_list)
     
-    token = TokenResponse(access_token=settings.MOCK_ACCESS_TOKEN)
+    token = TokenResponse(access_token=new_user["id"])
     
     return LoginResponse(
         token=token,
@@ -82,7 +84,7 @@ async def login(payload: LoginRequest) -> LoginResponse:
         )
 
     token = TokenResponse(
-        access_token=settings.ADMIN_ACCESS_TOKEN if user_data["role"] == "admin" else settings.MOCK_ACCESS_TOKEN
+        access_token=user_data["id"]
     )
 
     return LoginResponse(

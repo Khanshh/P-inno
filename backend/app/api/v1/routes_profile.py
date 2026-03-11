@@ -1,3 +1,5 @@
+import json
+import os
 from fastapi import APIRouter, Depends, HTTPException, Header, status
 
 from app.core.config import settings
@@ -8,7 +10,6 @@ router = APIRouter()
 
 
 def _get_current_user(authorization: str = Header(default="")) -> UserProfile:
-    """Very simple token check using a static mock token."""
     prefix = "Bearer "
     if not authorization.startswith(prefix):
         raise HTTPException(
@@ -17,21 +18,37 @@ def _get_current_user(authorization: str = Header(default="")) -> UserProfile:
         )
 
     token = authorization[len(prefix) :]
-    if token != settings.MOCK_ACCESS_TOKEN:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token.",
-        )
+    
+    users_path = os.path.join(os.getcwd(), "data", "users.json")
+    try:
+        with open(users_path, "r", encoding="utf-8") as f:
+            users_list = json.load(f)
+            user = next((u for u in users_list if u["id"] == token), None)
+            
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid token or user not found.",
+                )
+                
+            return UserProfile(
+                username=user.get("username", ""),
+                full_name=user.get("full_name", ""),
+                patient_code=user.get("patient_code", ""),
+                email=user.get("email", ""),
+                phone=user.get("phone", ""),
+                age=user.get("age", 0),
+                address=user.get("address", ""),
+                gender=user.get("gender", ""),
+                dob=user.get("dob", ""),
+            )
+            
+    except FileNotFoundError:
+        pass
 
-    # Return a mock user profile
-    return UserProfile(
-        username="mockuser",
-        full_name="Nguyễn Thị A",
-        patient_code="BN0001",
-        email="patient@example.com",
-        phone="+84 912 345 678",
-        age=32,
-        address="Hà Nội, Việt Nam",
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Internal Error or No Users DB.",
     )
 
 

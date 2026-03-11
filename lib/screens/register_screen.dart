@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_main_screen.dart';
 import 'login_screen.dart';
 import '../services/api_service.dart';
@@ -55,16 +56,23 @@ class _RegisterScreenState extends State<RegisterScreen>
     try {
       final registerData = {
         'fullName': _nameController.text.trim(),
+        'username': _usernameController.text.trim(),
         'dob': _birthDateController.text.trim(),
         'phone': _phoneController.text.trim(),
         'email': _emailController.text.trim(),
+        'gender': _gender ?? 'Unknown',
         'password': _passwordController.text,
       };
       
       final apiService = ApiService();
-      await apiService.registerPatient(registerData);
+      final result = await apiService.registerPatient(registerData);
 
       if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', result['token']['access_token']);
+      await prefs.setString('user_full_name', result['user_full_name']);
+      await prefs.setString('username', _usernameController.text.trim());
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
