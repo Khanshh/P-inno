@@ -110,7 +110,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       title: 'Điều khoản & Chính sách',
                       onTap: () => _showTerms(context),
                     ),
-                    const SizedBox(height: 16),
                     _buildMenuCard(
                       icon: Icons.exit_to_app_rounded,
                       title: 'Đăng xuất',

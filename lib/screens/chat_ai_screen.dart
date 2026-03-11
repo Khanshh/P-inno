@@ -512,21 +512,6 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
         top: false,
         child: Row(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: _bgColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: _darkShadow, blurRadius: 6, offset: const Offset(2, 2)),
-                  BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
-                ],
-              ),
-              child: IconButton(
-                icon: Icon(Icons.add_rounded, color: _primaryColor, size: 26),
-                onPressed: () {},
-              ),
-            ),
-            const SizedBox(width: 16),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
