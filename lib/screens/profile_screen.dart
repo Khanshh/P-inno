@@ -21,14 +21,14 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   
   late AnimationController _backgroundController;
 
-  // Premium Theme Colors
-  final Color _primaryColor = const Color(0xFF1D4E56);
-  final Color _accentColor = const Color(0xFF73C6D9);
-
+  // Premium Theme Colors (Modern Health-Tech)
+  final Color _primaryColor = const Color(0xFF1D4E56); // Deep Teal
+  final Color _accentColor = const Color(0xFF73C6D9); // Hopeful gradient start
+  
   // Soft UI / Neumorphism Colors
-  final Color _bgColor = const Color(0xFFF8FBFF);
+  final Color _bgColor = const Color(0xFFF8FBFF); // Matches Onboarding
   final Color _lightShadow = Colors.white;
-  final Color _darkShadow = const Color(0xFFD1D9E6);
+  final Color _darkShadow = const Color(0xFFD1D9E6); // Soft blue-grey shadow
 
   @override
   void initState() {
@@ -54,15 +54,19 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
 
     try {
       final profile = await _apiService.getMyProfile();
-      setState(() {
-        _profile = profile;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -75,14 +79,14 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           _buildAnimatedBackground(),
           Column(
             children: [
-              _buildHeader(context),
+              _buildGlassHeader(),
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   children: [
                     _buildMenuCard(
-                      icon: Icons.person_outline_rounded,
+                      icon: Icons.person_rounded,
                       title: 'Thông tin cá nhân',
                       onTap: () {
                         Navigator.push(
@@ -92,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       },
                     ),
                     _buildMenuCard(
-                      icon: Icons.star_outline_rounded,
+                      icon: Icons.star_rounded,
                       title: 'Đánh giá ứng dụng',
                       onTap: () {},
                     ),
@@ -102,10 +106,11 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       onTap: () => _showMission(context),
                     ),
                     _buildMenuCard(
-                      icon: Icons.policy_outlined,
+                      icon: Icons.policy_rounded,
                       title: 'Điều khoản & Chính sách',
                       onTap: () => _showTerms(context),
                     ),
+                    const SizedBox(height: 16),
                     _buildMenuCard(
                       icon: Icons.exit_to_app_rounded,
                       title: 'Đăng xuất',
@@ -118,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                         'Phiên bản 1.0.0',
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.blueGrey.shade400,
-                          fontSize: 13,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -141,19 +146,14 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         return Stack(
           children: [
             Positioned(
-              top: -120 + (40 * _backgroundController.value),
-              left: -80 + (30 * _backgroundController.value),
-              child: _buildOrb(450, const Color(0xFFD6F3F3).withOpacity(0.6)),
-            ),
-            Positioned(
-              top: 250 - (30 * _backgroundController.value),
+              top: 50 + (30 * _backgroundController.value),
               right: -100 + (20 * _backgroundController.value),
-              child: _buildOrb(400, const Color(0xFFFEF9E7).withOpacity(0.5)),
+              child: _buildOrb(400, const Color(0xFFE2F1AF).withOpacity(0.3)),
             ),
             Positioned(
-              bottom: -150 + (50 * _backgroundController.value),
-              left: -50 - (20 * _backgroundController.value),
-              child: _buildOrb(500, const Color(0xFFF5EFDF).withOpacity(0.7)),
+              bottom: -150 + (40 * _backgroundController.value),
+              left: -120 + (30 * _backgroundController.value),
+              child: _buildOrb(450, const Color(0xFFD1F1F1).withOpacity(0.5)),
             ),
           ],
         );
@@ -177,16 +177,16 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white.withOpacity(0.95),
+        backgroundColor: _bgColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: Colors.white.withOpacity(0.5), width: 1.5)
+            borderRadius: BorderRadius.circular(28),
+            side: const BorderSide(color: Colors.white, width: 2)
         ),
         title: Text(
           'Đăng xuất',
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w800,
             color: _primaryColor,
           ),
@@ -194,21 +194,22 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         content: Text(
           'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?',
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+            fontSize: 16,
+            height: 1.5,
+            fontWeight: FontWeight.w600,
             color: Colors.blueGrey.shade700,
           ),
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Hủy',
               style: GoogleFonts.plusJakartaSans(
-                color: Colors.blueGrey.shade400,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+                color: Colors.blueGrey.shade500,
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
               ),
             ),
           ),
@@ -217,10 +218,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               Navigator.pop(context); // Close dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đang đăng xuất...', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                  content: Text('Đang đăng xuất...', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 15)),
                   backgroundColor: _primaryColor,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               );
               Navigator.of(context).pushAndRemoveUntil(
@@ -230,9 +231,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE53935),
-              elevation: 4,
+              elevation: 6,
               shadowColor: const Color(0xFFE53935).withOpacity(0.4),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: Text(
@@ -260,12 +261,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         expand: false,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(color: Colors.white, width: 1.5),
+            color: _bgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: _darkShadow.withOpacity(0.4),
+                color: _darkShadow.withOpacity(0.5),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -292,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 Text(
                   'Sứ mệnh của chúng tôi',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 26,
+                    fontSize: 29, // +3
                     fontWeight: FontWeight.w800,
                     color: _primaryColor,
                     letterSpacing: -0.5,
@@ -302,9 +303,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 Text(
                   'P-inno sinh ra với sứ mệnh đồng hành cùng các cặp đôi trên hành trình tìm kiếm thiên chức làm cha mẹ.',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
+                    fontSize: 17, // +1
                     height: 1.6,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.blueGrey.shade700,
                   ),
                 ),
@@ -315,12 +316,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 60,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _primaryColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       elevation: 6,
                       shadowColor: _primaryColor.withOpacity(0.4),
                     ),
@@ -334,6 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -351,12 +353,17 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _accentColor.withOpacity(0.15),
+              color: _bgColor,
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 4, offset: const Offset(2, 2)),
+                BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+              ],
             ),
-            child: Icon(icon, color: _primaryColor, size: 28),
+            child: Icon(icon, color: const Color(0xFF4A9EAD), size: 28),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   title,
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w800,
-                    fontSize: 18,
+                    fontSize: 20, // +2
                     color: _primaryColor,
                   ),
                 ),
@@ -374,9 +381,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 Text(
                   desc,
                   style: GoogleFonts.plusJakartaSans(
-                    color: Colors.blueGrey.shade600,
+                    color: Colors.blueGrey.shade700,
                     height: 1.5,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -399,12 +406,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         expand: false,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(color: Colors.white, width: 1.5),
+            color: _bgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: _darkShadow.withOpacity(0.4),
+                color: _darkShadow.withOpacity(0.5),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -431,7 +438,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 Text(
                   'Điều khoản & Chính sách',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 26,
+                    fontSize: 29, // +3
                     fontWeight: FontWeight.w800,
                     color: _primaryColor,
                     letterSpacing: -0.5,
@@ -457,27 +464,29 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   '4. Giới hạn trách nhiệm',
                   'Các thông tin trên ứng dụng mang tính chất tham khảo. Bạn nên thảo luận trực tiếp với bác sĩ điều trị trước khi ra quyết định y tế.',
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 48),
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
+                  height: 60,
+                  child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: _primaryColor, width: 2),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      backgroundColor: Colors.white.withOpacity(0.5),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primaryColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      elevation: 6,
+                      shadowColor: _primaryColor.withOpacity(0.4),
                     ),
                     child: Text(
                       'Tôi đã hiểu',
                       style: GoogleFonts.plusJakartaSans(
-                        color: _primaryColor,
+                        color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -493,7 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         Text(
           title,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 18,
+            fontSize: 20, // +2
             fontWeight: FontWeight.w800,
             color: _primaryColor,
           ),
@@ -502,9 +511,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         Text(
           content,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
+            fontSize: 16, // +1
             height: 1.6,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: Colors.blueGrey.shade700,
           ),
         ),
@@ -512,19 +521,22 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildGlassHeader() {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5), // Glassmorphism background component
+        gradient: const LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], // Hopeful gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
         ),
-        border: Border.all(color: Colors.white, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: _darkShadow.withOpacity(0.2),
+            color: _primaryColor.withOpacity(0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -533,26 +545,19 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 48, 28, 40),
+          padding: const EdgeInsets.fromLTRB(28, 20, 28, 40),
           child: Row(
             children: [
               Container(
-                width: 72,
-                height: 72,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [_primaryColor, _accentColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: _primaryColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
-                  ],
-                  border: Border.all(color: Colors.white, width: 2), // Ring
+                  color: Colors.white.withOpacity(0.2),
+                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 2), // Ring
                 ),
                 child: const Center(
-                  child: Icon(Icons.person_rounded, size: 36, color: Colors.white),
+                  child: Icon(Icons.person_rounded, size: 44, color: Colors.white),
                 ),
               ),
               const SizedBox(width: 20),
@@ -564,27 +569,27 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                     Text(
                       _profile?.fullName ?? 'Nguyễn Văn A',
                       style: GoogleFonts.plusJakartaSans(
-                        color: _primaryColor,
-                        fontSize: 24,
+                        color: Colors.white,
+                        fontSize: 26, // +2
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: _accentColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _primaryColor.withOpacity(0.2)),
+                         color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
                       ),
                       child: Text(
                         _profile != null ? 'Thành viên chính thức' : 'Chưa cập nhật thông tin',
                         style: GoogleFonts.plusJakartaSans(
-                          color: _primaryColor,
-                          fontSize: 13,
+                          color: Colors.white,
+                          fontSize: 14, // +1
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -605,62 +610,57 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     required VoidCallback onTap,
     bool isLogout = false,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.only(bottom: 20),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7), // Transparent base
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white, width: 1.5), // Glass border
+        color: _bgColor, 
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(
-            color: _darkShadow.withOpacity(0.35),
-            blurRadius: 12,
-            offset: const Offset(6, 6),
-          ),
-          BoxShadow(
-            color: Colors.white.withOpacity(0.9),
-            blurRadius: 12,
-            offset: const Offset(-6, -6),
-          ),
+          BoxShadow(color: _darkShadow, blurRadius: 10, offset: const Offset(5, 5)),
+          BoxShadow(color: _lightShadow, blurRadius: 10, offset: const Offset(-5, -5)),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isLogout ? const Color(0xFFE53935).withOpacity(0.1) : _accentColor.withOpacity(0.15),
+                    color: _bgColor,
                     shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 4, offset: const Offset(2, 2)),
+                      BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+                    ],
                   ),
                   child: Icon(
                     icon, 
-                    color: isLogout ? const Color(0xFFE53935) : _primaryColor, 
-                    size: 24,
+                    color: isLogout ? const Color(0xFFE53935) : const Color(0xFF4A9EAD), 
+                    size: 26,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Text(
                     title,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 17, // +1
+                      fontWeight: FontWeight.w800,
                       color: isLogout ? const Color(0xFFE53935) : _primaryColor,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded, 
-                  size: 16, 
-                  color: Colors.blueGrey.shade400,
+                  size: 18, 
+                  color: isLogout ? const Color(0xFFE53935).withOpacity(0.5) : _primaryColor.withOpacity(0.5),
                 ),
               ],
             ),

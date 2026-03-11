@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'video_player_screen.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../services/api_service.dart';
@@ -11,17 +13,35 @@ class IUIDetailScreen extends StatefulWidget {
   State<IUIDetailScreen> createState() => _IUIDetailScreenState();
 }
 
-class _IUIDetailScreenState extends State<IUIDetailScreen> {
+class _IUIDetailScreenState extends State<IUIDetailScreen> with TickerProviderStateMixin {
   int _currentTab = 0; // 0: Định nghĩa, 1: Quy trình
   final ApiService _apiService = ApiService();
   DiscoverMethodDetailModel? _detail;
   bool _isLoading = true;
   String? _error;
 
+  late AnimationController _backgroundController;
+
+  final Color _primaryColor = const Color(0xFF1D4E56);
+  final Color _accentColor = const Color(0xFF73C6D9);
+  final Color _bgColor = const Color(0xFFF8FBFF);
+  final Color _lightShadow = Colors.white;
+  final Color _darkShadow = const Color(0xFFD1D9E6);
+
   @override
   void initState() {
     super.initState();
+    _backgroundController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat(reverse: true);
     _loadDetail();
+  }
+
+  @override
+  void dispose() {
+    _backgroundController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadDetail() async {
@@ -32,875 +52,376 @@ class _IUIDetailScreenState extends State<IUIDetailScreen> {
 
     try {
       final detail = await _apiService.getDiscoverMethodDetail('method-iui');
-      setState(() {
-        _detail = detail;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _detail = detail;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text(_error!))
-              : Column(
-                  children: [
-                    _buildHeader(context),
-                    Expanded(
-                      child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
-                    ),
-                  ],
-                ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      color: const Color(0xFF73C6D9), // Primary color
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10,
-        left: 20,
-        right: 20,
-        bottom: 20,
-      ),
-      child: Column(
+      backgroundColor: _bgColor,
+      body: Stack(
         children: [
-          Row(
-            children: [
-              InkWell(
-                onTap: () => Navigator.of(context).pop(),
-                child: const Icon(Icons.arrow_back, color: Colors.white),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.vaccines, // Syringe/Injection icon equivalent
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'IUI',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      '15-20%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _currentTab = 0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _currentTab == 0 ? Colors.white : Colors.transparent,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Định nghĩa',
-                        style: TextStyle(
-                          color: _currentTab == 0 ? const Color(0xFF73C6D9) : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _currentTab = 1),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _currentTab == 1 ? Colors.white : Colors.transparent,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Quy trình điều trị',
-                        style: TextStyle(
-                          color: _currentTab == 1 ? const Color(0xFF73C6D9) : Colors.white,
-                          fontWeight: _currentTab == 1 ? FontWeight.bold : FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Definition Tab Content ---
-
-  Widget _buildDefinitionTab() {
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: 100, // Space for footer
-          ),
-          child: Column(
-            children: [
-              _buildDefinitionCard(),
-              const SizedBox(height: 20),
-              _buildIndicationsCard(),
-              const SizedBox(height: 20),
-              _buildAdvantagesCard(),
-              const SizedBox(height: 20),
-              _buildNotesCard(),
-            ],
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: _buildFooterDefinition(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDefinitionCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.menu_book, color: Color(0xFF73C6D9)), // Icon: Quyển sách
-              SizedBox(width: 8),
-              Text(
-                'Chi tiết phương pháp',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          MarkdownBody(
-            data: _detail?.content ?? 'Đang cập nhật nội dung...',
-            styleSheet: MarkdownStyleSheet(
-              p: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-                height: 1.5,
-              ),
-              h1: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
-              h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-              h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIndicationsCard() {
-    final List<String> indications = [
-      'Chất lượng tinh trùng giảm nhẹ',
-      'Rối loạn xuất tinh hoặc cương dương nhẹ',
-      'Niêm dịch cổ tử cung bất thường',
-      'Hiếm muộn không rõ nguyên nhân (nhẹ)',
-      'Vấn đề về giải phẫu cơ quan sinh dục nhẹ',
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Chỉ định điều trị',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...indications.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1F5FE),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    color: Color(0xFF73C6D9),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAdvantagesCard() {
-    final List<String> advantages = [
-      'Thủ thuật đơn giản, không xâm lấn',
-      'Chi phí thấp hơn so với IVF',
-      'Không cần gây mê hoặc phẫu thuật',
-      'Ít tác dụng phụ, thời gian phục hồi nhanh',
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9), // Xanh lá mạ nhạt
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.check_circle_outline, color: Colors.green),
-              SizedBox(width: 8),
-              Text(
-                'Ưu điểm',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...advantages.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.check,
-                  color: Colors.green,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotesCard() {
-    final List<String> notes = [
-      'Tỷ lệ thành công thấp hơn IVF',
-      'Chỉ phù hợp với một số trường hợp nhất định',
-      'Có thể cần thực hiện nhiều chu kỳ',
-      'Yêu cầu ít nhất 1 vòi trứng thông',
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0), // Cam nhạt
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange),
-              SizedBox(width: 8),
-              Text(
-                'Lưu ý',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...notes.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.priority_high,
-                  color: Colors.deepOrangeAccent,
-                  size: 16,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooterDefinition() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Color(0xFF73C6D9),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Text(
-              'Cần tư vấn chi tiết?',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: const Text(
-              'Tham khảo phòng khám',
-              style: TextStyle(
-                color: Color(0xFF73C6D9),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Process Tab Content ---
-
-  Widget _buildProcessTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildTimeline(),
-          const SizedBox(height: 24),
-          _buildVideoCard(),
-          const SizedBox(height: 24),
-          _buildReferenceFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeline() {
-    final List<Map<String, dynamic>> steps = [
-      {
-        'id': '1',
-        'title': 'Kích trứng',
-        'duration': '10-14 ngày',
-        'description': 'Sử dụng thuốc (uống/tiêm nhẹ) để kích thích buồng trứng phát triển nang trứng.',
-      },
-      {
-        'id': '2',
-        'title': 'Theo dõi nang trứng',
-        'duration': 'Định kỳ',
-        'description': 'Siêu âm theo dõi sự phát triển của nang trứng để xác định thời điểm rụng trứng.',
-      },
-      {
-        'id': '3',
-        'title': 'Tiêm rụng trứng',
-        'duration': '36h trước IUI',
-        'description': 'Tiêm mũi hCG để kích thích nang trứng rụng vào thời điểm định trước.',
-      },
-      {
-        'id': '4',
-        'title': 'Chuẩn bị tinh trùng',
-        'duration': '2 giờ',
-        'description': 'Lọc rửa và cô đặc tinh trùng của người chồng tại phòng thí nghiệm.',
-      },
-      {
-        'id': '5',
-        'title': 'Bơm tinh trùng (IUI)',
-        'duration': '15-20 phút',
-        'description': 'Bác sĩ bơm tinh trùng vào buồng tử cung thông qua một ống catheter mềm.',
-      },
-      {
-        'id': '6',
-        'title': 'Hỗ trợ hoàng thể',
-        'duration': '14 ngày',
-        'description': 'Sử dụng thuốc hỗ trợ để tăng khả năng thụ thai và giữ thai.',
-      },
-      {
-        'id': '7',
-        'title': 'Thử thai',
-        'duration': 'Sau 14 ngày',
-        'description': 'Xét nghiệm máu beta-hCG để kiểm tra kết quả.',
-      },
-    ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: steps.length,
-      itemBuilder: (context, index) {
-        final isLast = index == steps.length - 1;
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Column: Circle & Line
-              SizedBox(
-                width: 40,
-                child: Column(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE1F5FE),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF73C6D9), width: 1.5),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        steps[index]['id'],
-                        style: const TextStyle(
-                          color: Color(0xFF0277BD),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    if (!isLast)
-                      Expanded(
-                        child: Container(
-                          width: 2,
-                          color: Colors.grey[300],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Right Column: Card
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          _buildAnimatedBackground(),
+          _isLoading
+              ? Center(child: CircularProgressIndicator(color: _accentColor))
+              : _error != null
+                  ? Center(child: Text(_error!, style: GoogleFonts.plusJakartaSans(color: Colors.red)))
+                  : Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              steps[index]['title'],
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                steps[index]['duration'],
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          steps[index]['description'],
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                            height: 1.4,
+                        _buildGlassHeader(),
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: _currentTab == 0 ? _buildDefinitionTab() : _buildProcessTab(),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _backgroundController,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned(
+              top: 50 + (30 * _backgroundController.value),
+              right: -100 + (20 * _backgroundController.value),
+              child: _buildOrb(400, const Color(0xFFF1D1F1).withOpacity(0.3)),
+            ),
+            Positioned(
+              bottom: -50 + (20 * _backgroundController.value),
+              left: -50 + (10 * _backgroundController.value),
+              child: _buildOrb(450, const Color(0xFFD1F1F1).withOpacity(0.5)),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildVideoCard() {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF73C6D9), Color(0xFF26A69A)], // Adjusted gradient to be slightly more teal/greenish like IUI vibe or keep blue
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF73C6D9).withOpacity(0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
+  Widget _buildOrb(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+        child: Container(color: Colors.transparent),
+      ),
+    );
+  }
+
+  Widget _buildGlassHeader() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+        boxShadow: [
+          BoxShadow(color: _primaryColor.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10)),
+        ],
+      ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 20,
+        right: 20,
+        bottom: 24,
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              // Decorative circles
-              Positioned(
-                top: -20,
-                right: -20,
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
                 child: Container(
-                  width: 100,
-                  height: 100,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
+                  child: const Icon(Icons.arrow_back_rounded, size: 28, color: Colors.white),
                 ),
               ),
-              Positioned(
-                bottom: -30,
-                left: -30,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
+                    Text(
+                      'IUI',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
-                        size: 40,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Video mô phỏng 3D',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Quy trình bơm IUI',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            '3:30',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const VideoPlayerScreen(
-                                videoFileName: 'iui_3d.mp4',
-                                title: 'Video mô phỏng 3D - Quy trình IUI',
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF00897B),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          'Xem video mô phỏng',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    Text(
+                      'Bơm tinh trùng vào tử cung',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.9),
                       ),
                     ),
                   ],
                 ),
               ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                ),
+                child: Text(
+                  '15-20%',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+              ),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF8E1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFFECB3)),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.1), borderRadius: BorderRadius.circular(30)),
+            child: Row(
+              children: [
+                _buildTabButton(0, "Định nghĩa"),
+                _buildTabButton(1, "Quy trình"),
+              ],
+            ),
           ),
-          child: Row(
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(int index, String title) {
+    final bool isActive = _currentTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _currentTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(26),
+            boxShadow: isActive ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))] : [],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              color: isActive ? const Color(0xFF1D4E56) : Colors.white.withOpacity(0.8),
+              fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+              fontSize: 15,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDefinitionTab() {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+      children: [
+        _buildGlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.lightbulb_outline, color: Colors.orange, size: 20),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Video giúp bạn hiểu rõ cách tinh trùng di chuyển sau khi bơm vào tử cung.',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.brown,
-                  ),
+              _buildSectionTitle(Icons.menu_book_rounded, 'Chi tiết phương pháp'),
+              const SizedBox(height: 16),
+              MarkdownBody(
+                data: _detail?.content ?? 'Đang cập nhật nội dung...',
+                styleSheet: MarkdownStyleSheet(
+                  p: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.blueGrey.shade800, height: 1.6),
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 20),
+        _buildSectionCard('Chỉ định điều trị', [
+          'Chất lượng tinh trùng giảm nhẹ',
+          'Rối loạn xuất tinh hoặc cương dương nhẹ',
+          'Niêm dịch cổ tử cung bất thường',
+          'Hiếu muộn không rõ nguyên nhân (nhẹ)',
+          'Vấn đề về giải phẫu cơ quan sinh dục nhẹ',
+        ], Icons.assignment_turned_in_rounded, const Color(0xFFE3F2FD), const Color(0xFF1976D2)),
+        const SizedBox(height: 20),
+        _buildSectionCard('Ưu điểm', [
+          'Thủ thuật đơn giản, không xâm lấn',
+          'Chi phí thấp hơn so với IVF',
+          'Không cần gây mê hoặc phẫu thuật',
+          'Ít tác dụng phụ, hồi phục nhanh',
+        ], Icons.check_circle_rounded, const Color(0xFFE8F5E9), const Color(0xFF388E3C)),
+        const SizedBox(height: 20),
+        _buildSectionCard('Lưu ý', [
+          'Tỷ lệ thành công thấp hơn IVF',
+          'Chỉ phù hợp với một số trường hợp nhất định',
+          'Yêu cầu ít nhất 1 vòi trứng thông',
+        ], Icons.warning_rounded, const Color(0xFFFFF3E0), const Color(0xFFF57C00)),
       ],
     );
   }
 
-  Widget _buildReferenceFooter() {
-    final List<String> resources = [
-      'Điều kiện để thực hiện IUI',
-      'Chi phí IUI hiện nay',
-      'Kinh nghiệm tăng tỷ lệ thành công IUI',
+  Widget _buildGlassCard({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: Padding(padding: const EdgeInsets.all(24), child: child)),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(IconData icon, String title) {
+    return Row(
+      children: [
+        Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _accentColor.withOpacity(0.15), shape: BoxShape.circle), child: Icon(icon, color: _accentColor, size: 22)),
+        const SizedBox(width: 14),
+        Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 19, fontWeight: FontWeight.w800, color: _primaryColor)),
+      ],
+    );
+  }
+
+  Widget _buildSectionCard(String title, List<String> items, IconData icon, Color bgColor, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [BoxShadow(color: _darkShadow.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [Icon(icon, color: iconColor, size: 24), const SizedBox(width: 12), Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: _primaryColor))]),
+          const SizedBox(height: 18),
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(padding: const EdgeInsets.all(4.0), child: Container(width: 6, height: 6, decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle))),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(item, style: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.blueGrey.shade700, fontWeight: FontWeight.w600, height: 1.4))),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProcessTab() {
+    return ListView(physics: const BouncingScrollPhysics(), padding: const EdgeInsets.fromLTRB(20, 24, 20, 40), children: [_buildTimeline(), const SizedBox(height: 32), _buildVideoCard()]);
+  }
+
+  Widget _buildTimeline() {
+    final List<Map<String, dynamic>> steps = [
+      {'id': '1', 'title': 'Kích trứng', 'duration': '10-14 ngày', 'desc': 'Sử dụng thuốc để kích thích nang trứng phát triển.'},
+      {'id': '2', 'title': 'Theo dõi nang trứng', 'duration': 'Định kỳ', 'desc': 'Siêu âm theo dõi sự phát triển nang trứng để định ngày rụng.'},
+      {'id': '3', 'title': 'Tiêm rụng trứng', 'duration': '36h trước IUI', 'desc': 'Tiêm mũi hCG kích thích trứng rụng đúng thời điểm.'},
+      {'id': '4', 'title': 'Chuẩn bị tinh trùng', 'duration': '2 giờ', 'desc': 'Lọc rửa và cô đặc tinh binh tại phòng thí nghiệm.'},
+      {'id': '5', 'title': 'Bơm tinh trùng', 'duration': '15-20 phút', 'desc': 'Bơm tinh binh vào tử cung qua ống catheter mềm.'},
+      {'id': '6', 'title': 'Hỗ trợ hoàng thể', 'duration': '14 ngày', 'desc': 'Sử dụng thuốc nội tiết hỗ trợ phôi làm tổ.'},
+      {'id': '7', 'title': 'Thử thai', 'duration': '14 ngày sau', 'desc': 'Xét nghiệm máu beta-hCG kiểm tra kết quả.'},
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Tham khảo thêm',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+    return Column(children: List.generate(steps.length, (index) {
+      final step = steps[index];
+      return IntrinsicHeight(
+        child: Row(children: [
+          Column(children: [
+            Container(width: 36, height: 36, decoration: BoxDecoration(color: _accentColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: _accentColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]), child: Center(child: Text(step['id'], style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)))),
+            if (index != steps.length - 1) Expanded(child: Container(width: 2, color: _accentColor.withOpacity(0.2))),
+          ]),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: _darkShadow.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: Text(step['title'], style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor))), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: _accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Text(step['duration'], style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold, color: _accentColor)))]),
+                  const SizedBox(height: 10),
+                  Text(step['desc'], style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.blueGrey.shade600, height: 1.5)),
+                ],
+              ),
+            ),
+          ),
+        ]),
+      );
+    }));
+  }
+
+  Widget _buildVideoCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [BoxShadow(color: _accentColor.withOpacity(0.4), blurRadius: 25, offset: const Offset(0, 15))],
+      ),
+      child: Column(children: [
+        Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 50)),
+        const SizedBox(height: 20),
+        Text('Xem mô phỏng 3D', style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+        const SizedBox(height: 10),
+        Text('Quy trình bơm IUI trực quan', style: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w600)),
+        const SizedBox(height: 30),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'iui_3d.mp4', title: 'Video mô phỏng 3D - Quy trình IUI')));
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
+            child: Text('Bắt đầu xem ngay', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
           ),
         ),
-        const SizedBox(height: 16),
-        ...resources.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.article_outlined, color: Colors.grey),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-              ],
-            ),
-          ),
-        )),
-      ],
+      ]),
     );
   }
 }
