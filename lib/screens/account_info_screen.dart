@@ -2,8 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../models/user_model.dart';
+
 class AccountInfoScreen extends StatefulWidget {
-  const AccountInfoScreen({super.key});
+  final UserProfileModel? profile;
+
+  const AccountInfoScreen({super.key, this.profile});
 
   @override
   State<AccountInfoScreen> createState() => _AccountInfoScreenState();
@@ -18,9 +22,13 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
   final Color _bgColor = const Color(0xFFF8FBFF);
   final Color _darkShadow = const Color(0xFFD1D9E6);
 
-  String _selectedGender = 'Nữ';
+  String _selectedGender = 'Khác';
   bool _isEditingEmail = false;
   bool _isEditingPhone = false;
+
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
 
   @override
   void initState() {
@@ -29,11 +37,26 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
+
+    _nameController = TextEditingController(text: widget.profile?.fullName ?? 'Khách');
+    _emailController = TextEditingController(text: widget.profile?.email ?? 'Chưa rõ');
+    _phoneController = TextEditingController(text: widget.profile?.phone ?? 'Chưa rõ');
+    
+    // Normalize gender string if needed, expecting 'Nam', 'Nữ', or 'Khác'
+    String genderStr = widget.profile?.gender ?? 'Khác';
+    if (genderStr.toLowerCase() == 'nam') genderStr = 'Nam';
+    else if (genderStr.toLowerCase() == 'nữ' || genderStr.toLowerCase() == 'nu') genderStr = 'Nữ';
+    else genderStr = 'Khác';
+    
+    _selectedGender = genderStr;
   }
 
   @override
   void dispose() {
     _backgroundController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -156,7 +179,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                         child: Column(
                           children: [
                             TextFormField(
-                              initialValue: 'Nguyễn Thị A',
+                              controller: _nameController,
                               readOnly: true,
                               style: GoogleFonts.plusJakartaSans(
                                 color: Colors.grey.shade400,
@@ -183,7 +206,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                             ),
                             const SizedBox(height: 20),
                             TextFormField(
-                              initialValue: '01/01/1995',
+                              initialValue: widget.profile?.dob ?? 'Không rõ',
                               readOnly: true,
                               style: GoogleFonts.plusJakartaSans(
                                 color: Colors.grey.shade400,
@@ -193,7 +216,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                             ),
                             const SizedBox(height: 20),
                             TextFormField(
-                              initialValue: 'nguyenthia@gmail.com',
+                              controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               readOnly: !_isEditingEmail,
                               style: GoogleFonts.plusJakartaSans(
@@ -217,7 +240,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                             ),
                             const SizedBox(height: 20),
                             TextFormField(
-                              initialValue: '0987654321',
+                              controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               readOnly: !_isEditingPhone,
                               style: GoogleFonts.plusJakartaSans(

@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'natural_result_screen.dart';
+import '../services/api_service.dart';
 
 class IVFResultScreen extends StatefulWidget {
   final Map<String, dynamic>? resultData;
-  const IVFResultScreen({super.key, this.resultData});
+  final Map<String, dynamic>? femaleData;
+  final Map<String, dynamic>? maleData;
+  
+  const IVFResultScreen({super.key, this.resultData, this.femaleData, this.maleData});
 
   @override
   State<IVFResultScreen> createState() => _IVFResultScreenState();
@@ -23,6 +27,7 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
   final Color _bgColor = const Color(0xFFF8FBFF); 
   final Color _lightShadow = Colors.white;
   final Color _darkShadow = const Color(0xFFD1D9E6); 
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -739,11 +744,47 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NaturalResultScreen()),
+              onPressed: () async {
+                if (widget.femaleData == null || widget.maleData == null) {
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NaturalResultScreen()));
+                  return;
+                }
+                
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return Dialog(
+                      backgroundColor: _bgColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_accentColor)),
+                            const SizedBox(height: 24),
+                            Text('Đang phân tích dữ liệu tự nhiên...', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor)),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
+
+                try {
+                  final result = await _apiService.runSimulation('hunault', widget.femaleData!, widget.maleData!);
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: widget.femaleData, maleData: widget.maleData)),
+                  );
+                } catch (e) {
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NaturalResultScreen()));
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

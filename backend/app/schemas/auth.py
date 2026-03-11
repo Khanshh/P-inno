@@ -17,5 +17,11 @@ class LoginResponse(BaseModel):
     patient_code: str
     role: str
 
-
-
+class RegisterRequest(BaseModel):
+    fullname: str
+    username: str
+    password: str
+    phone: str
+    gender: str = ""
+    dob: str = ""
+    email: str = ""

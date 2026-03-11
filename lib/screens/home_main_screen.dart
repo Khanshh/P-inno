@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'chat_ai_screen.dart';
 import 'discover_screen.dart';
 import 'notification_screen.dart';
@@ -43,6 +44,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   bool _isLoadingFeatures = true;
   bool _isLoadingNews = true;
   bool _isLoadingTips = true;
+  
+  String _userFullName = '';
 
   @override
   void initState() {
@@ -61,6 +64,11 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   }
 
   Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userFullName = prefs.getString('user_full_name') ?? 'Khách';
+    });
+    
     _loadFeatures();
     _loadNews();
     _loadDailyTips();
@@ -384,7 +392,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Nguyễn Văn A",
+                        _userFullName,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 25,
                           fontWeight: FontWeight.w800,

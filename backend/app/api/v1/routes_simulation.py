@@ -7,6 +7,10 @@ Endpoints:
     GET  /simulation/models           – Danh sách tất cả mô hình
 """
 
+import json
+import os
+from datetime import datetime
+import uuid
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.simulation import (
@@ -33,8 +37,40 @@ router = APIRouter()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# DB Utils cho Simulations
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_simulations_path = os.path.join(os.getcwd(), "data", "simulations.json")
+
+def load_simulations():
+    try:
+        if os.path.exists(_simulations_path):
+            with open(_simulations_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Error loading simulations: {e}")
+    return []
+
+def save_simulations(sim_list):
+    try:
+        with open(_simulations_path, "w", encoding="utf-8") as f:
+            json.dump(sim_list, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving simulations: {e}")
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Endpoints
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@router.get("/simulation/history")
+async def get_simulation_history(user_id: str):
+    """Lấy lịch sử mô phỏng của người dùng"""
+    sim_list = load_simulations()
+    user_sims = [s for s in sim_list if s.get("user_id") == user_id]
+    
+    # Sort by date descending
+    user_sims.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    return {"history": user_sims}
 
 
 @router.post(
@@ -67,7 +103,32 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
         ai_report = await generate_final_report_ai("Hunault (Tự nhiên)", result.probability_percent, request.profile, ai_diagnosis)
         result.interpretation = ai_report
         
-        return result
+        hunault_resp = HunaultResponse(
+            probability_percent=result.probability_percent,
+            risk_level=result.risk_level.value,
+            interpretation=result.interpretation,
+            recommendations=result.recommendations,
+            factors_summary=result.factors_summary,
+            motility_used=result.motility_used,
+            motility_source=result.motility_source,
+            disclaimer=result.disclaimer,
+        )
+        
+        # Save to DB
+        if request.user_id:
+            sim_list = load_simulations()
+            sim_list.append({
+                "id": str(uuid.uuid4()),
+                "user_id": request.user_id,
+                "model_id": request.model_id,
+                "probability_percent": hunault_resp.probability_percent,
+                "risk_level": hunault_resp.risk_level,
+                "created_at": datetime.now().isoformat(),
+                "result": hunault_resp.model_dump()
+            })
+            save_simulations(sim_list)
+            
+        return hunault_resp
         
     elif request.model_id == "sart_ivf":
         # 1. Map to SART predictor format
@@ -80,7 +141,7 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
         # 3. Supercharge with AI Report
         ai_report = await generate_final_report_ai("SART (IVF)", prob, request.profile, ai_diagnosis)
         
-        return {
+        res = {
             "probability_percent": prob,
             "risk_level": "moderate",
             "interpretation": ai_report,
@@ -92,6 +153,21 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
             },
             "disclaimer": MEDICAL_DISCLAIMER
         }
+
+        if request.user_id:
+            sim_list = load_simulations()
+            sim_list.append({
+                "id": str(uuid.uuid4()),
+                "user_id": request.user_id,
+                "model_id": request.model_id,
+                "probability_percent": prob,
+                "risk_level": "moderate",
+                "created_at": datetime.now().isoformat(),
+                "result": res
+            })
+            save_simulations(sim_list)
+
+        return res
     else:
         raise HTTPException(status_code=400, detail="Model ID không hợp lệ.")
 

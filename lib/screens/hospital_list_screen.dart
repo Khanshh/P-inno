@@ -2,6 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import '../services/api_service.dart';
 
 class HospitalListScreen extends StatefulWidget {
   const HospitalListScreen({super.key});
@@ -21,60 +24,41 @@ class _HospitalListScreenState extends State<HospitalListScreen>
   final Color _bgColor = const Color(0xFFF8FBFF);
   final Color _darkShadow = const Color(0xFFD1D9E6);
 
-  final List<Map<String, dynamic>> _allHospitals = [
-    {
-      'name': 'Bệnh viện Phụ sản Trung Ương',
-      'address': '43 Tràng Thi, Hoàn Kiếm, Hà Nội',
-      'distance': 2.5,
-      'rating': 4.8,
-      'image':
-          'https://images.unsplash.com/photo-1586773860418-d37222d8fce2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'Bệnh viện Từ Dũ',
-      'address': '284 Cống Quỳnh, Quận 1, TP.HCM',
-      'distance': 5.0,
-      'rating': 4.9,
-      'image':
-          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'Bệnh viện Bưu Điện',
-      'address': '49 Trần Điền, Hoàng Mai, Hà Nội',
-      'distance': 1.2,
-      'rating': 4.7,
-      'image':
-          'https://images.unsplash.com/photo-1512678080530-7760d81faba6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'Bệnh viện Phụ sản Hà Nội',
-      'address': '929 La Thành, Ba Đình, Hà Nội',
-      'distance': 3.8,
-      'rating': 4.6,
-      'image':
-          'https://images.unsplash.com/photo-1516549655169-df83a0774514?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-    },
-    {
-      'name': 'Bệnh viện Phụ sản Mekong',
-      'address': '243-243A-243B Hoàng Văn Thụ, Tân Bình, TP.HCM',
-      'distance': 4.2,
-      'rating': 4.5,
-      'image':
-          'https://images.unsplash.com/photo-1504439468489-c8920d796a29?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-    },
-  ];
-
+  List<Map<String, dynamic>> _allHospitals = [];
   List<Map<String, dynamic>> _filteredHospitals = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _filteredHospitals = List.from(_allHospitals);
     _searchController.addListener(_onSearchChanged);
     _backgroundController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
+
+    _loadHospitals();
+  }
+
+  Future<void> _loadHospitals() async {
+    try {
+      final apiService = ApiService();
+      final hospitals = await apiService.getHospitals();
+
+      setState(() {
+        _allHospitals = hospitals;
+        _filteredHospitals = List.from(_allHospitals);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage =
+            "Không thể tải danh sách bệnh viện. Vui lòng thử lại sau.";
+      });
+      debugPrint("Lỗi tải danh sách bệnh viện: $e");
+    }
   }
 
   @override
@@ -219,7 +203,59 @@ class _HospitalListScreenState extends State<HospitalListScreen>
             children: [
               _buildGlassHeader(),
               Expanded(
-                child: _filteredHospitals.isEmpty
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF1D4E56),
+                        ),
+                      )
+                    : _errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
+                                size: 64,
+                                color: Colors.red.shade300,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.red.shade400,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isLoading = true;
+                                    _errorMessage = null;
+                                  });
+                                  _loadHospitals();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _accentColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Thử lại',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _filteredHospitals.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -656,108 +692,55 @@ class _HospitalListScreenState extends State<HospitalListScreen>
 
               const SizedBox(height: 32),
 
-              // Map Illustration
+              // Real Interactive Map
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(24),
+                height: 220,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F7F8),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: _accentColor.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: _darkShadow.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.my_location_rounded,
-                            color: Colors.blue.shade500,
-                          ),
-                        ),
-                        Container(
-                          height: 40,
-                          width: 2,
-                          color: _accentColor.withOpacity(0.5),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: _accentColor,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: _accentColor.withOpacity(0.4),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.location_on_rounded,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: _darkShadow.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Vị trí của bạn',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.blue.shade700,
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(
+                        hospital['lat'] ?? 21.028511,
+                        hospital['lng'] ?? 105.845672,
+                      ),
+                      initialZoom: 15.0,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.hackathon.pinno',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(
+                              hospital['lat'] ?? 21.028511,
+                              hospital['lng'] ?? 105.845672,
                             ),
-                          ),
-                          Text(
-                            'Đang định vị...',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
+                            width: 60,
+                            height: 60,
+                            child: const Icon(
+                              Icons.location_on_rounded,
+                              color: Colors.redAccent,
+                              size: 45,
                             ),
-                          ),
-                          const SizedBox(height: 32),
-                          Text(
-                            'Điểm đến',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: _primaryColor,
-                            ),
-                          ),
-                          Text(
-                            hospital['address'],
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              color: Colors.blueGrey.shade600,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 

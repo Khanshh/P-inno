@@ -20,6 +20,7 @@ class ApiConfig {
   static String discoverMethodDetail(String id) => '$baseUrl$apiPrefix/discover/methods/$id';
   static String get infertilityInfo => '$baseUrl$apiPrefix/discover/infertility-info';
   static String get aiChat => '$baseUrl$apiPrefix/ai/chat';
+  static String aiChatHistory(String sessionId) => '$baseUrl$apiPrefix/ai/chat/history?session_id=$sessionId';
   static String get notifications => '$baseUrl$apiPrefix/notifications';
   static String get healthAssessmentQuestions => '$baseUrl$apiPrefix/health-assessment/questions';
   static String get onboarding => '$baseUrl$apiPrefix/onboarding';
@@ -27,5 +28,7 @@ class ApiConfig {
   static String get medicalRecords => '$baseUrl$apiPrefix/medical-records';
   static String get patients => '$baseUrl$apiPrefix/patients';
   static String get authLogin => '$baseUrl$apiPrefix/auth/login';
+  static String get authRegister => '$baseUrl$apiPrefix/auth/register';
   static String get simulationUnified => '$baseUrl$apiPrefix/simulation/unified';
+  static String get hospitals => '$baseUrl$apiPrefix/hospitals';
 }

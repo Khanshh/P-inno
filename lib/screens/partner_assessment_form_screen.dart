@@ -105,7 +105,7 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result)),
+        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: widget.femaleData, maleData: maleData)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -167,7 +167,7 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
       
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result)),
+        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result, femaleData: widget.femaleData, maleData: maleData)),
       );
     } catch (e) {
       if (!mounted) return;
