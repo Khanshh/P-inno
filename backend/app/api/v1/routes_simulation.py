@@ -31,7 +31,7 @@ from ai.features.fertility_simulation.hunault_model import (
     StressLevel,
     MEDICAL_DISCLAIMER,
 )
-from ai.features.fertility_simulation.adapter import map_profile_to_hunault
+from ai.features.fertility_simulation.adapter import map_profile_to_hunault, get_patient_group
 
 router = APIRouter()
 
@@ -115,6 +115,7 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
             timeline_data=result.timeline_data,
             break_point=result.break_point,
             disclaimer=result.disclaimer,
+            patient_group=get_patient_group(result.probability_percent, is_natural=True)
         )
         
         # Save to DB
@@ -154,6 +155,7 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
                 "bmi": {"value": round(sart_input["bmi"], 1), "impact": "neutral"},
                 "diagnosis": {"value": ai_diagnosis, "label": "Nhóm bệnh lý (AI xác định)"}
             },
+            "patient_group": get_patient_group(prob, is_natural=False),
             "disclaimer": MEDICAL_DISCLAIMER
         }
 
@@ -218,6 +220,7 @@ async def run_hunault_simulation(request: HunaultRequest) -> HunaultResponse:
             timeline_data=result.timeline_data,
             break_point=result.break_point,
             disclaimer=result.disclaimer,
+            patient_group=get_patient_group(result.probability_percent, is_natural=True)
         )
     except Exception as e:
         raise HTTPException(

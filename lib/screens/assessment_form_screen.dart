@@ -111,7 +111,32 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
     );
   }
 
+  bool _isFemaleComplete() => _countFilled() == 20;
+
+  bool _isMaleComplete() {
+    if (widget.maleData == null) return false;
+    final d = widget.maleData!;
+    if ((d['age'] ?? 0) <= 0) return false;
+    final keys = ['has_children', 'semen_test', 'testosterone', 'testicular_issues', 'varicocele', 'erectile_dysfunction', 'ejaculation_issues', 'smoking', 'alcohol', 'exercise', 'environment', 'stress'];
+    for (var k in keys) {
+      if (d[k] == null || d[k] == "" || d[k] == "Vui lòng chọn") return false;
+    }
+    return true;
+  }
+
   void _onShowNaturalResultPressed() async {
+    if (!_isFemaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người vợ để xem kết quả Tự nhiên'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (!_isMaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người chồng để xem kết quả Tự nhiên'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -160,6 +185,12 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
   }
 
   void _onShowIVFResultPressed() async {
+    if (!_isFemaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người vợ để xem kết quả IVF'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -307,6 +338,7 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildInfoBox(),
                   _buildInputField(
                     question: '1. Bạn bao nhiêu tuổi?',
                     hint: 'VD: 28',
@@ -752,6 +784,49 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoBox() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _accentColor.withOpacity(0.5), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 8, offset: const Offset(4, 4)),
+          BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _accentColor.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.lightbulb_outline_rounded, color: _primaryColor, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              widget.isPartner
+                  ? 'Phần này dành cho bạn đời (nữ giới) của bạn. Vui lòng nhập thông tin của người đó.'
+                  : 'Phần này dành cho nữ giới. Vui lòng cung cấp thông tin y tế của bạn.',
+              style: GoogleFonts.plusJakartaSans(
+                color: _primaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

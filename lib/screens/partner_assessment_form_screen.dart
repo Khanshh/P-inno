@@ -43,6 +43,24 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
   String? _q12Value = 'Vui lòng chọn';
   String? _q13Value = 'Vui lòng chọn';
 
+  int _countFilled() {
+    int count = 0;
+    if (_ageCtrl.text.trim().isNotEmpty) count++;
+    if (_q2Value != 'Vui lòng chọn') count++;
+    if (_q3Value != 'Vui lòng chọn') count++;
+    if (_q4Value != 'Vui lòng chọn') count++;
+    if (_q5Value != 'Vui lòng chọn') count++;
+    if (_q6Value != 'Vui lòng chọn') count++;
+    if (_q7Value != 'Vui lòng chọn') count++;
+    if (_q8Value != 'Vui lòng chọn') count++;
+    if (_q9Value != 'Vui lòng chọn') count++;
+    if (_q10Value != 'Vui lòng chọn') count++;
+    if (_q11Value != 'Vui lòng chọn') count++;
+    if (_q12Value != 'Vui lòng chọn') count++;
+    if (_q13Value != 'Vui lòng chọn') count++;
+    return count;
+  }
+
   Map<String, dynamic> _gatherMaleData() {
     return {
       "age": double.tryParse(_ageCtrl.text) ?? 0.0,
@@ -72,7 +90,35 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
     );
   }
 
+  bool _isMaleComplete() => _countFilled() == 13;
+
+  bool _isFemaleComplete() {
+    if (widget.femaleData == null) return false;
+    final d = widget.femaleData!;
+    if ((d['age'] ?? 0) <= 0) return false;
+    if ((d['height'] ?? 0) <= 0) return false;
+    if ((d['weight'] ?? 0) <= 0) return false;
+
+    final keys = ['trying_duration', 'pregnancy_count', 'live_births', 'miscarriages', 'done_ivf', 'menstrual_cycle', 'tracking_ovulation', 'amh_level', 'afc_count', 'hsg_result', 'has_pcos', 'has_endometriosis', 'has_thyroid_issues', 'smoking', 'alcohol', 'exercise', 'stress'];
+    for (var k in keys) {
+      if (d[k] == null || d[k] == "" || d[k] == "Vui lòng chọn") return false;
+    }
+    return true;
+  }
+
   void _onShowNaturalResultPressed() async {
+    if (!_isFemaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người vợ để xem kết quả Tự nhiên'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (!_isMaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người chồng để xem kết quả Tự nhiên'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
     // Hiện popup loading
     showDialog(
       context: context,
@@ -136,6 +182,12 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
   }
 
   void _onShowIVFResultPressed() async {
+    if (!_isFemaleComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin của người vợ để xem kết quả IVF'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
     // Hiện popup loading
     showDialog(
       context: context,

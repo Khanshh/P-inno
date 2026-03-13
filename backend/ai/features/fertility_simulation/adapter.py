@@ -203,3 +203,68 @@ def map_profile_to_sart(profile: ComprehensiveFertilityProfile, ai_diagnosis: Di
         "diagnosis": ai_diagnosis,
         "amh_estimated": f.amh_level if f.amh_level != "Không biết" else None
     }
+
+def get_patient_group(probability: float, is_natural: bool = True) -> Dict[str, Any]:
+    """
+    Map probability to a user-friendly patient group.
+    Tailors the message for Natural (Couple-focused) vs IVF (Treatment-focused).
+    """
+    if is_natural:
+        if probability >= 55:
+            return {
+                "name": "Cặp Đôi Cơ Hội Thuận Lợi",
+                "color": "#4CAF50",
+                "description": "Hai bạn đang có nền tảng sức khỏe sinh sản rất tốt. Hãy duy trì lối sống lành mạnh cùng nhau để sớm đón tin vui.",
+                "icon": "favorite_rounded"
+            }
+        elif probability >= 35:
+            return {
+                "name": "Cặp Đôi Tiềm Năng Cần Tối Ưu",
+                "color": "#2196F3",
+                "description": "Hai bạn có cơ hội tốt. Việc kết hợp ăn uống, tập luyện và canh thời điểm vàng sẽ giúp tối ưu hóa khả năng thụ thai.",
+                "icon": "psychology_rounded"
+            }
+        elif probability >= 20:
+            return {
+                "name": "Cặp Đôi Cần Đồng Hành Chuyên Khoa",
+                "color": "#FF9800",
+                "description": "Đây là thời điểm thích hợp để hai bạn cùng đi thăm khám để nhận được sự tư vấn chuyên sâu từ bác sĩ.",
+                "icon": "medical_services_rounded"
+            }
+        else:
+            return {
+                "name": "Cặp Đôi Kiên Trì & Hy Vọng Mãnh Liệt",
+                "color": "#9C27B0",
+                "description": "Mọi hành trình đều có thử thách. Với sự hỗ trợ của y khoa hiện đại, cánh cửa đón con yêu vẫn luôn rộng mở với hai bạn.",
+                "icon": "stars_rounded"
+            }
+    else:
+        # IVF / Treatment focused
+        if probability >= 55:
+            return {
+                "name": "Nhóm Tiên Lượng Tốt",
+                "color": "#4CAF50",
+                "description": "Phác đồ điều trị đang có những chỉ số rất khả quan. Hãy giữ tinh thần thoải mái để đạt kết quả tốt nhất.",
+                "icon": "favorite_rounded"
+            }
+        elif probability >= 35:
+            return {
+                "name": "Nhóm Triển Vọng Ổn Định",
+                "color": "#2196F3",
+                "description": "Cơ hội thành công trong chu kỳ này là hoàn toàn hiện hữu. Hãy tuân thủ phác đồ và tối ưu hóa sức khỏe.",
+                "icon": "psychology_rounded"
+            }
+        elif probability >= 20:
+            return {
+                "name": "Nhóm Cần Phác Đồ Chuyên Biệt",
+                "color": "#FF9800",
+                "description": "Hệ thống khuyến nghị một sự khảo sát kỹ lưỡng hơn về nội tiết để bác sĩ đưa ra phác đồ sát sao nhất.",
+                "icon": "medical_services_rounded"
+            }
+        else:
+            return {
+                "name": "Nhóm Kiên Trì & Nỗ Lực Không Ngừng",
+                "color": "#9C27B0",
+                "description": "Y học hiện đại có nhiều phương án dự phòng. Đừng bỏ cuộc, bác sĩ sẽ đồng hành để tìm ra 'chìa khóa' cho bạn.",
+                "icon": "stars_rounded"
+            }

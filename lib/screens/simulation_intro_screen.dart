@@ -24,6 +24,9 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
   final Color _lightShadow = Colors.white;
   final Color _darkShadow = const Color(0xFFD1D9E6);
 
+  String _selectedGender = 'Nữ';
+  bool _isLoadingGender = true;
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +34,25 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
+    _loadGender();
+  }
+
+  Future<void> _loadGender() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _selectedGender = prefs.getString('gender') ?? 'Nữ';
+        _isLoadingGender = false;
+      });
+    }
+  }
+
+  Future<void> _saveGender(String gender) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('gender', gender);
+    setState(() {
+      _selectedGender = gender;
+    });
   }
 
   @override
@@ -90,6 +112,8 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
                   child: Column(
                     children: [
                       _buildHeroCard(),
+                      const SizedBox(height: 24),
+                      _buildGenderSelectionCard(),
                       const SizedBox(height: 24),
                       _buildWarningCard(),
                       const SizedBox(height: 24),
@@ -239,6 +263,106 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
     );
   }
 
+  Widget _buildGenderSelectionCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.6), blurRadius: 16, offset: const Offset(8, 8)),
+          BoxShadow(color: _lightShadow, blurRadius: 16, offset: const Offset(-8, -8)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Cá nhân hóa giới tính',
+            style: GoogleFonts.plusJakartaSans(
+              color: _primaryColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Chọn giới tính của bạn để bắt đầu khảo sát phù hợp.',
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: _buildGenderOption(
+                  'Nam',
+                  Icons.male_rounded,
+                  _selectedGender == 'Nam',
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildGenderOption(
+                  'Nữ',
+                  Icons.female_rounded,
+                  _selectedGender == 'Nữ',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderOption(String label, IconData icon, bool isSelected) {
+    return GestureDetector(
+      onTap: () => _saveGender(label),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: _bgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? _accentColor : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(color: _accentColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4)),
+                ]
+              : [
+                  BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 8, offset: const Offset(4, 4)),
+                  BoxShadow(color: _lightShadow, blurRadius: 8, offset: const Offset(-4, -4)),
+                ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? _accentColor : Colors.grey.shade400,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? _primaryColor : Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildWarningCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -315,11 +439,17 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
             ),
           ),
           const SizedBox(height: 24),
-          _buildStepItem(1, 'Hoàn thành khảo sát', 'Trả lời các câu hỏi về thông tin cá nhân và y tế.'),
+          _buildStepItem(
+            1,
+            'Hoàn thành khảo sát',
+            _selectedGender == 'Nam'
+                ? 'Nhập thông tin của bạn và sau đó là thông tin của bạn đời (Nữ).'
+                : 'Nhập thông tin của bạn và sau đó là thông tin của bạn đời (Nam).',
+          ),
           const SizedBox(height: 16),
-          _buildStepItem(2, 'Hệ thống phân tích', 'Xử lý dữ liệu dựa trên mô hình thuật toán tiên tiến.'),
+          _buildStepItem(2, 'Hệ thống phân tích', 'Xử lý dữ liệu dựa trên mô hình thuật toán lâm sàng.'),
           const SizedBox(height: 16),
-          _buildStepItem(3, 'Nhận kết quả', 'Xem chi tiết đánh giá về tình trạng sức khỏe sinh sản.'),
+          _buildStepItem(3, 'Nhận kết quả', 'Xem dự đoán khả năng thành công cho các phương pháp.'),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
@@ -435,13 +565,8 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                final gender = prefs.getString('gender') ?? 'Nữ';
-                
-                if (!context.mounted) return;
-                
-                if (gender == 'Nam') {
+              onPressed: _isLoadingGender ? null : () {
+                if (_selectedGender == 'Nam') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const PartnerAssessmentFormScreen(isPartner: false)),

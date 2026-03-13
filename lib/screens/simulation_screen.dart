@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SimulationScreen extends StatefulWidget {
   const SimulationScreen({super.key});
@@ -11,6 +12,8 @@ class SimulationScreen extends StatefulWidget {
 
 class _SimulationScreenState extends State<SimulationScreen> with TickerProviderStateMixin {
   late AnimationController _backgroundController;
+  String _userGender = 'Nữ';
+  bool _isLoading = true;
 
   // Premium Theme Colors
   final Color _primaryColor = const Color(0xFF1D4E56); // Deep Teal
@@ -28,6 +31,17 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
       vsync: this,
       duration: const Duration(seconds: 15),
     )..repeat(reverse: true);
+    _loadGender();
+  }
+
+  Future<void> _loadGender() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _userGender = prefs.getString('gender') ?? 'Nữ';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -95,6 +109,8 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
                       _buildInfluencingFactorsCard(),
                       const SizedBox(height: 24),
                       _buildPersonalizedSuggestionsCard(),
+                      const SizedBox(height: 24),
+                      _buildActionRoadmapCard(),
                       const SizedBox(height: 32),
                       _buildFooterButton(context),
                       const SizedBox(height: 48),
@@ -132,17 +148,14 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
       ),
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 16,
-        left: 8,
+        left: 20,
         right: 20,
         bottom: 24,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 24),
-            onPressed: () => Navigator.pop(context),
-          ),
+          const SizedBox(width: 44), // Placeholder to keep title centered since there's a button on the right
           Expanded(
             child: Text(
               'Mô phỏng 3 tháng',
@@ -501,23 +514,23 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
           const SizedBox(height: 24),
           _buildFactorItem(
             icon: Icons.cake_outlined,
-            label: 'Tuổi',
+            label: _userGender == 'Nam' ? 'Tuổi của bạn' : 'Tuổi của bạn',
             level: 'Ảnh hưởng Cao',
             color: const Color(0xFFE53935),
             fraction: 0.9,
           ),
           const SizedBox(height: 20),
           _buildFactorItem(
-            icon: Icons.science_outlined,
-            label: 'AMH',
-            level: 'Ảnh hưởng Trung bình',
-            color: const Color(0xFFFB8C00),
-            fraction: 0.6,
+            icon: _userGender == 'Nam' ? Icons.biotech_rounded : Icons.science_outlined,
+            label: _userGender == 'Nam' ? 'Chất lượng tinh trùng' : 'Chỉ số AMH',
+            level: _userGender == 'Nam' ? 'Bình thường' : 'Ảnh hưởng Trung bình',
+            color: _userGender == 'Nam' ? const Color(0xFF43A047) : const Color(0xFFFB8C00),
+            fraction: _userGender == 'Nam' ? 0.4 : 0.6,
           ),
           const SizedBox(height: 20),
           _buildFactorItem(
             icon: Icons.timer_outlined,
-            label: 'Thời gian >12 tháng',
+            label: 'Thời gian mong con',
             level: 'Ảnh hưởng Cao',
             color: const Color(0xFFE53935),
             fraction: 0.85,
@@ -525,7 +538,7 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
           const SizedBox(height: 20),
           _buildFactorItem(
             icon: Icons.monitor_weight_outlined,
-            label: 'BMI',
+            label: 'Chỉ số BMI',
             level: 'Bình thường',
             color: const Color(0xFF43A047),
             fraction: 0.35,
@@ -651,26 +664,111 @@ class _SimulationScreenState extends State<SimulationScreen> with TickerProvider
           ),
           const SizedBox(height: 24),
           _buildSuggestionItem(
-            Icons.biotech_outlined,
-            'Nên làm xét nghiệm AMH để đánh giá dự trữ buồng trứng chính xác hơn.',
+            _userGender == 'Nam' ? Icons.smoke_free_outlined : Icons.biotech_outlined,
+            _userGender == 'Nam' 
+                ? 'Nên hạn chế hút thuốc và rượu bia để cải thiện chất lượng tinh binh.' 
+                : 'Nên làm xét nghiệm AMH để đánh giá dự trữ buồng trứng chính xác hơn.',
           ),
           const SizedBox(height: 16),
           _buildSuggestionItem(
             Icons.medical_services_outlined,
-            'Cân nhắc tư vấn với bác sĩ chuyên khoa về các phương pháp hỗ trợ sinh sản.',
+            _userGender == 'Nam'
+                ? 'Đặt lịch khám nam khoa để kiểm tra sức khỏe sinh sản tổng quát.'
+                : 'Cân nhắc tư vấn với bác sĩ chuyên khoa về các phương pháp hỗ trợ sinh sản.',
           ),
           const SizedBox(height: 16),
           _buildSuggestionItem(
-            Icons.restaurant_outlined,
-            'Bổ sung axit folic và vitamin tổng hợp hằng ngày để tăng cơ hội thụ thai.',
+            _userGender == 'Nam' ? Icons.fitness_center_outlined : Icons.restaurant_outlined,
+            _userGender == 'Nam'
+                ? 'Duy trì chế độ ăn giàu kẽm và tập thể dục đều đặn 30p mỗi ngày.'
+                : 'Bổ sung axit folic và vitamin tổng hợp hằng ngày để tăng cơ hội thụ thai.',
           ),
           const SizedBox(height: 16),
           _buildSuggestionItem(
-            Icons.fitness_center_outlined,
-            'Duy trì lối sống lành mạnh: tập thể dục nhẹ, ngủ đủ giấc, giảm stress.',
+            Icons.spa_outlined,
+            'Giảm bớt áp lực công việc, ngủ đủ giấc để cân bằng nội tiết tố.',
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionRoadmapCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: _darkShadow.withOpacity(0.6), blurRadius: 16, offset: const Offset(8, 8)),
+          BoxShadow(color: _lightShadow, blurRadius: 16, offset: const Offset(-8, -8)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Lộ trình hành động',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: _primaryColor,
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildRoadmapItem(1, 'Giai đoạn chuẩn bị', _userGender == 'Nam' ? 'Tăng cường sức khỏe, bỏ thói quen xấu.' : 'Bổ sung vitamin, theo dõi chu kỳ.'),
+          _buildRoadmapVerticalLine(),
+          _buildRoadmapItem(2, 'Kiểm tra lâm sàng', _userGender == 'Nam' ? 'Xét nghiệm tinh dịch đồ & nội tiết.' : 'Siêu âm đầu dò & xét nghiệm AMH.'),
+          _buildRoadmapVerticalLine(),
+          _buildRoadmapItem(3, 'Tư vấn phác đồ', 'Thảo luận kết quả cùng chuyên gia sinh sản.'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoadmapItem(int step, String title, String desc) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: _bgColor,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 6, offset: const Offset(2, 2)),
+              BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              step.toString(),
+              style: GoogleFonts.plusJakartaSans(color: _accentColor, fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor)),
+              const SizedBox(height: 2),
+              Text(desc, style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoadmapVerticalLine() {
+    return Container(
+      margin: const EdgeInsets.only(left: 15, top: 4, bottom: 4),
+      width: 2,
+      height: 20,
+      color: _accentColor.withOpacity(0.3),
     );
   }
 

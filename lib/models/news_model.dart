@@ -1,3 +1,5 @@
+import '../core/api_config.dart';
+
 class NewsModel {
   final String id;
   final String title;
@@ -24,12 +26,19 @@ class NewsModel {
   });
 
   factory NewsModel.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['image_url'] as String?;
+    
+    // Handle relative URLs for local static assets
+    if (imageUrl != null && imageUrl.startsWith('/static')) {
+      imageUrl = '${ApiConfig.baseUrl}$imageUrl';
+    }
+
     return NewsModel(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
       category: json['category'] as String?,
-      imageUrl: json['image_url'] as String?,
+      imageUrl: imageUrl,
       views: json['views'] as int,
       time: json['time'] as String? ?? '',
       createdAt: json['created_at'] != null

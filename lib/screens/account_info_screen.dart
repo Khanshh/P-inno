@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user_model.dart';
 
@@ -49,6 +50,14 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
     else genderStr = 'Khác';
     
     _selectedGender = genderStr;
+  }
+
+  Future<void> _saveGender(String gender) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('gender', gender);
+    setState(() {
+      _selectedGender = gender;
+    });
   }
 
   @override
@@ -190,10 +199,10 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                             const SizedBox(height: 20),
                             DropdownButtonFormField<String>(
                               value: _selectedGender,
-                              decoration: _buildInputDecoration('Giới tính', Icons.transgender_rounded, isReadOnlyField: true),
-                              icon: Icon(Icons.lock_outline_rounded, size: 18, color: Colors.grey.shade300),
+                              decoration: _buildInputDecoration('Giới tính', Icons.transgender_rounded),
+                              icon: Icon(Icons.keyboard_arrow_down_rounded, size: 22, color: _accentColor),
                               style: GoogleFonts.plusJakartaSans(
-                                color: Colors.grey.shade400,
+                                color: _primaryColor,
                                 fontWeight: FontWeight.w600,
                               ),
                               items: ['Nam', 'Nữ', 'Khác'].map((String value) {
@@ -202,7 +211,11 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> with TickerProvid
                                   child: Text(value),
                                 );
                               }).toList(),
-                              onChanged: null,
+                              onChanged: (val) {
+                                if (val != null) {
+                                  _saveGender(val);
+                                }
+                              },
                             ),
                             const SizedBox(height: 20),
                             TextFormField(

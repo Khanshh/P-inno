@@ -536,8 +536,10 @@ class _HomeMainScreenState extends State<HomeMainScreen>
 
   Widget _buildActiveTimelineCard() {
     final result = _lastSimulation!['result'] ?? {};
-    final double mainProb = (result['probability_percent'] ?? 0).toDouble();
-    final String probRange = result['probability_range'] ?? "";
+    final Map<String, dynamic>? patientGroup = result['patient_group'];
+    final String groupName = patientGroup?['name'] ?? "Lộ trình của bạn";
+    final String colorHex = patientGroup?['color'] ?? "#1D4E56";
+    final Color groupColor = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
 
     return GestureDetector(
       onTap: () => _showTimelineDetailDialog(),
@@ -546,14 +548,14 @@ class _HomeMainScreenState extends State<HomeMainScreen>
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [_primaryColor, const Color(0xFF2D6A73)],
+            colors: [groupColor, groupColor.withOpacity(0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: _primaryColor.withOpacity(0.3),
+              color: groupColor.withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -570,16 +572,16 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Thụ thai tự nhiên",
+                        "Nhóm hiện tại",
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white.withOpacity(0.8),
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Mô phỏng gần nhất",
+                        groupName,
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white,
                           fontSize: 20,
@@ -591,21 +593,15 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
+                    shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    probRange.isNotEmpty ? probRange : "${mainProb.toInt()}%",
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: probRange.isNotEmpty ? 16 : 24,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  child: Icon(
+                    _getIconData(patientGroup?['icon'] ?? 'stars_rounded'),
+                    color: Colors.white,
+                    size: 28,
                   ),
                 ),
               ],
@@ -614,14 +610,14 @@ class _HomeMainScreenState extends State<HomeMainScreen>
             Row(
               children: [
                 const Icon(
-                  Icons.timeline_rounded,
+                  Icons.map_outlined,
                   color: Colors.white,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Nhấn để xem biểu đồ lộ trình 24 tháng",
+                    "Xem lộ trình hành động chi tiết",
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 15,
@@ -643,12 +639,19 @@ class _HomeMainScreenState extends State<HomeMainScreen>
     );
   }
 
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'favorite_rounded': return Icons.favorite_rounded;
+      case 'psychology_rounded': return Icons.psychology_rounded;
+      case 'medical_services_rounded': return Icons.medical_services_rounded;
+      case 'stars_rounded': return Icons.stars_rounded;
+      default: return Icons.bubble_chart_rounded;
+    }
+  }
+
   void _showTimelineDetailDialog() {
     final result = _lastSimulation!['result'] ?? {};
-
-    final List<dynamic> timelineRaw = result['timeline_data'] ?? [];
     final int breakPoint = result['break_point'] ?? 12;
-    final String probRange = result['probability_range'] ?? "";
 
     showDialog(
       context: context,
@@ -675,33 +678,19 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.auto_graph_rounded,
+                      Icons.map_outlined,
                       color: Colors.white,
                       size: 28,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Lộ trình sinh sản",
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 22,
-                            ),
-                          ),
-                          if (probRange.isNotEmpty)
-                            Text(
-                              "Khoảng tin cậy: $probRange",
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white.withOpacity(0.7),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                            ),
-                        ],
+                      child: Text(
+                        "Lộ trình tối ưu hóa",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -715,32 +704,46 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      "Biểu đồ dự báo biên độ theo thời gian",
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: _primaryColor,
+                    _buildTimelineStep(
+                      'Tháng 1 - Tháng ${breakPoint ~/ 2}',
+                      'Giai đoạn Vàng: Tự nhiên',
+                      'Tập trung vào dinh dưỡng, bổ sung vitamin cho cả hai vợ chồng.',
+                      Icons.wb_sunny_rounded,
+                      Colors.green,
+                      true,
+                    ),
+                    _buildTimelineStep(
+                      'Tháng ${breakPoint ~/ 2 + 1} - Tháng $breakPoint',
+                      'Giai đoạn Lưu ý: Kiểm tra',
+                      'Nếu chưa có tin vui, hai bạn nên thực hiện các kiểm tra sức khỏe cơ bản.',
+                      Icons.visibility_rounded,
+                      Colors.orange,
+                      true,
+                    ),
+                    _buildTimelineStep(
+                      'Sau tháng $breakPoint',
+                      'Giai đoạn Hành động',
+                      'Đã đến lúc cần phác đồ chuyên biệt từ bác sĩ để rút ngắn hành trình.',
+                      Icons.medical_services_rounded,
+                      Colors.redAccent,
+                      false,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Text(
+                        "Đã rõ lộ trình",
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      height: 250,
-                      child: timelineRaw.isEmpty
-                          ? const Center(
-                              child: Text("Dữ liệu đang được cập nhật..."),
-                            )
-                          : _buildTimelineChart(timelineRaw, breakPoint),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildTrafficLightLegend(breakPoint),
-                    const SizedBox(height: 32),
-                    _buildBreakPointAlert(breakPoint),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -748,6 +751,68 @@ class _HomeMainScreenState extends State<HomeMainScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTimelineStep(String time, String title, String desc, IconData icon, Color color, bool showLine) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            if (showLine)
+              Container(
+                width: 2,
+                height: 50,
+                color: color.withOpacity(0.2),
+              ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                time,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: _primaryColor,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                desc,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: Colors.blueGrey.shade600,
+                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -226,6 +226,14 @@ class FactorDetail(BaseModel):
     source: Optional[str] = None
 
 
+class PatientGroup(BaseModel):
+    """Phân nhóm bệnh nhân để hiển thị thân thiện hơn."""
+    name: str
+    color: str
+    description: str
+    icon: str
+
+
 class HunaultResponse(BaseModel):
     """
     Response body từ Hunault Model.
@@ -238,6 +246,10 @@ class HunaultResponse(BaseModel):
     )
     risk_level: RiskLevelEnum = Field(
         description="Mức đánh giá: high, moderate, low, very_low"
+    )
+    patient_group: Optional[PatientGroup] = Field(
+        default=None,
+        description="Phân nhóm bệnh nhân thân thiện"
     )
     interpretation: str = Field(
         description="Giải thích kết quả chi tiết bằng tiếng Việt"

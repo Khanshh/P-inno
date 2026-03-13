@@ -47,7 +47,7 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     final double probability = widget.resultData?['probability_percent']?.toDouble() ?? 58.0;
-    final String interpretation = widget.resultData?['interpretation'] ?? 'Bạn có cơ hội 58% thành công khi sử dụng phương pháp IVF.';
+    final String interpretation = widget.resultData?['interpretation'] ?? 'Dựa trên hồ sơ của bạn, hệ thống đã phân tích và đưa ra kế hoạch hỗ trợ chuyên sâu.';
 
     return Scaffold(
       backgroundColor: _bgColor,
@@ -63,13 +63,13 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Column(
                     children: [
-                      _buildChartCard(probability),
+                      if (widget.resultData?['patient_group'] != null)
+                        _buildPatientGroupCard(widget.resultData?['patient_group']),
                       const SizedBox(height: 16),
                       _buildInterpretationCard(interpretation),
-                      _buildEfficiencyCompareCard(probability),
+                      _buildTreatmentJourneyTimeline(),
                       _buildProcedureCard(),
                       _buildProsConsCard(),
-                      _buildCompareCard(context),
                       _buildWarningBox(),
                       const SizedBox(height: 24),
                       Padding(
@@ -217,6 +217,73 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
     );
   }
 
+  Widget _buildPatientGroupCard(Map<String, dynamic> group) {
+    final Color groupColor = Color(int.parse(group['color'].replaceFirst('#', '0xFF')));
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [groupColor.withOpacity(0.05), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: groupColor.withOpacity(0.2), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: groupColor.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: groupColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(_getIconData(group['icon']), color: groupColor, size: 40),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            group['name'] ?? 'Phân nhóm bệnh nhân',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: groupColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            group['description'] ?? '',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.blueGrey.shade700,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getIconData(String? iconName) {
+    switch (iconName) {
+      case 'favorite_rounded': return Icons.favorite_rounded;
+      case 'psychology_rounded': return Icons.psychology_rounded;
+      case 'medical_services_rounded': return Icons.medical_services_rounded;
+      case 'stars_rounded': return Icons.stars_rounded;
+      default: return Icons.person_rounded;
+    }
+  }
+
   Widget _buildCard({required Widget child}) {
     return Container(
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 20),
@@ -301,41 +368,47 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
 
   Widget _buildChartCard(double probability) {
     int percentage = probability.round();
+    bool isLow = percentage < 25;
+
     return _buildCard(
       child: Column(
         children: [
-          Text(
-            'Khả năng trong mỗi chu kỳ\n(chuyển phôi)',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: _primaryColor,
-              height: 1.4,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.query_stats_rounded, color: _primaryColor.withOpacity(0.5), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Tỷ lệ tham chiếu mỗi chu kỳ',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _primaryColor.withOpacity(0.7),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Stack(
             alignment: Alignment.center,
             children: [
               Container(
-                width: 160,
-                height: 160,
+                width: 130,
+                height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: _accentColor.withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
+                      color: _accentColor.withOpacity(0.1),
+                      blurRadius: 15,
                     ),
                   ],
                 ),
                 child: CircularProgressIndicator(
                   value: probability / 100.0,
-                  strokeWidth: 16,
+                  strokeWidth: 12,
                   backgroundColor: _bgColor,
-                  valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
+                  valueColor: AlwaysStoppedAnimation<Color>(isLow ? Colors.purple.shade300 : _accentColor),
                   strokeAlign: CircularProgressIndicator.strokeAlignInside,
                 ),
               ),
@@ -345,33 +418,22 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
                   Text(
                     '$percentage%',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 44,
+                      fontSize: 32,
                       fontWeight: FontWeight.w800,
                       color: _primaryColor,
-                      height: 1.1,
                       letterSpacing: -1,
                     ),
                   ),
                   Text(
-                    'Thành công',
+                    'Khả năng',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      color: Colors.blueGrey.shade600,
+                      fontSize: 12,
+                      color: Colors.blueGrey.shade400,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 20,
-            runSpacing: 10,
-            children: [
-              _buildLegendItem(_accentColor, 'Thành công ($percentage%)'),
-              _buildLegendItem(_bgColor, 'Chưa thành công (${100 - percentage}%)', hasBorder: true),
             ],
           ),
         ],
@@ -405,108 +467,6 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildEfficiencyCompareCard(double probability) {
-    int percentage = probability.round();
-    return _buildCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.bar_chart_rounded, color: _accentColor, size: 24),
-              const SizedBox(width: 10),
-              Text(
-                'So sánh hiệu quả',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: _primaryColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(color: _darkShadow.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Tự nhiên\n(Dự tính trung bình)',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12, 
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blueGrey.shade600,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '42%',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.blueGrey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: _accentColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _accentColor.withOpacity(0.4), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(color: _accentColor.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'IVF\n(Trường hợp của bạn)',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: _primaryColor,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '$percentage%',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: _primaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildProcedureCard() {
     return _buildCard(
@@ -695,16 +655,18 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildCompareCard(BuildContext context) {
+
+  Widget _buildTreatmentJourneyTimeline() {
     return _buildCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.compare_arrows_rounded, color: _accentColor, size: 24),
+              Icon(Icons.auto_awesome_rounded, color: _accentColor, size: 24),
               const SizedBox(width: 10),
               Text(
-                'So sánh phương pháp',
+                'Lộ trình IVF tiêu chuẩn',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -713,75 +675,103 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () async {
-                if (widget.femaleData == null || widget.maleData == null) {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NaturalResultScreen()));
-                  return;
-                }
-                
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (BuildContext context) {
-                    return Dialog(
-                      backgroundColor: _bgColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_accentColor)),
-                            const SizedBox(height: 24),
-                            Text('Đang phân tích dữ liệu tự nhiên...', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor)),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
+          const SizedBox(height: 24),
+          _buildTimelineStep(
+            'Giai đoạn 1',
+            'Chuẩn bị & Kích thích',
+            'Sử dụng thuốc để kích thích buồng trứng phát triển nhiều nang noãn chất lượng.',
+            Icons.spa_rounded,
+            const Color(0xFF4CAF50),
+            true,
+          ),
+          _buildTimelineStep(
+            'Giai đoạn 2',
+            'Chọc hút & Thụ tinh',
+            'Trứng được thu hoạch và thụ tinh với tinh trùng trong phòng Lab hiện đại.',
+            Icons.biotech_rounded,
+            const Color(0xFF2196F3),
+            true,
+          ),
+          _buildTimelineStep(
+            'Giai đoạn 3',
+            'Nuôi cấy & Chuyển phôi',
+            'Phôi tốt nhất sẽ được nuôi cấy đến ngày 3 hoặc ngày 5 trước khi chuyển vào tử cung.',
+            Icons.egg_rounded,
+            const Color(0xFF9C27B0),
+            true,
+          ),
+          _buildTimelineStep(
+            'Giai đoạn 4',
+            'Chờ đợi & Kiểm tra',
+            'Khoảng 10-14 ngày sau chuyển phôi, hai bạn sẽ thực hiện xét nghiệm Beta để đón kết quả.',
+            Icons.favorite_rounded,
+            Colors.redAccent,
+            false,
+          ),
+        ],
+      ),
+    );
+  }
 
-                try {
-                  final result = await _apiService.runSimulation('hunault', widget.femaleData!, widget.maleData!);
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: widget.femaleData, maleData: widget.maleData)),
-                  );
-                } catch (e) {
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const NaturalResultScreen()));
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: _primaryColor,
-                elevation: 4,
-                shadowColor: _darkShadow,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: _accentColor.withOpacity(0.3)),
+  Widget _buildTimelineStep(String step, String title, String desc, IconData icon, Color color, bool showLine) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            if (showLine)
+              Container(
+                width: 2,
+                height: 50,
+                color: color.withOpacity(0.2),
+              ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                step,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: color,
                 ),
               ),
-              child: Text(
-                'Xem kết quả Tự nhiên',
+              Text(
+                title,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w800,
                   color: _primaryColor,
                 ),
               ),
-            ),
+              const SizedBox(height: 4),
+              Text(
+                desc,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: Colors.blueGrey.shade600,
+                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
