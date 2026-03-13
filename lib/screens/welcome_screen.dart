@@ -92,7 +92,7 @@ class WelcomeScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 48),
           child: Text(
-            'Đồng hành cùng hành trình\nIVF của bạn',
+            'Cùng bạn đón chờ phép màu',
             textAlign: TextAlign.center,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,

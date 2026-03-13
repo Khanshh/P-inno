@@ -233,6 +233,9 @@ class HunaultResponse(BaseModel):
     probability_percent: float = Field(
         description="% xác suất thụ thai tự nhiên trong 12 tháng tới"
     )
+    probability_range: str = Field(
+        description="Khoảng xác suất tin cậy (VD: '25% - 40%')"
+    )
     risk_level: RiskLevelEnum = Field(
         description="Mức đánh giá: high, moderate, low, very_low"
     )
@@ -250,6 +253,12 @@ class HunaultResponse(BaseModel):
     )
     motility_source: str = Field(
         description="Nguồn motility: 'test_result' hoặc 'estimated'"
+    )
+    timeline_data: List[dict] = Field(
+        description="Mảng xác suất tích lũy 1-24 tháng kèm phân vùng zone"
+    )
+    break_point: int = Field(
+        description="Tháng mà đường cong bắt đầu đi ngang"
     )
     disclaimer: str = Field(
         description="Cảnh báo y tế bắt buộc"

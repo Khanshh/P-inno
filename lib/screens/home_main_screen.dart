@@ -11,11 +11,13 @@ import 'health_assessment_screen.dart';
 import 'simulation_screen.dart';
 import 'simulation_intro_screen.dart';
 import 'hospital_list_screen.dart';
+import 'simulation_history_screen.dart';
 import '../services/api_service.dart';
 import '../models/feature_model.dart';
 import '../models/news_model.dart';
 import '../models/home_model.dart';
 import '../widgets/ai_summary_dialog.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class HomeMainScreen extends StatefulWidget {
   const HomeMainScreen({super.key});
@@ -24,12 +26,13 @@ class HomeMainScreen extends StatefulWidget {
   State<HomeMainScreen> createState() => _HomeMainScreenState();
 }
 
-class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStateMixin {
+class _HomeMainScreenState extends State<HomeMainScreen>
+    with TickerProviderStateMixin {
   late AnimationController _backgroundController;
   // Brand Colors
   final Color _primaryColor = const Color(0xFF1D4E56); // Deep Teal
   final Color _accentColor = const Color(0xFF6FB7C6); // Light Teal
-  
+
   // Soft UI / Neumorphism Colors
   final Color _bgColor = const Color(0xFFF8FBFF); // Matches Onboarding
   final Color _lightShadow = Colors.white;
@@ -44,8 +47,11 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   bool _isLoadingFeatures = true;
   bool _isLoadingNews = true;
   bool _isLoadingTips = true;
-  
+  bool _isLoadingHistory = true;
+  Map<String, dynamic>? _lastSimulation;
+
   String _userFullName = '';
+  String _gender = 'Khác';
 
   @override
   void initState() {
@@ -67,11 +73,30 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _userFullName = prefs.getString('user_full_name') ?? 'Khách';
+      _gender = prefs.getString('gender') ?? 'Khác';
     });
-    
+
     _loadFeatures();
     _loadNews();
     _loadDailyTips();
+    _loadSimulationHistory();
+  }
+
+  Future<void> _loadSimulationHistory() async {
+    setState(() => _isLoadingHistory = true);
+    try {
+      final history = await _apiService.getSimulationHistory();
+      if (history.isNotEmpty) {
+        setState(() {
+          _lastSimulation = history.first;
+          _isLoadingHistory = false;
+        });
+      } else {
+        setState(() => _isLoadingHistory = false);
+      }
+    } catch (e) {
+      setState(() => _isLoadingHistory = false);
+    }
   }
 
   Future<void> _loadFeatures() async {
@@ -84,8 +109,18 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
         _isLoadingFeatures = false;
         _features = [
           FeatureModel(id: '1', title: 'Tìm hiểu', icon: 'search', order: 1),
-          FeatureModel(id: '2', title: 'Gợi ý', icon: 'medical_services_outlined', order: 2),
-          FeatureModel(id: '3', title: 'Mẹo', icon: 'tips_and_updates_outlined', order: 3),
+          FeatureModel(
+            id: '2',
+            title: 'Gợi ý',
+            icon: 'medical_services_outlined',
+            order: 2,
+          ),
+          FeatureModel(
+            id: '3',
+            title: 'Mẹo',
+            icon: 'tips_and_updates_outlined',
+            order: 3,
+          ),
         ];
       });
     }
@@ -94,7 +129,10 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   Future<void> _loadNews() async {
     setState(() => _isLoadingNews = true);
     try {
-      final response = await _apiService.getNews(page: 1, limit: 4); // Fetch 4 for new layout
+      final response = await _apiService.getNews(
+        page: 1,
+        limit: 4,
+      ); // Fetch 4 for new layout
       setState(() {
         _news = response.items;
         _isLoadingNews = false;
@@ -117,7 +155,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   void _showDailyTipDialog(BuildContext context) {
     if (_dailyTips.isEmpty) return;
     final tip = _dailyTips[DateTime.now().day % _dailyTips.length];
-    
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -130,18 +168,30 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_accentColor, const Color(0xFF4A8E96)], // Vibrant gradient
+                  colors: [
+                    _accentColor,
+                    const Color(0xFF4A8E96),
+                  ], // Vibrant gradient
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-                    child: const Icon(Icons.lightbulb_rounded, color: Colors.white, size: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lightbulb_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Text(
@@ -190,8 +240,16 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                         color: _bgColor,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: _darkShadow, blurRadius: 10, offset: const Offset(4, 4)),
-                          BoxShadow(color: _lightShadow, blurRadius: 10, offset: const Offset(-4, -4)),
+                          BoxShadow(
+                            color: _darkShadow,
+                            blurRadius: 10,
+                            offset: const Offset(4, 4),
+                          ),
+                          BoxShadow(
+                            color: _lightShadow,
+                            blurRadius: 10,
+                            offset: const Offset(-4, -4),
+                          ),
                         ],
                       ),
                       alignment: Alignment.center,
@@ -230,28 +288,42 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
           _buildAnimatedBackground(),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 650),
-            reverseDuration: const Duration(milliseconds: 300), // Rời đi thì nhanh hơn
+            reverseDuration: const Duration(
+              milliseconds: 300,
+            ), // Rời đi thì nhanh hơn
             switchInCurve: Curves.easeOutQuart,
             switchOutCurve: Curves.easeInQuart,
             transitionBuilder: (child, animation) {
               // Hiệu ứng Fade mờ dần
               final fade = FadeTransition(opacity: animation, child: child);
-              
+
               // Trượt tà tà từ dưới lên
               final slide = SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.0, 0.1), // Rớt sâu xuống một tí
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0.0, 0.1), // Rớt sâu xuống một tí
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
                 child: fade,
               );
 
               // Cùng lúc đó hình ảnh phình to (Scale) nhẹ
               return ScaleTransition(
-                scale: Tween<double>(
-                  begin: 0.96, // Phóng từ 96%
-                  end: 1.0,
-                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                scale:
+                    Tween<double>(
+                      begin: 0.96, // Phóng từ 96%
+                      end: 1.0,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
                 child: slide,
               );
             },
@@ -320,15 +392,700 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                   const SizedBox(height: 20),
                   _buildFunctionGrid(),
                   const SizedBox(height: 40),
+                  _buildTimelineSection(),
+                  const SizedBox(height: 40),
                   _buildSectionTitle('Tin tức y tế', isInteractive: true),
                   const SizedBox(height: 20),
                   _buildModernNewsLayout(), // The requested new layout
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 60),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Lộ trình của bạn',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 25,
+                fontWeight: FontWeight.w800,
+                color: _primaryColor,
+                letterSpacing: -0.5,
+              ),
+            ),
+            if (_lastSimulation != null)
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SimulationHistoryScreen(),
+                  ),
+                ),
+                child: Text(
+                  'Xem lịch sử',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: _accentColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _isLoadingHistory
+            ? const Center(child: CircularProgressIndicator())
+            : _lastSimulation == null
+            ? _buildEmptyTimelineCard()
+            : _buildActiveTimelineCard(),
+      ],
+    );
+  }
+
+  Widget _buildEmptyTimelineCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: _darkShadow,
+            blurRadius: 15,
+            offset: const Offset(8, 8),
+          ),
+          BoxShadow(
+            color: _lightShadow,
+            blurRadius: 15,
+            offset: const Offset(-8, -8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _accentColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.auto_graph_rounded,
+              color: _accentColor,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Chưa có dữ liệu lộ trình",
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: _primaryColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Hãy thực hiện mô phỏng để AI phân tích lộ trình sinh sản dành riêng cho bạn.",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              color: Colors.black.withOpacity(0.5),
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () =>
+                setState(() => _selectedIndex = 2), // Go to Simulation Page
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+            child: Text(
+              "Thử ngay",
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveTimelineCard() {
+    final result = _lastSimulation!['result'] ?? {};
+    final double mainProb = (result['probability_percent'] ?? 0).toDouble();
+    final String modelId = _lastSimulation!['model_id'] ?? 'hunault';
+    final String probRange = result['probability_range'] ?? "";
+
+    return GestureDetector(
+      onTap: () => _showTimelineDetailDialog(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [_primaryColor, const Color(0xFF2D6A73)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: _primaryColor.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        modelId == 'hunault'
+                            ? "Thụ thai tự nhiên"
+                            : "Thành công IVF",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Mô phỏng gần nhất",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    probRange.isNotEmpty ? probRange : "${mainProb.toInt()}%",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: probRange.isNotEmpty ? 16 : 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Icon(
+                  Icons.timeline_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    modelId == 'hunault'
+                        ? "Nhấn để xem biểu đồ lộ trình 24 tháng"
+                        : "Nhấn để xem tóm tắt phân tích AI",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTimelineDetailDialog() {
+    final result = _lastSimulation!['result'] ?? {};
+    final String modelId = _lastSimulation!['model_id'] ?? 'hunault';
+
+    if (modelId == 'sart_ivf') {
+      _showIVFDetailDialog();
+      return;
+    }
+
+    final List<dynamic> timelineRaw = result['timeline_data'] ?? [];
+    final int breakPoint = result['break_point'] ?? 12;
+    final String probRange = result['probability_range'] ?? "";
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: _bgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_primaryColor, const Color(0xFF2D6A73)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_graph_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Lộ trình sinh sản",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 22,
+                            ),
+                          ),
+                          if (probRange.isNotEmpty)
+                            Text(
+                              "Khoảng tin cậy: $probRange",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white.withOpacity(0.7),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Text(
+                      "Biểu đồ dự báo biên độ theo thời gian",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: _primaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 250,
+                      child: timelineRaw.isEmpty
+                          ? const Center(
+                              child: Text("Dữ liệu đang được cập nhật..."),
+                            )
+                          : _buildTimelineChart(timelineRaw, breakPoint),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildTrafficLightLegend(breakPoint),
+                    const SizedBox(height: 32),
+                    _buildBreakPointAlert(breakPoint),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showIVFDetailDialog() {
+    final result = _lastSimulation!['result'] ?? {};
+    final String interpretation =
+        result['interpretation'] ?? "Chưa có dữ liệu phân tích chi tiết.";
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: _bgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_primaryColor, const Color(0xFF2D6A73)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        "Tóm tắt AI",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  interpretation,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    color: Colors.grey.shade800,
+                    height: 1.6,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    "Đóng",
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineChart(List<dynamic> data, int breakPoint) {
+    List<FlSpot> avgSpots = data
+        .map(
+          (d) => FlSpot(
+            (d['month'] as num).toDouble(),
+            (d['cumulative_probability'] as num).toDouble(),
+          ),
+        )
+        .toList();
+
+    List<FlSpot> lowSpots = [];
+    List<FlSpot> highSpots = [];
+
+    // Prepare low and high boundaries
+    if (data.isNotEmpty && data.first.containsKey('prob_low')) {
+      lowSpots = data
+          .map(
+            (d) => FlSpot(
+              (d['month'] as num).toDouble(),
+              (d['prob_low'] as num).toDouble(),
+            ),
+          )
+          .toList();
+      highSpots = data
+          .map(
+            (d) => FlSpot(
+              (d['month'] as num).toDouble(),
+              (d['prob_high'] as num).toDouble(),
+            ),
+          )
+          .toList();
+    }
+
+    final avgLine = LineChartBarData(
+      spots: avgSpots,
+      isCurved: true,
+      color: Colors.white,
+      barWidth: 4,
+      isStrokeCapRound: true,
+      dotData: const FlDotData(show: false),
+      belowBarData: highSpots.isEmpty
+          ? BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  _accentColor.withOpacity(0.4),
+                  _accentColor.withOpacity(0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            )
+          : BarAreaData(show: false),
+    );
+
+    final lowLine = LineChartBarData(
+      spots: lowSpots,
+      isCurved: true,
+      color: Colors.transparent,
+      barWidth: 0,
+      dotData: const FlDotData(show: false),
+    );
+
+    final highLine = LineChartBarData(
+      spots: highSpots,
+      isCurved: true,
+      color: Colors.transparent,
+      barWidth: 0,
+      dotData: const FlDotData(show: false),
+    );
+
+    final List<LineChartBarData> barDataList = highSpots.isNotEmpty
+        ? [avgLine, lowLine, highLine]
+        : [avgLine];
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          horizontalInterval: 10,
+          verticalInterval: 6,
+          getDrawingHorizontalLine: (value) =>
+              FlLine(color: _darkShadow.withOpacity(0.5), strokeWidth: 1),
+          getDrawingVerticalLine: (value) =>
+              FlLine(color: _darkShadow.withOpacity(0.5), strokeWidth: 1),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: 6,
+              getTitlesWidget: (value, meta) => Text(
+                'T${value.toInt()}',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 20,
+              reservedSize: 42,
+              getTitlesWidget: (value, meta) => Text(
+                '${value.toInt()}%',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 1,
+        maxX: 24,
+        minY: 0,
+        maxY: 100,
+        lineBarsData: barDataList,
+        betweenBarsData: highSpots.isNotEmpty
+            ? [
+                BetweenBarsData(
+                  fromIndex: 1,
+                  toIndex: 2,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+              ]
+            : [],
+        extraLinesData: ExtraLinesData(
+          verticalLines: [
+            VerticalLine(
+              x: breakPoint.toDouble(),
+              color: Colors.red.withOpacity(0.5),
+              strokeWidth: 2,
+              dashArray: [5, 5],
+              label: VerticalLineLabel(
+                show: true,
+                alignment: Alignment.topRight,
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.red,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                labelResolver: (_) => "Điểm gãy",
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrafficLightLegend(int breakPoint) {
+    return Column(
+      children: [
+        _buildLegendItem(
+          Colors.green,
+          "Vùng thoải mái (1-${breakPoint - 2} tháng): Hãy cứ thả tự nhiên.",
+        ),
+        const SizedBox(height: 12),
+        _buildLegendItem(
+          Colors.orange,
+          "Vùng lưu ý (${breakPoint - 1}-${breakPoint + 2} tháng): Tỷ lệ bắt đầu chững lại.",
+        ),
+        const SizedBox(height: 12),
+        _buildLegendItem(
+          Colors.red,
+          "Vùng hành động (Từ tháng $breakPoint): Thời điểm vàng để đặt lịch khám.",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          margin: const EdgeInsets.only(top: 4),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: _primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBreakPointAlert(int breakPoint) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.red.withOpacity(0.1)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded, color: Colors.red),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              "AI dự báo bạn nên tối ưu hóa thời gian trong 6-12 tháng đầu. Sau tháng $breakPoint, hãy cân nhắc can thiệp y tế.",
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                color: Colors.red.shade900,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -371,24 +1128,47 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
                     child: const CircleAvatar(
                       radius: 26,
-                      backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=a'),
+                      backgroundImage: NetworkImage(
+                        'https://i.pravatar.cc/150?u=a',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Hello 👋",
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 17,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            _gender == 'Nam'
+                                ? Icons.male
+                                : (_gender == 'Nữ'
+                                      ? Icons.female
+                                      : Icons.person),
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _gender == 'Nam'
+                                ? "Chào Anh 👋"
+                                : (_gender == 'Nữ'
+                                      ? "Chào Chị 👋"
+                                      : "Hello 👋"),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 17,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -411,8 +1191,17 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                   border: Border.all(color: Colors.white.withOpacity(0.2)),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen())),
-                  icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 26),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationScreen(),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 26,
+                  ),
                 ),
               ),
             ],
@@ -437,25 +1226,44 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
         ),
         if (isInteractive)
           GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NewsScreen()),
+            ),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: _bgColor,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: _darkShadow, blurRadius: 6, offset: const Offset(2, 2)),
-                  BoxShadow(color: _lightShadow, blurRadius: 6, offset: const Offset(-2, -2)),
+                  BoxShadow(
+                    color: _darkShadow,
+                    blurRadius: 6,
+                    offset: const Offset(2, 2),
+                  ),
+                  BoxShadow(
+                    color: _lightShadow,
+                    blurRadius: 6,
+                    offset: const Offset(-2, -2),
+                  ),
                 ],
               ),
               child: Row(
                 children: [
                   Text(
                     'Tất cả',
-                    style: GoogleFonts.plusJakartaSans(color: _primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: _primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_rounded, size: 17, color: _primaryColor),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 17,
+                    color: _primaryColor,
+                  ),
                 ],
               ),
             ),
@@ -465,8 +1273,9 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
   }
 
   Widget _buildFunctionGrid() {
-    if (_isLoadingFeatures) return const Center(child: CircularProgressIndicator());
-    
+    if (_isLoadingFeatures)
+      return const Center(child: CircularProgressIndicator());
+
     return Row(
       children: _features.asMap().entries.map((entry) {
         final int idx = entry.key;
@@ -483,13 +1292,25 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
               bgColor: _bgColor,
               lightShadow: _lightShadow,
               darkShadow: _darkShadow,
-              accentColor: idx == 0 ? _accentColor : idx == 1 ? const Color(0xFF7CB342) : const Color(0xFF42A5F5),
+              accentColor: idx == 0
+                  ? _accentColor
+                  : idx == 1
+                  ? const Color(0xFF7CB342)
+                  : const Color(0xFF42A5F5),
               primaryColor: _primaryColor,
               onTap: () {
                 if (feature.title.contains('Tìm hiểu')) {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DiscoverScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DiscoverScreen()),
+                  );
                 } else if (feature.title.contains('Gợi ý')) {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HospitalListScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HospitalListScreen(),
+                    ),
+                  );
                 } else if (feature.title.contains('Mẹo')) {
                   _showDailyTipDialog(context);
                 }
@@ -505,52 +1326,33 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
     if (_isLoadingNews) return const Center(child: CircularProgressIndicator());
     if (_news.isEmpty) return const Center(child: Text("Không có tin tức"));
 
-    final displayNews = _news.take(4).toList();
-    // Layout: 2 Rows, 2 Columns (Grid)
-    List<Widget> rows = [];
-    for (int i = 0; i < displayNews.length; i += 2) {
-      Widget leftCard = Expanded(
-        child: _NeumorphicGridNewsCard(
-          news: displayNews[i],
-          bgColor: _bgColor,
-          lightShadow: _lightShadow,
-          darkShadow: _darkShadow,
-          brandColor: _primaryColor,
-          onTap: () => showAISummaryDialog(context, displayNews[i]),
-        ),
-      );
+    final displayNews = _news.take(5).toList();
 
-      Widget rightCard;
-      if (i + 1 < displayNews.length) {
-        rightCard = Expanded(
-          child: _NeumorphicGridNewsCard(
-            news: displayNews[i + 1],
-            bgColor: _bgColor,
-            lightShadow: _lightShadow,
-            darkShadow: _darkShadow,
-            brandColor: _primaryColor,
-            onTap: () => showAISummaryDialog(context, displayNews[i + 1]),
-          ),
-        );
-      } else {
-        rightCard = const Expanded(child: SizedBox()); // Empty space
-      }
-
-      rows.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leftCard,
-              const SizedBox(width: 16),
-              rightCard,
-            ],
-          ),
-        )
-      );
-    }
-    return Column(children: rows);
+    return SizedBox(
+      height: 270,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        clipBehavior: Clip.none,
+        itemCount: displayNews.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: SizedBox(
+              width: 220,
+              child: _NeumorphicGridNewsCard(
+                news: displayNews[index],
+                bgColor: _bgColor,
+                lightShadow: _lightShadow,
+                darkShadow: _darkShadow,
+                brandColor: _primaryColor,
+                onTap: () => showAISummaryDialog(context, displayNews[index]),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildBottomNavigationBar() {
@@ -558,7 +1360,11 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
       decoration: BoxDecoration(
         color: _bgColor,
         boxShadow: [
-          BoxShadow(color: _darkShadow.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, -10)),
+          BoxShadow(
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -10),
+          ),
         ],
       ),
       child: BottomNavigationBar(
@@ -581,7 +1387,11 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int index) {
+  BottomNavigationBarItem _buildNavItem(
+    IconData icon,
+    String label,
+    int index,
+  ) {
     bool isActive = _selectedIndex == index;
     return BottomNavigationBarItem(
       icon: AnimatedContainer(
@@ -592,12 +1402,24 @@ class _HomeMainScreenState extends State<HomeMainScreen> with TickerProviderStat
                 color: _bgColor,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: _darkShadow, blurRadius: 4, offset: const Offset(2, 2)),
-                  BoxShadow(color: _lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
+                  BoxShadow(
+                    color: _darkShadow,
+                    blurRadius: 4,
+                    offset: const Offset(2, 2),
+                  ),
+                  BoxShadow(
+                    color: _lightShadow,
+                    blurRadius: 4,
+                    offset: const Offset(-2, -2),
+                  ),
                 ],
               )
             : const BoxDecoration(),
-        child: Icon(icon, size: 24, color: isActive ? _primaryColor : Colors.grey.withOpacity(0.7)),
+        child: Icon(
+          icon,
+          size: 24,
+          color: isActive ? _primaryColor : Colors.grey.withOpacity(0.7),
+        ),
       ),
       label: label,
     );
@@ -618,13 +1440,13 @@ class _NeumorphicFeatureCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _NeumorphicFeatureCard({
-    required this.feature, 
-    required this.bgColor, 
-    required this.lightShadow, 
+    required this.feature,
+    required this.bgColor,
+    required this.lightShadow,
     required this.darkShadow,
     required this.accentColor,
     required this.primaryColor,
-    required this.onTap
+    required this.onTap,
   });
 
   @override
@@ -643,16 +1465,27 @@ class _NeumorphicFeatureCardState extends State<_NeumorphicFeatureCard> {
       onTap: widget.onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8), // Reduced vertical stretch
+        padding: const EdgeInsets.symmetric(
+          vertical: 24,
+          horizontal: 8,
+        ), // Reduced vertical stretch
         decoration: BoxDecoration(
           color: widget.bgColor,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: _isPressed 
-            ? null 
-            : [
-                BoxShadow(color: widget.darkShadow, blurRadius: 12, offset: const Offset(6, 6)),
-                BoxShadow(color: widget.lightShadow, blurRadius: 12, offset: const Offset(-6, -6)),
-              ],
+          boxShadow: _isPressed
+              ? null
+              : [
+                  BoxShadow(
+                    color: widget.darkShadow,
+                    blurRadius: 12,
+                    offset: const Offset(6, 6),
+                  ),
+                  BoxShadow(
+                    color: widget.lightShadow,
+                    blurRadius: 12,
+                    offset: const Offset(-6, -6),
+                  ),
+                ],
         ),
         child: Column(
           children: [
@@ -663,17 +1496,37 @@ class _NeumorphicFeatureCardState extends State<_NeumorphicFeatureCard> {
                 color: widget.bgColor,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
-                boxShadow: _isPressed 
-                  ? [
-                      BoxShadow(color: widget.darkShadow, blurRadius: 4, offset: const Offset(2, 2)),
-                      BoxShadow(color: widget.lightShadow, blurRadius: 4, offset: const Offset(-2, -2)),
-                    ]
-                  : [
-                      BoxShadow(color: widget.darkShadow, blurRadius: 6, offset: const Offset(4, 4)),
-                      BoxShadow(color: widget.lightShadow, blurRadius: 6, offset: const Offset(-4, -4)),
-                    ],
+                boxShadow: _isPressed
+                    ? [
+                        BoxShadow(
+                          color: widget.darkShadow,
+                          blurRadius: 4,
+                          offset: const Offset(2, 2),
+                        ),
+                        BoxShadow(
+                          color: widget.lightShadow,
+                          blurRadius: 4,
+                          offset: const Offset(-2, -2),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: widget.darkShadow,
+                          blurRadius: 6,
+                          offset: const Offset(4, 4),
+                        ),
+                        BoxShadow(
+                          color: widget.lightShadow,
+                          blurRadius: 6,
+                          offset: const Offset(-4, -4),
+                        ),
+                      ],
               ),
-              child: Icon(_getIcon(widget.feature.icon), color: widget.accentColor, size: 28),
+              child: Icon(
+                _getIcon(widget.feature.icon),
+                color: widget.accentColor,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -681,10 +1534,10 @@ class _NeumorphicFeatureCardState extends State<_NeumorphicFeatureCard> {
               maxLines: 2,
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 17, 
-                fontWeight: FontWeight.w800, 
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
                 color: widget.primaryColor,
-                letterSpacing: -0.2
+                letterSpacing: -0.2,
               ),
             ),
           ],
@@ -713,12 +1566,12 @@ class _NeumorphicGridNewsCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NeumorphicGridNewsCard({
-    required this.news, 
-    required this.bgColor, 
-    required this.lightShadow, 
+    required this.news,
+    required this.bgColor,
+    required this.lightShadow,
     required this.darkShadow,
     required this.brandColor,
-    required this.onTap
+    required this.onTap,
   });
 
   @override
@@ -732,8 +1585,16 @@ class _NeumorphicGridNewsCard extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: darkShadow, blurRadius: 12, offset: const Offset(6, 6)),
-            BoxShadow(color: lightShadow, blurRadius: 12, offset: const Offset(-6, -6)),
+            BoxShadow(
+              color: darkShadow,
+              blurRadius: 12,
+              offset: const Offset(6, 6),
+            ),
+            BoxShadow(
+              color: lightShadow,
+              blurRadius: 12,
+              offset: const Offset(-6, -6),
+            ),
           ],
         ),
         child: Column(
@@ -745,14 +1606,24 @@ class _NeumorphicGridNewsCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
-                    BoxShadow(color: darkShadow.withOpacity(0.5), blurRadius: 6, offset: const Offset(2, 2)),
+                    BoxShadow(
+                      color: darkShadow.withOpacity(0.5),
+                      blurRadius: 6,
+                      offset: const Offset(2, 2),
+                    ),
                   ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: news.imageUrl != null 
-                    ? Image.network(news.imageUrl!, fit: BoxFit.cover) 
-                    : Container(color: Colors.grey[300], child: const Icon(Icons.image_outlined, color: Colors.grey)),
+                  child: news.imageUrl != null
+                      ? Image.network(news.imageUrl!, fit: BoxFit.cover)
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.image_outlined,
+                            color: Colors.grey,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -762,23 +1633,27 @@ class _NeumorphicGridNewsCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 17, 
-                fontWeight: FontWeight.w800, 
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
                 color: brandColor,
-                height: 1.3
+                height: 1.3,
               ),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.access_time_filled_rounded, size: 15, color: Colors.grey.shade600),
+                Icon(
+                  Icons.access_time_filled_rounded,
+                  size: 15,
+                  color: Colors.grey.shade600,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   news.time,
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14, 
-                    color: Colors.grey.shade600, 
-                    fontWeight: FontWeight.w600
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -802,12 +1677,12 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NeumorphicRowNewsCard({
-    required this.news, 
-    required this.bgColor, 
-    required this.lightShadow, 
+    required this.news,
+    required this.bgColor,
+    required this.lightShadow,
     required this.darkShadow,
     required this.brandColor,
-    required this.onTap
+    required this.onTap,
   });
 
   @override
@@ -820,8 +1695,16 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: darkShadow, blurRadius: 12, offset: const Offset(6, 6)),
-            BoxShadow(color: lightShadow, blurRadius: 12, offset: const Offset(-6, -6)),
+            BoxShadow(
+              color: darkShadow,
+              blurRadius: 12,
+              offset: const Offset(6, 6),
+            ),
+            BoxShadow(
+              color: lightShadow,
+              blurRadius: 12,
+              offset: const Offset(-6, -6),
+            ),
           ],
         ),
         child: Row(
@@ -830,7 +1713,11 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: darkShadow.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2)),
+                  BoxShadow(
+                    color: darkShadow.withOpacity(0.4),
+                    blurRadius: 6,
+                    offset: const Offset(2, 2),
+                  ),
                 ],
               ),
               child: ClipRRect(
@@ -838,9 +1725,15 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
                 child: SizedBox(
                   width: 90,
                   height: 90,
-                  child: news.imageUrl != null 
-                    ? Image.network(news.imageUrl!, fit: BoxFit.cover) 
-                    : Container(color: Colors.grey[300], child: const Icon(Icons.image_outlined, color: Colors.grey)),
+                  child: news.imageUrl != null
+                      ? Image.network(news.imageUrl!, fit: BoxFit.cover)
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.image_outlined,
+                            color: Colors.grey,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -854,16 +1747,19 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 18, 
-                      fontWeight: FontWeight.w800, 
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                       color: brandColor,
-                      height: 1.3
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _buildMetaInfo(Icons.access_time_filled_rounded, news.time),
+                      _buildMetaInfo(
+                        Icons.access_time_filled_rounded,
+                        news.time,
+                      ),
                       const SizedBox(width: 12),
                       _buildMetaInfo(Icons.visibility_rounded, '${news.views}'),
                     ],
@@ -885,9 +1781,9 @@ class _NeumorphicRowNewsCard extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 15, 
-            color: Colors.grey.shade600, 
-            fontWeight: FontWeight.w600
+            fontSize: 15,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

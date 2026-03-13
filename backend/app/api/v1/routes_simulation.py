@@ -105,12 +105,15 @@ async def run_unified_simulation(request: UnifiedSimulationRequest):
         
         hunault_resp = HunaultResponse(
             probability_percent=result.probability_percent,
+            probability_range=result.probability_range,
             risk_level=result.risk_level.value,
             interpretation=result.interpretation,
             recommendations=result.recommendations,
             factors_summary=result.factors_summary,
             motility_used=result.motility_used,
             motility_source=result.motility_source,
+            timeline_data=result.timeline_data,
+            break_point=result.break_point,
             disclaimer=result.disclaimer,
         )
         
@@ -205,12 +208,15 @@ async def run_hunault_simulation(request: HunaultRequest) -> HunaultResponse:
 
         return HunaultResponse(
             probability_percent=result.probability_percent,
+            probability_range=result.probability_range,
             risk_level=result.risk_level.value,
             interpretation=result.interpretation,
             recommendations=result.recommendations,
             factors_summary=result.factors_summary,
             motility_used=result.motility_used,
             motility_source=result.motility_source,
+            timeline_data=result.timeline_data,
+            break_point=result.break_point,
             disclaimer=result.disclaimer,
         )
     except Exception as e:

@@ -32,12 +32,15 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
   final Color _darkShadow = const Color(0xFFD1D9E6); // Soft blue-grey shadow
 
   final List<ChatMessage> _messages = [];
+  final List<ChatMessage> _historyMessages = []; // Thêm list lưu lịch sử
+  
   bool _isThinking = false; // "..." state
   bool _isTyping = false;   // Streaming text state
   Timer? _typingTimer;
   String? _errorMessage;
 
   String _sessionId = 'user_demo';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -56,20 +59,20 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
     
     final history = await _aiChatService.getChatHistory(_sessionId);
     if (mounted) {
-      if (history.isEmpty) {
+      if (history.isNotEmpty) {
         setState(() {
-          _messages.add(
-            ChatMessage.assistant(
-              'Xin chào${prefs.getString('user_full_name') != null ? ' ${prefs.getString('user_full_name')}' : ''}! Tôi là trợ lý AI sức khỏe. Tôi có thể giải đáp mọi thắc mắc của bạn về hiếm muộn và sinh sản.',
-            ),
-          );
+          _historyMessages.addAll(history);
         });
-      } else {
-        setState(() {
-          _messages.addAll(history);
-        });
-        Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
       }
+      
+      // Màn hình chat chính luôn khởi đầu với tin nhắn chào mừng mới
+      setState(() {
+        _messages.add(
+          ChatMessage.assistant(
+            'Xin chào${prefs.getString('user_full_name') != null ? ' ${prefs.getString('user_full_name')}' : ''}! Tôi là trợ lý AI y tế. Hôm nay tôi có thể giúp gì cho tình trạng sức khỏe của bạn?',
+          ),
+        );
+      });
     }
   }
 
@@ -195,7 +198,9 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: _bgColor,
+      endDrawer: _buildHistoryDrawer(),
       body: Stack(
         children: [
           _buildAnimatedBackground(),
@@ -207,6 +212,116 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
               ),
               _buildInputBar(),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryDrawer() {
+    return Drawer(
+      backgroundColor: _bgColor,
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 20,
+              left: 20,
+              right: 20,
+              bottom: 20,
+            ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryColor.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.history_rounded, color: Colors.white, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  'Lịch sử Chat',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _historyMessages.isEmpty
+                ? Center(
+                    child: Text(
+                      'Chưa có lịch sử',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.blueGrey.shade400,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    itemCount: _historyMessages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _historyMessages[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: msg.isUser ? Colors.white : _primaryColor.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: msg.isUser ? _darkShadow.withOpacity(0.3) : _accentColor.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  msg.isUser ? Icons.person_rounded : Icons.smart_toy_rounded,
+                                  size: 16,
+                                  color: msg.isUser ? Colors.blueGrey.shade400 : _accentColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  msg.isUser ? 'Bạn' : 'Trợ lý AI',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: msg.isUser ? Colors.blueGrey.shade600 : _primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              msg.content,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                color: Colors.blueGrey.shade800,
+                                height: 1.5,
+                              ),
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -325,6 +440,12 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.history_rounded, color: Colors.white, size: 28),
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer();
+            },
           ),
         ],
       ),

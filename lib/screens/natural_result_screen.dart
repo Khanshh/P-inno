@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'ivf_result_screen.dart';
 import '../services/api_service.dart';
 
@@ -48,6 +49,9 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
   Widget build(BuildContext context) {
     final double probability = widget.resultData?['probability_percent']?.toDouble() ?? 42.0;
     final String interpretation = widget.resultData?['interpretation'] ?? 'Dựa trên thống kê tổng quát, bạn có 42% cơ hội thụ thai tự nhiên.';
+    final String probRange = widget.resultData?['probability_range'] ?? '';
+    final List<dynamic> timelineData = widget.resultData?['timeline_data'] ?? [];
+    final int breakPoint = widget.resultData?['break_point'] ?? 12;
 
     return Scaffold(
       backgroundColor: _bgColor,
@@ -63,37 +67,14 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Column(
                     children: [
-                      _buildChartCard(probability),
+                      _buildChartCard(probability, probRange),
                       const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.5),
-                              side: BorderSide(color: _accentColor.withOpacity(0.3)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: Text(
-                              'Quay lại trang chủ',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _primaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      if (timelineData.isNotEmpty)
+                        _buildTimelineCard(timelineData, breakPoint),
                       const SizedBox(height: 16),
                       _buildInterpretationCard(interpretation),
-                      _buildFactorsCard(),
-                      _buildSuggestionsCard(),
+                      _buildFactorsCard(widget.resultData?['factors_summary']),
+                      _buildSuggestionsCard(widget.resultData?['recommendations']),
                       _buildCompareCard(context),
                       _buildWarningBox(),
                       const SizedBox(height: 24),
@@ -324,7 +305,7 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
     );
   }
 
-  Widget _buildChartCard(double probability) {
+  Widget _buildChartCard(double probability, String probRange) {
     int percentage = probability.round();
     return _buildCard(
       child: Column(
@@ -387,7 +368,46 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          if (probRange.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: _accentColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _accentColor.withOpacity(0.15)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shield_rounded, color: _accentColor, size: 20),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Khoảng tin cậy',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        probRange,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 20,
@@ -399,6 +419,202 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimelineCard(List<dynamic> timelineData, int breakPoint) {
+    List<FlSpot> spots = timelineData.map((d) => FlSpot(
+      (d['month'] as num).toDouble(),
+      (d['cumulative_probability'] as num).toDouble(),
+    )).toList();
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.timeline_rounded, color: _accentColor, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                'Lộ trình 24 tháng',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: _primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 220,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 20,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.blueGrey.shade100,
+                    strokeWidth: 1,
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: 6,
+                      getTitlesWidget: (value, meta) => Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'T${value.toInt()}',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.blueGrey.shade400,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 20,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) => Text(
+                        '${value.toInt()}%',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.blueGrey.shade400,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                minX: 1,
+                maxX: 24,
+                minY: 0,
+                maxY: 100,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    gradient: LinearGradient(colors: [_accentColor, const Color(0xFF4A9EAD)]),
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [_accentColor.withOpacity(0.3), _accentColor.withOpacity(0.0)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+                extraLinesData: ExtraLinesData(
+                  verticalLines: [
+                    VerticalLine(
+                      x: breakPoint.toDouble(),
+                      color: Colors.redAccent.withOpacity(0.5),
+                      strokeWidth: 2,
+                      dashArray: [5, 5],
+                      label: VerticalLineLabel(
+                        show: true,
+                        alignment: Alignment.topRight,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.redAccent,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        labelResolver: (_) => 'Điểm gãy',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Traffic Light Legend
+          _buildZoneRow(Colors.green, '🟢 Vùng thoải mái', 'Hãy cứ thả tự nhiên thoải mái.'),
+          const SizedBox(height: 10),
+          _buildZoneRow(Colors.orange, '🟡 Vùng lưu ý', 'Tỷ lệ bắt đầu chững lại, tìm hiểu kiến thức.'),
+          const SizedBox(height: 10),
+          _buildZoneRow(Colors.red, '🔴 Vùng hành động', 'Thời điểm vàng để đặt lịch khám.'),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.red.withOpacity(0.1)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, color: Colors.redAccent, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Sau tháng $breakPoint, khả năng bắt đầu bão hòa. Hãy cân nhắc tư vấn bác sĩ.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red.shade800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildZoneRow(Color color, String title, String desc) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '$title: ',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: _primaryColor,
+                  ),
+                ),
+                TextSpan(
+                  text: desc,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blueGrey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -428,7 +644,27 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
     );
   }
 
-  Widget _buildFactorsCard() {
+  Widget _buildFactorsCard(Map<String, dynamic>? factorsSummary) {
+    if (factorsSummary == null || factorsSummary.isEmpty) return const SizedBox.shrink();
+
+    // Map impact -> display label & color
+    String _impactLabel(String impact) {
+      switch (impact) {
+        case 'positive': return 'Thuận lợi';
+        case 'negative': return 'Bất lợi';
+        default: return 'Bình thường';
+      }
+    }
+    Color _impactColor(String impact) {
+      switch (impact) {
+        case 'positive': return const Color(0xFF4CAF50);
+        case 'negative': return const Color(0xFFF44336);
+        default: return const Color(0xFFFF9800);
+      }
+    }
+
+    final entries = factorsSummary.entries.toList();
+
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,22 +684,37 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
             ],
           ),
           const SizedBox(height: 20),
-          _buildFactorRow('Tuổi', 'Thuận lợi', const Color(0xFF4CAF50)),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(color: Color(0xFFE2E8F0), thickness: 1.5),
-          ),
-          _buildFactorRow('Chỉ số AMH', 'Bình thường', const Color(0xFF4CAF50)),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(color: Color(0xFFE2E8F0), thickness: 1.5),
-          ),
-          _buildFactorRow('Chu kỳ kinh', 'Đều đặn', const Color(0xFF4CAF50)),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Divider(color: Color(0xFFE2E8F0), thickness: 1.5),
-          ),
-          _buildFactorRow('Chất lượng tinh trùng', 'Trung bình', const Color(0xFFFF9800)),
+          ...entries.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final factor = entry.value.value;
+            if (factor is! Map) return const SizedBox.shrink();
+            final label = factor['label'] ?? entry.value.key;
+            final impact = factor['impact'] ?? 'neutral';
+            final value = factor['value'];
+            final source = factor['source'];
+
+            String displayValue = _impactLabel(impact);
+            if (value != null && value is num) {
+              displayValue = '$value';
+              if (factor['unit'] != null) displayValue += ' ${factor['unit']}';
+            } else if (value is bool) {
+              displayValue = value ? 'Có' : 'Không';
+            }
+            if (source == 'estimated') {
+              displayValue += ' (ước tính)';
+            }
+
+            return Column(
+              children: [
+                _buildFactorRow(label.toString(), displayValue, _impactColor(impact)),
+                if (idx < entries.length - 1)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    child: Divider(color: Color(0xFFE2E8F0), thickness: 1.5),
+                  ),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -500,7 +751,27 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
     );
   }
 
-  Widget _buildSuggestionsCard() {
+  Widget _buildSuggestionsCard(List<dynamic>? recommendations) {
+    final List<String> recs = (recommendations ?? []).map((e) => e.toString()).toList();
+    if (recs.isEmpty) {
+      recs.addAll([
+        'Duy trì lối sống lành mạnh, tập thể dục đều đặn.',
+        'Theo dõi rụng trứng chính xác hơn.',
+        'Kiểm tra định kỳ chất lượng sinh sản.',
+      ]);
+    }
+
+    final icons = [
+      Icons.favorite_rounded,
+      Icons.calendar_month_rounded,
+      Icons.fitness_center_rounded,
+      Icons.health_and_safety_rounded,
+      Icons.local_hospital_rounded,
+      Icons.science_rounded,
+      Icons.monitor_heart_rounded,
+      Icons.medication_rounded,
+    ];
+
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -520,11 +791,13 @@ class _NaturalResultScreenState extends State<NaturalResultScreen> with TickerPr
             ],
           ),
           const SizedBox(height: 20),
-          _buildSuggestionItem(Icons.calendar_month_rounded, 'Theo dõi rụng trứng chính xác hơn.'),
-          const SizedBox(height: 16),
-          _buildSuggestionItem(Icons.fitness_center_rounded, 'Duy trì lối sống lành mạnh, tập thể dục đều đặn.'),
-          const SizedBox(height: 16),
-          _buildSuggestionItem(Icons.health_and_safety_rounded, 'Kiểm tra định kỳ chất lượng sinh sản.'),
+          ...recs.asMap().entries.map((entry) {
+            final icon = icons[entry.key % icons.length];
+            return Padding(
+              padding: EdgeInsets.only(bottom: entry.key < recs.length - 1 ? 16 : 0),
+              child: _buildSuggestionItem(icon, entry.value),
+            );
+          }),
         ],
       ),
     );

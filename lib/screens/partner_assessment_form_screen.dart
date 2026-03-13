@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'assessment_form_screen.dart';
 import 'natural_result_screen.dart';
 import 'ivf_result_screen.dart';
 import '../services/api_service.dart';
 
 class PartnerAssessmentFormScreen extends StatefulWidget {
-  final Map<String, dynamic> femaleData;
-  const PartnerAssessmentFormScreen({super.key, required this.femaleData});
+  final Map<String, dynamic>? femaleData;
+  final bool isPartner;
+
+  const PartnerAssessmentFormScreen({super.key, this.femaleData, this.isPartner = true});
 
   @override
   State<PartnerAssessmentFormScreen> createState() => _PartnerAssessmentFormScreenState();
@@ -58,6 +61,17 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
     };
   }
 
+  void _onContinuePressed() {
+    final maleData = _gatherMaleData();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AssessmentFormScreen(maleData: maleData, isPartner: true),
+      ),
+    );
+  }
+
   void _onShowNaturalResultPressed() async {
     // Hiện popup loading
     showDialog(
@@ -98,14 +112,15 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
 
     try {
       final maleData = _gatherMaleData();
-      final result = await _apiService.runSimulation('hunault', widget.femaleData, maleData);
+      final femaleData = widget.femaleData ?? {};
+      final result = await _apiService.runSimulation('hunault', femaleData, maleData);
 
       if (!mounted) return;
       Navigator.pop(context); // Close dialog
       
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: widget.femaleData, maleData: maleData)),
+        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: femaleData, maleData: maleData)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -160,14 +175,15 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
 
     try {
       final maleData = _gatherMaleData();
-      final result = await _apiService.runSimulation('sart_ivf', widget.femaleData, maleData);
+      final femaleData = widget.femaleData ?? {};
+      final result = await _apiService.runSimulation('sart_ivf', femaleData, maleData);
 
       if (!mounted) return;
       Navigator.pop(context); // Close dialog
       
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result, femaleData: widget.femaleData, maleData: maleData)),
+        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result, femaleData: femaleData, maleData: maleData)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -202,7 +218,7 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
         title: Column(
           children: [
             Text(
-              'Thông tin bạn đời',
+              widget.isPartner ? 'Thông tin bạn đời' : 'Thông tin của bạn',
               style: GoogleFonts.plusJakartaSans(
                 color: _primaryColor,
                 fontWeight: FontWeight.w800,
@@ -212,7 +228,7 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
             ),
             const SizedBox(height: 2),
             Text(
-              'Bước 2/2',
+              widget.isPartner ? 'Bước 2/2' : 'Bước 1/2',
               style: GoogleFonts.plusJakartaSans(
                 color: Colors.grey.shade600,
                 fontSize: 13,
@@ -374,7 +390,9 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Phần này dành cho bạn đời (nam giới) của bạn. Vui lòng nhập thông tin của người đó.',
+              widget.isPartner
+                  ? 'Phần này dành cho bạn đời (nam giới) của bạn. Vui lòng nhập thông tin của người đó.'
+                  : 'Phần này dành cho nam giới. Vui lòng cung cấp thông tin y tế của bạn.',
               style: GoogleFonts.plusJakartaSans(
                 color: _primaryColor,
                 fontSize: 14,
@@ -525,6 +543,14 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
   }
 
   Widget _buildFooterButtons() {
+    if (widget.isPartner) {
+      return _buildSubmitButtons();
+    } else {
+      return _buildContinueButton(context);
+    }
+  }
+
+  Widget _buildSubmitButtons() {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       decoration: BoxDecoration(
@@ -629,6 +655,72 @@ class _PartnerAssessmentFormScreenState extends State<PartnerAssessmentFormScree
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_primaryColor, _accentColor],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: _primaryColor.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(24),
+              onTap: _onContinuePressed,
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Tiếp tục',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'partner_assessment_form_screen.dart';
+import 'natural_result_screen.dart';
+import 'ivf_result_screen.dart';
+import '../services/api_service.dart';
 
 class AssessmentFormScreen extends StatefulWidget {
-  const AssessmentFormScreen({super.key});
+  final Map<String, dynamic>? maleData;
+  final bool isPartner;
+  
+  const AssessmentFormScreen({super.key, this.maleData, this.isPartner = false});
 
   @override
   State<AssessmentFormScreen> createState() => _AssessmentFormScreenState();
@@ -18,6 +24,8 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
   final Color _bgColor = const Color(0xFFF8FBFF);
   final Color _lightShadow = Colors.white;
   final Color _darkShadow = const Color(0xFFD1D9E6);
+
+  final ApiService _apiService = ApiService();
 
   // Mảng lưu trạng thái của 20 câu
   final TextEditingController _ageCtrl = TextEditingController();
@@ -67,8 +75,8 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
     return count;
   }
 
-  void _onContinuePressed() {
-    final femaleData = {
+  Map<String, dynamic> _gatherFemaleData() {
+    return {
       "age": double.tryParse(_ageCtrl.text) ?? 0.0,
       "height": double.tryParse(_heightCtrl.text) ?? 0.0,
       "weight": double.tryParse(_weightCtrl.text) ?? 0.0,
@@ -90,14 +98,115 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
       "exercise": _q19Value ?? "",
       "stress": _q20Value ?? "",
     };
+  }
+
+  void _onContinuePressed() {
+    final femaleData = _gatherFemaleData();
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PartnerAssessmentFormScreen(femaleData: femaleData),
+        builder: (_) => PartnerAssessmentFormScreen(femaleData: femaleData, isPartner: true),
       ),
     );
   }
+
+  void _onShowNaturalResultPressed() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: _bgColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_accentColor)),
+                const SizedBox(height: 24),
+                Text(
+                  'Đang phân tích dữ liệu tự nhiên...',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor),
+                ),
+                const SizedBox(height: 8),
+                Text('Vui lòng đợi trong giây lát', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      final femaleData = _gatherFemaleData();
+      final maleData = widget.maleData ?? {};
+      final result = await _apiService.runSimulation('hunault', femaleData, maleData);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => NaturalResultScreen(resultData: result, femaleData: femaleData, maleData: maleData)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.redAccent));
+    }
+  }
+
+  void _onShowIVFResultPressed() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: _bgColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(_accentColor)),
+                const SizedBox(height: 24),
+                Text(
+                  'Đang phân tích dữ liệu IVF...',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor),
+                ),
+                const SizedBox(height: 8),
+                Text('Vui lòng đợi trong giây lát', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      final femaleData = _gatherFemaleData();
+      final maleData = widget.maleData ?? {};
+      final result = await _apiService.runSimulation('sart_ivf', femaleData, maleData);
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => IVFResultScreen(resultData: result, femaleData: femaleData, maleData: maleData)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.redAccent));
+    }
+  }
+
 
   @override
   void dispose() {
@@ -121,14 +230,27 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: _primaryColor, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Thông tin của bạn',
-          style: GoogleFonts.plusJakartaSans(
-            color: _primaryColor,
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: -0.5,
-          ),
+        title: Column(
+          children: [
+            Text(
+              widget.isPartner ? 'Thông tin bạn đời' : 'Thông tin của bạn',
+              style: GoogleFonts.plusJakartaSans(
+                color: _primaryColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              widget.isPartner ? 'Bước 2/2' : 'Bước 1/2',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.grey.shade600,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
       ),
@@ -308,7 +430,7 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
             ),
           ),
           
-          _buildFooterButton(context),
+          _buildFooterButtons(context),
         ],
       ),
     );
@@ -450,7 +572,125 @@ class _AssessmentFormScreenState extends State<AssessmentFormScreen> {
     );
   }
   
-  Widget _buildFooterButton(BuildContext context) {
+  Widget _buildFooterButtons(BuildContext context) {
+    if (widget.isPartner) {
+      return _buildSubmitButtons();
+    } else {
+      return _buildContinueButton(context);
+    }
+  }
+
+  Widget _buildSubmitButtons() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      decoration: BoxDecoration(
+        color: _bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _darkShadow.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _bgColor,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: _primaryColor, width: 2),
+                  boxShadow: [
+                    BoxShadow(color: _darkShadow.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(22),
+                    onTap: _onShowNaturalResultPressed,
+                    child: Center(
+                      child: Text(
+                        'Xem kết quả Tự nhiên',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_primaryColor, _accentColor],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: _primaryColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: _onShowIVFResultPressed,
+                    child: Center(
+                      child: Text(
+                        'Xem kết quả IVF',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.verified_user_rounded, size: 14, color: _primaryColor.withOpacity(0.6)),
+                const SizedBox(width: 8),
+                Text(
+                  'Miễn phí • Bảo mật thông tin cá nhân',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: _primaryColor.withOpacity(0.6),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       decoration: BoxDecoration(

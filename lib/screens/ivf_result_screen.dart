@@ -64,32 +64,6 @@ class _IVFResultScreenState extends State<IVFResultScreen> with TickerProviderSt
                   child: Column(
                     children: [
                       _buildChartCard(probability),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.5),
-                              side: BorderSide(color: _accentColor.withOpacity(0.3)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: Text(
-                              'Quay lại trang chủ',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _primaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
                       _buildInterpretationCard(interpretation),
                       _buildEfficiencyCompareCard(probability),

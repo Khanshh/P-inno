@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'assessment_form_screen.dart';
+import 'partner_assessment_form_screen.dart';
 
 class SimulationIntroScreen extends StatefulWidget {
   const SimulationIntroScreen({super.key});
@@ -433,11 +435,23 @@ class _SimulationIntroScreenState extends State<SimulationIntroScreen> with Tick
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AssessmentFormScreen()),
-                );
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final gender = prefs.getString('gender') ?? 'Nữ';
+                
+                if (!context.mounted) return;
+                
+                if (gender == 'Nam') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PartnerAssessmentFormScreen(isPartner: false)),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AssessmentFormScreen(isPartner: false)),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _primaryColor,

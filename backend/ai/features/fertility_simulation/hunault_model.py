@@ -102,12 +102,15 @@ class HunaultInput:
 class HunaultResult:
     """Kết quả dự đoán từ mô hình Hunault."""
     probability_percent: float              # % khả năng thụ thai trong 12 tháng
+    probability_range: str                  # Khoảng xác suất (VD: "25.0% - 40.0%")
     risk_level: FertilityRiskLevel          # Mức đánh giá
     interpretation: str                     # Giải thích bằng tiếng Việt
     recommendations: List[str]              # Các khuyến nghị
     factors_summary: dict                   # Tóm tắt các yếu tố đã dùng
     motility_used: float                    # % motility thực tế đã dùng để tính
     motility_source: str                    # "test_result" hoặc "estimated"
+    timeline_data: List[dict]               # Mảng xác suất tích lũy từ 1-24 tháng
+    break_point: int                        # Tháng mà đường cong bắt đầu đi ngang (điểm gãy)
     disclaimer: str = ""                    # Cảnh báo y tế
 
 
@@ -445,13 +448,7 @@ MEDICAL_DISCLAIMER = (
 
 def predict(input_data: HunaultInput) -> HunaultResult:
     """
-    Chạy dự đoán Hunault Model.
-
-    Args:
-        input_data: Dữ liệu đầu vào (tuổi, thời gian, tinh trùng, v.v.)
-
-    Returns:
-        HunaultResult với xác suất, giải thích, và khuyến nghị.
+    Chạy dự đoán Hunault Model với các cải tiến về Confidence Interval và Timeline.
     """
     # ── Step 1: Xác định motility ──────────────────────────────────────────
     sperm = input_data.sperm_data
@@ -477,11 +474,65 @@ def predict(input_data: HunaultInput) -> HunaultResult:
         has_semen_data=sperm.has_test_result
     )
 
-    # ── Step 3: Tính xác suất ──────────────────────────────────────────────
+    # ── Step 3: Tính xác suất & Khoảng tin cậy (Confidence Interval) ─────────
     probability = _logistic(pi)
     probability_pct = round(probability * 100, 1)
+    
+    # Giả lập CI (±15% tương đối của giá trị pi, sau đó qua logistic)
+    # Trong thực tế CI được tính bằng Standard Error của Beta coefficients
+    pi_low = pi * 0.85 if pi > 0 else pi * 1.15
+    pi_high = pi * 1.15 if pi > 0 else pi * 0.85
+    prob_low = round(_logistic(pi_low) * 100, 1)
+    prob_high = round(_logistic(pi_high) * 100, 1)
+    
+    # Đảm bảo low luôn thấp hơn high
+    p_min, p_max = min(prob_low, prob_high), max(prob_low, prob_high)
+    probability_range = f"{p_min}% - {p_max}%"
 
-    # ── Step 4: Phân loại & giải thích ─────────────────────────────────────
+    # ── Step 4: Tính toán Timeline Prediction (1-24 tháng) ────────────────
+    # p_monthly = 1 - (1 - P_12m)^(1/12)
+    p_monthly = 1.0 - (1.0 - probability) ** (1.0 / 12.0)
+    
+    # Tính p_monthly cho cận dưới và cận trên
+    p_monthly_low = 1.0 - (1.0 - (p_min / 100)) ** (1.0 / 12.0)
+    p_monthly_high = 1.0 - (1.0 - (p_max / 100)) ** (1.0 / 12.0)
+    
+    timeline_data = []
+    prev_prob = 0
+    break_point = 12 # Default
+    plateau_detected = False
+
+    for m in range(1, 25):
+        cum_prob = 1.0 - (1.0 - p_monthly) ** m
+        cum_pct = round(cum_prob * 100, 1)
+        
+        cum_prob_low = 1.0 - (1.0 - p_monthly_low) ** m
+        cum_pct_low = round(cum_prob_low * 100, 1)
+        
+        cum_prob_high = 1.0 - (1.0 - p_monthly_high) ** m
+        cum_pct_high = round(cum_prob_high * 100, 1)
+        
+        # Traffic Light logic (cho frontend dễ dùng)
+        zone = "green"
+        if m > 12: zone = "yellow"
+        if m > 18: zone = "red"
+        
+        timeline_data.append({
+            "month": m,
+            "cumulative_probability": cum_pct,
+            "prob_low": cum_pct_low,
+            "prob_high": cum_pct_high,
+            "zone": zone
+        })
+        
+        # Xác định break_point: khi mức tăng giữa 2 tháng < 1%
+        if not plateau_detected and m > 1 and (cum_pct - prev_prob) < 1.0:
+            break_point = m
+            plateau_detected = True
+        
+        prev_prob = cum_pct
+
+    # ── Step 5: Phân loại & giải thích ─────────────────────────────────────
     risk_level = _classify_risk(probability)
 
     interpretation = _generate_interpretation(
@@ -503,7 +554,7 @@ def predict(input_data: HunaultInput) -> HunaultResult:
         is_secondary=input_data.is_secondary_subfertility,
     )
 
-    # ── Step 5: Tạo factors summary ───────────────────────────────────────
+    # ── Step 6: Tạo factors summary ───────────────────────────────────────
     factors_summary = {
         "female_age": {
             "value": input_data.female_age,
@@ -536,11 +587,14 @@ def predict(input_data: HunaultInput) -> HunaultResult:
 
     return HunaultResult(
         probability_percent=probability_pct,
+        probability_range=probability_range,
         risk_level=risk_level,
         interpretation=interpretation,
         recommendations=recommendations,
         factors_summary=factors_summary,
         motility_used=round(motility, 1),
         motility_source=motility_source,
+        timeline_data=timeline_data,
+        break_point=break_point,
         disclaimer=MEDICAL_DISCLAIMER,
     )
