@@ -434,7 +434,7 @@ class _ICSIDetailScreenState extends State<ICSIDetailScreen> with TickerProvider
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'icsi_3d.mp4', title: 'Video mô phỏng 3D - Quy trình ICSI')));
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'icsi.mp4', title: 'Video mô phỏng 3D - Quy trình ICSI')));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
             child: Text('Bắt đầu xem ngay', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),

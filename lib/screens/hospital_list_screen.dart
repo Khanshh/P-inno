@@ -601,228 +601,316 @@ class _HospitalListScreenState extends State<HospitalListScreen>
   }
 
   void _showHospitalMap(Map<String, dynamic> hospital) {
+    bool isFindingRoute = false;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Swipe Handle
-              Container(
-                width: 40,
-                height: 5,
-                margin: const EdgeInsets.only(top: 16, bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        image: DecorationImage(
-                          image: NetworkImage(hospital['image']),
-                          fit: BoxFit.cover,
+              child: Stack(
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Swipe Handle
+                      Container(
+                        width: 40,
+                        height: 5,
+                        margin: const EdgeInsets.only(top: 16, bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            hospital['name'],
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: _primaryColor,
+
+                      // Header
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                image: DecorationImage(
+                                  image: NetworkImage(hospital['image']),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    hospital['name'],
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: _primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star_rounded,
+                                        color: Colors.amber,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${hospital['rating']}',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.amber.shade800,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Cách bạn ${hospital['distance']} km',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: _accentColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Real Interactive Map
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 24),
+                        height: 220,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _darkShadow.withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                hospital['lat'] ?? 21.028511,
+                                hospital['lng'] ?? 105.845672,
+                              ),
+                              initialZoom: 15.0,
+                            ),
                             children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                color: Colors.amber,
-                                size: 18,
+                              TileLayer(
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.hackathon.pinno',
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${hospital['rating']}',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.amber.shade800,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Cách bạn ${hospital['distance']} km',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _accentColor,
-                                ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(
+                                      hospital['lat'] ?? 21.028511,
+                                      hospital['lng'] ?? 105.845672,
+                                    ),
+                                    width: 60,
+                                    height: 60,
+                                    child: const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.redAccent,
+                                      size: 45,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 32),
+                      const SizedBox(height: 32),
 
-              // Real Interactive Map
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                height: 220,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _darkShadow.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCenter: LatLng(
-                        hospital['lat'] ?? 21.028511,
-                        hospital['lng'] ?? 105.845672,
-                      ),
-                      initialZoom: 15.0,
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.hackathon.pinno',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(
-                              hospital['lat'] ?? 21.028511,
-                              hospital['lng'] ?? 105.845672,
+                      // Action Buttons
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 20,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: _accentColor),
+                                ),
+                                child: IconButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  icon: Icon(Icons.close_rounded,
+                                      color: _primaryColor),
+                                ),
+                              ),
                             ),
-                            width: 60,
-                            height: 60,
-                            child: const Icon(
-                              Icons.location_on_rounded,
-                              color: Colors.redAccent,
-                              size: 45,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              flex: 3,
+                              child: SizedBox(
+                                height: 56,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    setModalState(
+                                        () => isFindingRoute = true);
+
+                                    // Simulate pathfinding animation
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 1500));
+
+                                    if (!context.mounted) return;
+
+                                    final String lat =
+                                        (hospital['lat'] ?? 21.028511)
+                                            .toString();
+                                    final String lng =
+                                        (hospital['lng'] ?? 105.845672)
+                                            .toString();
+                                    final String address =
+                                        Uri.encodeComponent(hospital['address']);
+
+                                    // Use precise coordinates if possible
+                                    final Uri mapUri = Uri.parse(
+                                      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+                                    );
+
+                                    if (await canLaunchUrl(mapUri)) {
+                                      await launchUrl(mapUri,
+                                          mode: LaunchMode.externalApplication);
+                                    } else {
+                                      final Uri fallbackUri = Uri.parse(
+                                          'https://www.google.com/maps/search/?api=1&query=$address');
+                                      if (await canLaunchUrl(fallbackUri)) {
+                                        await launchUrl(fallbackUri);
+                                      } else {
+                                        if (!context.mounted) return;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Không thể mở ứng dụng Bản đồ',
+                                              style: GoogleFonts
+                                                  .plusJakartaSans(),
+                                            ),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
+                                      }
+                                    }
+
+                                    setModalState(
+                                        () => isFindingRoute = false);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _accentColor,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.directions_rounded),
+                                  label: Text(
+                                    'Chỉ đường',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      // SafeArea padding
+                      SizedBox(
+                          height: MediaQuery.of(context).padding.bottom),
                     ],
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 32),
-
-              // Action Buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
+                  // Premium Route Finding Overlay
+                  if (isFindingRoute)
+                    Positioned.fill(
                       child: Container(
-                        height: 56,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: _accentColor),
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius:
+                              const BorderRadius.vertical(top: Radius.circular(32)),
                         ),
-                        child: IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: Icon(Icons.close_rounded, color: _primaryColor),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: _accentColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    _accentColor),
+                                strokeWidth: 3,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Đang tìm lộ trình tốt nhất...',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: _primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Đang kết nối với Google Maps',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                color: Colors.blueGrey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 3,
-                      child: SizedBox(
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final String query = Uri.encodeComponent(
-                              hospital['address'],
-                            );
-                            final Uri mapUri = Uri.parse(
-                              'https://www.google.com/maps/search/?api=1&query=$query',
-                            );
-                            if (await canLaunchUrl(mapUri)) {
-                              await launchUrl(mapUri);
-                            } else {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Không thể mở Google Maps',
-                                    style: GoogleFonts.plusJakartaSans(),
-                                  ),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _accentColor,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          icon: const Icon(Icons.directions_rounded),
-                          label: Text(
-                            'Chỉ đường',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ),
-              // SafeArea padding
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
-            ],
-          ),
+            );
+          },
         );
       },
     );

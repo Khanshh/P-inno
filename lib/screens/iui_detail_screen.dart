@@ -434,7 +434,7 @@ class _IUIDetailScreenState extends State<IUIDetailScreen> with TickerProviderSt
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'iui_3d.mp4', title: 'Video mô phỏng 3D - Quy trình IUI')));
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'iui.mp4', title: 'Video mô phỏng 3D - Quy trình IUI')));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
             child: Text('Bắt đầu xem ngay', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),

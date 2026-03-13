@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'video_player_screen.dart';
 
 class KTPNDetailScreen extends StatefulWidget {
   const KTPNDetailScreen({super.key});
@@ -323,33 +324,67 @@ class _KTPNDetailScreenState extends State<KTPNDetailScreen> with TickerProvider
     return ListView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-      children: List.generate(steps.length, (index) {
-        final step = steps[index];
-        return IntrinsicHeight(
-          child: Row(children: [
-            Column(children: [
-              Container(width: 36, height: 36, decoration: BoxDecoration(color: _accentColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: _accentColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]), child: Center(child: Text(step['id'], style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)))),
-              if (index != steps.length - 1) Expanded(child: Container(width: 2, color: _accentColor.withOpacity(0.2))),
-            ]),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: _darkShadow.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))]),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: Text(step['title'], style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor))), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: _accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Text(step['duration'], style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold, color: _accentColor)))]),
-                    const SizedBox(height: 10),
-                    Text(step['desc'], style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.blueGrey.shade600, height: 1.5)),
-                  ],
+      children: [
+        ...List.generate(steps.length, (index) {
+          final step = steps[index];
+          return IntrinsicHeight(
+            child: Row(children: [
+              Column(children: [
+                Container(width: 36, height: 36, decoration: BoxDecoration(color: _accentColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: _accentColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]), child: Center(child: Text(step['id'], style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.bold)))),
+                if (index != steps.length - 1) Expanded(child: Container(width: 2, color: _accentColor.withOpacity(0.2))),
+              ]),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: _darkShadow.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))]),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: Text(step['title'], style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800, color: _primaryColor))), Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: _accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Text(step['duration'], style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold, color: _accentColor)))]),
+                      const SizedBox(height: 10),
+                      Text(step['desc'], style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.blueGrey.shade600, height: 1.5)),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ]),
-        );
-      }),
+            ]),
+          );
+        }),
+        const SizedBox(height: 32),
+        _buildVideoCard(),
+      ],
+    );
+  }
+
+  Widget _buildVideoCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF73C6D9), Color(0xFF4A9EAD)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [BoxShadow(color: _accentColor.withOpacity(0.4), blurRadius: 25, offset: const Offset(0, 15))],
+      ),
+      child: Column(children: [
+        Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 50)),
+        const SizedBox(height: 20),
+        Text('Xem mô phỏng 3D', style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+        const SizedBox(height: 10),
+        Text('Quy trình kích thích phóng noãn trực quan', style: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w600)),
+        const SizedBox(height: 30),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoPlayerScreen(videoFileName: 'fsh.mp4', title: 'Video mô phỏng 3D - Quy trình KTPN')));
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 18), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
+            child: Text('Bắt đầu xem ngay', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w800)),
+          ),
+        ),
+      ]),
     );
   }
 }

@@ -580,7 +580,7 @@ class _IVFDetailScreenState extends State<IVFDetailScreen> with TickerProviderSt
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const VideoPlayerScreen(
-                      videoFileName: 'ivf_3d.mp4',
+                      videoFileName: 'ivf.mp4',
                       title: 'Video mô phỏng 3D - Quy trình IVF',
                     ),
                   ),
