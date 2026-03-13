@@ -1,6 +1,21 @@
 version: "3.9"
 
 services:
+  # The FastAPI Backend API
+  api:
+    build: .
+    container_name: ENA_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - postgres
+
+  # PostgreSQL Database (used if needed for future features)
   postgres:
     image: postgres:16-alpine
     container_name: ENA_postgres
@@ -16,6 +31,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: ENA_pgadmin
