@@ -42,11 +42,13 @@ class ChatMessage {
 class ChatRequest {
   final List<ChatMessage> messages;
   final String? sessionId;
+  final String? userId;
   final bool useRag;
 
   ChatRequest({
     required this.messages,
     this.sessionId,
+    this.userId,
     this.useRag = false,
   });
 
@@ -54,6 +56,7 @@ class ChatRequest {
     return {
       'messages': messages.map((m) => m.toJson()).toList(),
       if (sessionId != null) 'session_id': sessionId,
+      if (userId != null) 'user_id': userId,
       'use_rag': useRag,
     };
   }
@@ -77,6 +80,28 @@ class ChatResponse {
       retrievedContext: (json['retrieved_context'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+    );
+  }
+}
+class ChatSession {
+  final String sessionId;
+  final String title;
+  final String lastMessage;
+  final String timestamp;
+
+  ChatSession({
+    required this.sessionId,
+    required this.title,
+    required this.lastMessage,
+    required this.timestamp,
+  });
+
+  factory ChatSession.fromJson(Map<String, dynamic> json) {
+    return ChatSession(
+      sessionId: json['session_id'] as String,
+      title: json['title'] as String,
+      lastMessage: json['last_message'] as String,
+      timestamp: json['timestamp'] as String,
     );
   }
 }

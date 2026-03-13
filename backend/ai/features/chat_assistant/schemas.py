@@ -17,6 +17,10 @@ class ChatRequest(BaseModel):
         default=None,
         description="ID phiên chat (nếu muốn lưu state sau này).",
     )
+    user_id: Optional[str] = Field(
+        default=None,
+        description="ID của người dùng để phân loại lịch sử.",
+    )
     use_rag: bool = Field(
         default=False,
         description="Bật RAG để trả lời dựa trên tài liệu có sẵn (news articles, etc.).",

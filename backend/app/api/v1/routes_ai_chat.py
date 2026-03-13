@@ -27,27 +27,56 @@ def save_chats(chats_data):
 
 @router.get("/ai/chat/history")
 async def get_chat_history(session_id: str):
-    """Lấy danh sách chat history dựa theo session_id (tương đương user_id)."""
+    """Lấy danh sách chat history dựa theo session_id."""
     chats_data = load_chats()
-    history = chats_data.get(session_id, [])
-    return {"messages": history}
+    # Support both old format (list) and new format (dict)
+    session_data = chats_data.get(session_id, [])
+    if isinstance(session_data, dict):
+        return {"messages": session_data.get("messages", [])}
+    return {"messages": session_data}
+
+@router.get("/ai/chat/sessions")
+async def get_chat_sessions(user_id: str):
+    """Lấy danh sách các phiên chat của một người dùng."""
+    chats_data = load_chats()
+    sessions = []
+    for sid, data in chats_data.items():
+        if isinstance(data, dict) and data.get("user_id") == user_id:
+            # Lấy tin nhắn đầu tiên của user làm tiêu đề
+            messages = data.get("messages", [])
+            title = "Cuộc hội thoại mới"
+            for msg in messages:
+                if msg["role"] == "user":
+                    title = msg["content"][:50] + ("..." if len(msg["content"]) > 50 else "")
+                    break
+            
+            sessions.append({
+                "session_id": sid,
+                "title": title,
+                "last_message": messages[-1]["content"] if messages else "",
+                "timestamp": data.get("updated_at", "")
+            })
+    
+    # Sort by recent (if timestamp available, though here we just return all)
+    return {"sessions": sessions}
 
 @router.post("/ai/chat", response_model=ChatResponse)
 async def chat_with_ai(payload: ChatRequest) -> ChatResponse:
     """
     Chat endpoint for the AI assistant.
-
-    This route delegates all AI logic to `backend/ai/features/chat_assistant`.
     """
+    # Use user_id if provided, otherwise fallback to session_id (for compatibility)
+    target_user_id = payload.user_id or payload.session_id
+    
     # Add user context to the backend logic dynamically if user exists
     user_context = "Người dùng chưa rõ thông tin."
-    if payload.session_id:
+    if target_user_id:
         users_path = os.path.join(os.getcwd(), "data", "users.json")
         try:
             with open(users_path, "r", encoding="utf-8") as f:
                 users = json.load(f)
                 for u in users:
-                    if u["id"] == payload.session_id:
+                    if u["id"] == target_user_id:
                         gender_str = u.get("gender", "chưa rõ")
                         user_context = f"Thông tin cơ bản của người đang hỏi: Tên {u.get('full_name', '')}, Giới tính: {gender_str}, {u.get('age', 'chưa rõ')} tuổi, Email {u.get('email', '')}, SDT {u.get('phone', '')}. Đặc biệt hãy chú ý xưng hô phù hợp và tư vấn dựa trên thông tin, giới tính này (nếu user là nam mà hỏi có làm IVF được không thì phải phân tích dựa trên thực tế nam giới). "
                         break
@@ -59,19 +88,32 @@ async def chat_with_ai(payload: ChatRequest) -> ChatResponse:
     
     response = await generate_chat_reply(payload)
     
-    # Remove the temporarily injected system message so it doesn't get saved twice
+    # Remove the temporarily injected system message
     payload.messages.pop(0)
 
-    # Save the updated conversation to the "database"
+    # Save the updated conversation
     if payload.session_id:
+        from datetime import datetime
         chats_data = load_chats()
-        history = chats_data.get(payload.session_id, [])
+        
+        session_id = payload.session_id
+        session_data = chats_data.get(session_id, {"user_id": target_user_id, "messages": []})
+        
+        # If it was in the old list format, convert it
+        if isinstance(session_data, list):
+            session_data = {"user_id": target_user_id, "messages": session_data}
+            
+        history = session_data.get("messages", [])
         
         # Append only the new messages
         history.append({"role": payload.messages[-1].role, "content": payload.messages[-1].content})
         history.append({"role": response.reply.role, "content": response.reply.content})
         
-        chats_data[payload.session_id] = history
+        session_data["messages"] = history
+        session_data["updated_at"] = datetime.now().isoformat()
+        session_data["user_id"] = target_user_id # Ensure user_id is set
+        
+        chats_data[session_id] = session_data
         save_chats(chats_data)
 
     return response

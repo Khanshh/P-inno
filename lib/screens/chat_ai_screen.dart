@@ -32,14 +32,13 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
   final Color _darkShadow = const Color(0xFFD1D9E6); // Soft blue-grey shadow
 
   final List<ChatMessage> _messages = [];
-  final List<ChatMessage> _historyMessages = []; // Thêm list lưu lịch sử
-  
-  bool _isThinking = false; // "..." state
-  bool _isTyping = false;   // Streaming text state
+  bool _isThinking = false;
+  bool _isTyping = false;
   Timer? _typingTimer;
   String? _errorMessage;
-
-  String _sessionId = 'user_demo';
+  String _sessionId = '';
+  String _userId = '';
+  List<ChatSession> _sessions = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -55,23 +54,53 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
 
   Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    _sessionId = prefs.getString('access_token') ?? 'user_demo';
+    _userId = prefs.getString('access_token') ?? 'user_demo';
     
-    final history = await _aiChatService.getChatHistory(_sessionId);
+    // Load existing sessions
+    final sessions = await _aiChatService.getChatSessions(_userId);
+    
     if (mounted) {
-      if (history.isNotEmpty) {
-        setState(() {
-          _historyMessages.addAll(history);
-        });
-      }
-      
-      // Màn hình chat chính luôn khởi đầu với tin nhắn chào mừng mới
       setState(() {
-        _messages.add(
-          ChatMessage.assistant(
-            'Xin chào${prefs.getString('user_full_name') != null ? ' ${prefs.getString('user_full_name')}' : ''}! Tôi là trợ lý AI y tế. Hôm nay tôi có thể giúp gì cho tình trạng sức khỏe của bạn?',
-          ),
-        );
+        _sessions = sessions;
+      });
+      
+      // Start a new session by default if none exists or as starting point
+      _startNewChat();
+    }
+  }
+
+  void _startNewChat() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _sessionId = 'session_${DateTime.now().millisecondsSinceEpoch}';
+      _messages.clear();
+      _messages.add(
+        ChatMessage.assistant(
+          'Xin chào${prefs.getString('user_full_name') != null ? ' ${prefs.getString('user_full_name')}' : ''}! Tôi là trợ lý AI y tế. Hôm nay tôi có thể giúp gì cho tình trạng sức khỏe của bạn?',
+        ),
+      );
+    });
+  }
+
+  Future<void> _loadSession(String sessionId) async {
+    setState(() {
+      _isThinking = true;
+      _sessionId = sessionId;
+      _messages.clear();
+    });
+    
+    try {
+      final history = await _aiChatService.getChatHistory(sessionId);
+      if (mounted) {
+        setState(() {
+          _messages.addAll(history);
+          _isThinking = false;
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      setState(() {
+        _isThinking = false;
       });
     }
   }
@@ -109,6 +138,7 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
       final apiCall = _aiChatService.sendMessage(
         messages: _messages,
         sessionId: _sessionId,
+        userId: _userId,
       );
       
       final results = await Future.wait([minDelay, apiCall]);
@@ -174,6 +204,14 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
         timer.cancel();
         setState(() {
           _isTyping = false;
+        });
+        // After finishing, refresh sessions to update titles/previews
+        _aiChatService.getChatSessions(_userId).then((sessions) {
+          if (mounted) {
+            setState(() {
+              _sessions = sessions;
+            });
+          }
         });
       }
     });
@@ -259,65 +297,130 @@ class _ChatAIScreenState extends State<ChatAIScreen> with TickerProviderStateMix
               ],
             ),
           ),
+          // Add "New Chat" Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _startNewChat();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accentColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.add_rounded),
+                label: Text('Cuộc hội thoại mới', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
-            child: _historyMessages.isEmpty
+            child: _sessions.isEmpty
                 ? Center(
-                    child: Text(
-                      'Chưa có lịch sử',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.blueGrey.shade400,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline_rounded, size: 48, color: Colors.grey.withOpacity(0.3)),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Chưa có lịch sử',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.blueGrey.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    itemCount: _historyMessages.length,
+                    itemCount: _sessions.length,
                     itemBuilder: (context, index) {
-                      final msg = _historyMessages[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: msg.isUser ? Colors.white : _primaryColor.withOpacity(0.03),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: msg.isUser ? _darkShadow.withOpacity(0.3) : _accentColor.withOpacity(0.3),
+                      final session = _sessions[index];
+                      final bool isCurrent = session.sessionId == _sessionId;
+                      
+                      return GestureDetector(
+                        onTap: () {
+                          _loadSession(session.sessionId);
+                          Navigator.pop(context);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isCurrent ? _accentColor.withOpacity(0.1) : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isCurrent ? _accentColor : _darkShadow.withOpacity(0.3),
+                              width: isCurrent ? 1.5 : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _darkShadow.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
                           ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  msg.isUser ? Icons.person_rounded : Icons.smart_toy_rounded,
-                                  size: 16,
-                                  color: msg.isUser ? Colors.blueGrey.shade400 : _accentColor,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  msg.isUser ? 'Bạn' : 'Trợ lý AI',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: msg.isUser ? Colors.blueGrey.shade600 : _primaryColor,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.chat_rounded,
+                                    size: 16,
+                                    color: isCurrent ? _accentColor : Colors.blueGrey.shade400,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              msg.content,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                color: Colors.blueGrey.shade800,
-                                height: 1.5,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      session.title,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: isCurrent ? _primaryColor : Colors.blueGrey.shade800,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              maxLines: 4,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              Text(
+                                session.lastMessage,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13,
+                                  color: Colors.blueGrey.shade500,
+                                  height: 1.4,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    session.timestamp.split('T').first,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade400,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

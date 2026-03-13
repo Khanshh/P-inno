@@ -16,12 +16,14 @@ class AiChatService {
   Future<ChatResponse> sendMessage({
     required List<ChatMessage> messages,
     String? sessionId,
+    String? userId,
     bool useRag = false,
   }) async {
     try {
       final request = ChatRequest(
         messages: messages,
         sessionId: sessionId,
+        userId: userId,
         useRag: useRag,
       );
 
@@ -34,7 +36,7 @@ class AiChatService {
       );
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        final jsonData = json.decode(utf8.decode(response.bodyBytes));
         return ChatResponse.fromJson(jsonData);
       } else {
         throw Exception(
@@ -43,6 +45,22 @@ class AiChatService {
       }
     } catch (e) {
       throw Exception('Error communicating with AI: $e');
+    }
+  }
+
+  Future<List<ChatSession>> getChatSessions(String userId) async {
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.aiChatSessions(userId)));
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(utf8.decode(response.bodyBytes));
+        final List<dynamic> sessionsJson = jsonData['sessions'];
+        return sessionsJson.map((s) => ChatSession.fromJson(s)).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Lỗi load chat sessions: $e");
+      return [];
     }
   }
 
