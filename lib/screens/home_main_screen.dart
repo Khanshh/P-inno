@@ -86,13 +86,20 @@ class _HomeMainScreenState extends State<HomeMainScreen>
     setState(() => _isLoadingHistory = true);
     try {
       final history = await _apiService.getSimulationHistory();
-      if (history.isNotEmpty) {
+      // Chỉ lấy mô phỏng tự nhiên (hunault) cho phần lộ trình
+      final hunaultHistory = history
+          .where((s) => s['model_id'] == 'hunault')
+          .toList();
+      if (hunaultHistory.isNotEmpty) {
         setState(() {
-          _lastSimulation = history.first;
+          _lastSimulation = hunaultHistory.first;
           _isLoadingHistory = false;
         });
       } else {
-        setState(() => _isLoadingHistory = false);
+        setState(() {
+          _lastSimulation = null;
+          _isLoadingHistory = false;
+        });
       }
     } catch (e) {
       setState(() => _isLoadingHistory = false);
@@ -530,7 +537,6 @@ class _HomeMainScreenState extends State<HomeMainScreen>
   Widget _buildActiveTimelineCard() {
     final result = _lastSimulation!['result'] ?? {};
     final double mainProb = (result['probability_percent'] ?? 0).toDouble();
-    final String modelId = _lastSimulation!['model_id'] ?? 'hunault';
     final String probRange = result['probability_range'] ?? "";
 
     return GestureDetector(
@@ -564,9 +570,7 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        modelId == 'hunault'
-                            ? "Thụ thai tự nhiên"
-                            : "Thành công IVF",
+                        "Thụ thai tự nhiên",
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 16,
@@ -617,9 +621,7 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    modelId == 'hunault'
-                        ? "Nhấn để xem biểu đồ lộ trình 24 tháng"
-                        : "Nhấn để xem tóm tắt phân tích AI",
+                    "Nhấn để xem biểu đồ lộ trình 24 tháng",
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white.withOpacity(0.9),
                       fontSize: 15,
@@ -643,12 +645,6 @@ class _HomeMainScreenState extends State<HomeMainScreen>
 
   void _showTimelineDetailDialog() {
     final result = _lastSimulation!['result'] ?? {};
-    final String modelId = _lastSimulation!['model_id'] ?? 'hunault';
-
-    if (modelId == 'sart_ivf') {
-      _showIVFDetailDialog();
-      return;
-    }
 
     final List<dynamic> timelineRaw = result['timeline_data'] ?? [];
     final int breakPoint = result['break_point'] ?? 12;
@@ -755,102 +751,7 @@ class _HomeMainScreenState extends State<HomeMainScreen>
     );
   }
 
-  void _showIVFDetailDialog() {
-    final result = _lastSimulation!['result'] ?? {};
-    final String interpretation =
-        result['interpretation'] ?? "Chưa có dữ liệu phân tích chi tiết.";
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: _bgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [_primaryColor, const Color(0xFF2D6A73)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        "Tóm tắt AI",
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  interpretation,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    color: Colors.grey.shade800,
-                    height: 1.6,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Text(
-                    "Đóng",
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTimelineChart(List<dynamic> data, int breakPoint) {
     List<FlSpot> avgSpots = data
@@ -1133,10 +1034,15 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                         width: 1.5,
                       ),
                     ),
-                    child: const CircleAvatar(
+                    child: CircleAvatar(
                       radius: 26,
-                      backgroundImage: NetworkImage(
-                        'https://i.pravatar.cc/150?u=a',
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      child: Icon(
+                        _gender == 'Nam'
+                            ? Icons.face
+                            : (_gender == 'Nữ' ? Icons.face_3 : Icons.person),
+                        color: Colors.white,
+                        size: 32,
                       ),
                     ),
                   ),
@@ -1152,16 +1058,16 @@ class _HomeMainScreenState extends State<HomeMainScreen>
                                 : (_gender == 'Nữ'
                                       ? Icons.female
                                       : Icons.person),
-                            color: Colors.white,
-                            size: 18,
+                            color: _gender == 'Nam'
+                                ? Colors.blue.shade100
+                                : (_gender == 'Nữ'
+                                      ? Colors.pink.shade200
+                                      : Colors.white),
+                            size: 20,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _gender == 'Nam'
-                                ? "Chào Anh 👋"
-                                : (_gender == 'Nữ'
-                                      ? "Chào Chị 👋"
-                                      : "Hello 👋"),
+                            "Hello 👋",
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 17,
                               color: Colors.white,
