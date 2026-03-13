@@ -6,7 +6,7 @@ class ApiConfig {
   // - iOS Simulator: 'http://localhost:8000'
   // - Device thật: 'http://<IP_MÁY_TÍNH>:8000' (ví dụ: 'http://192.168.1.100:8000')
   
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = 'http://192.168.30.240:8000';
   
   // API endpoints
   static const String apiPrefix = '/api/v1';
